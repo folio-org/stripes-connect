@@ -11,7 +11,7 @@ Stripes Connect provides essentially one service: the ability to
 upgrade a regular React component into a Connected Component. This is
 done by importing the `connect()` method from `stripes-connect`,
 defining a data manifest, and exporting not the React component itself
-but the result of wrapping it in a call to `connect():
+but the result of wrapping it in a call to `connect()`:
 
 ```
 import { Component } from 'react';

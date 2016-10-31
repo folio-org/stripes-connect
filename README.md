@@ -27,4 +27,4 @@ The data manifest is explained in detail in
 [The Stripes Connect API](api.md);
 A complete worked example of a connected component for editing patrons
 is explained in
-[A component example: the **PatronEdit** component](https://github.com/folio-org/stripes-core/blob/master/doc/component-example.md).
+[A component example: the **PatronEdit** component](../stripes-core/doc/component-example.md).

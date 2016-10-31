@@ -15,9 +15,29 @@ const types = {
 const wrap = (Wrapped, module) => {
   let resources = [];
   _.forOwn(Wrapped.manifest, (query, name) => {
-    const resource = new types[query.type || defaultType](name, query, module);
-    resources.push(resource);
+    if (!name.startsWith('@')) {
+      // Regular manifest entries describe resources
+      const resource = new types[query.type || defaultType](name, query, module);
+      resources.push(resource);
+    } else if (name === '@errorHandler') {
+      setErrorHandler(query);
+    } else {
+      console.log("WARNING: " + module + " ignoring unsupported special manifest entry '" + name + "'");
+    }
   });
+
+  var errorHandler;
+  function setErrorHandler(handler, force) {
+    console.log("setErrorHandler(", force, ", ", handler, "): existing errorHandler = ", errorHandler);
+    if (force || !errorHandler) {
+      errorHandler = handler;
+      console.log("setErrorHandler: now errorHandler = ", errorHandler);
+    } else {
+      console.log("setErrorHandler: not overriding existing errorHandler");
+    }
+  }
+
+
   class Wrapper extends React.Component {
     constructor(props, context) {
       super();
@@ -27,8 +47,31 @@ const wrap = (Wrapped, module) => {
       resources.forEach(resource => {
         context.addReducer(resource.stateKey(), resource.reducer);
       });
+      context.addReducer('@@error', this.errorReducer.bind(this));
+      if (!errorHandler) {
+        setErrorHandler(this.naiveErrorHandler, false);
+      }
+    }
 
+    errorReducer(state = [], action) {
+      // Handle error actions. I'm not sure how I feel about dispatching
+      // from a reducer, but it's the only point of universal conctact
+      // with all errors.
+      let a = action.type.split('_');
+      let typetype = a.pop();
+      if (typetype === 'ERROR') {
+        let op = a.pop();
+        errorHandler(Object.assign({}, action.data, { op: op, error: action.error.message }));
+      }
 
+      // No change to state
+      return state;
+    }
+
+    naiveErrorHandler(e) {
+      alert("ERROR: in module '" + e.module + "', " +
+            " operation '" + e.op + "' on " +
+            " resource '" + e.resource + "' failed, saying: " + e.error);
     }
 
     componentDidMount() {

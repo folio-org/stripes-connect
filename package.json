@@ -1,7 +1,7 @@
 {
   "name": "@folio/stripes-connect",
   "version": "0.0.3-test",
-  "description": "A module connect to enable pluggable Redux applications.",
+  "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-experiments",
   "publishConfig" : {
     "registry" : "https://repository.folio.org/repository/npm-folio/"

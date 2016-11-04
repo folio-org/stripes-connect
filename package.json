@@ -1,7 +1,7 @@
 {
   "name": "@folio/stripes-connect",
   "version": "0.0.3-test",
-  "description": "A module connect to enable pluggable Redux applications.",
+  "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-experiments",
   "publishConfig" : {
     "registry" : "https://repository.folio.org/repository/npm-folio/"
@@ -11,6 +11,19 @@
   "license": "Apache-2.0",
   "engines": {
     "node": ">=6.0.0"
+  },
+  "scripts": {
+    "lint": "eslint *.js"
+  },
+  "devDependencies": {
+    "babel-core": "^6.17.0",
+    "babel-eslint": "^7.0.0",
+    "eslint": "^3.8.0",
+    "eslint-config-airbnb": "^12.0.0",
+    "eslint-plugin-babel": "^3.3.0",
+    "eslint-plugin-import": "^2.0.1",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.4.1"
   },
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",

@@ -95,10 +95,10 @@ const wrap = (Wrapped, module) => {
 
   Wrapper.mapState = function(state) {
     return {
-      data: resources.reduce((result, resource) => {
-        result[resource.name] = _.get(state, [resource.stateKey()], null);
+      data: Object.freeze(resources.reduce((result, resource) => {
+        result[resource.name] = Object.freeze(_.get(state, [resource.stateKey()], null));
         return result;
-      }, {})
+      }, {}))
     };
   }
 

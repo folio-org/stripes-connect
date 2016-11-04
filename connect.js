@@ -28,12 +28,12 @@ const wrap = (Wrapped, module) => {
 
   var errorHandler;
   function setErrorHandler(handler, force) {
-    console.log("setErrorHandler(", force, ", ", handler, "): existing errorHandler = ", errorHandler);
+    console.log("setErrorHandler(" + module + ", force=" + force, " +", handler, "): existing errorHandler = ", errorHandler);
     if (force || !errorHandler) {
       errorHandler = handler;
-      console.log("setErrorHandler: now errorHandler = ", errorHandler);
+      console.log("setErrorHandler(" + module + "): set new errorHandler");
     } else {
-      console.log("setErrorHandler: not overriding existing errorHandler");
+      console.log("setErrorHandler(" + module + "): not overriding existing errorHandler");
     }
   }
 

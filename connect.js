@@ -12,6 +12,9 @@ const types = {
   'rest': restResource
 }
 
+// Should be doable with a scalar in a closure, but doesn't work right for some reason.
+let module2errorHandler = {};
+
 const wrap = (Wrapped, module) => {
   let resources = [];
   _.forOwn(Wrapped.manifest, (query, name) => {
@@ -26,11 +29,11 @@ const wrap = (Wrapped, module) => {
     }
   });
 
-  var errorHandler;
   function setErrorHandler(handler, force) {
-    console.log("setErrorHandler(" + module + ", force=" + force, " +", handler, "): existing errorHandler = ", errorHandler);
-    if (force || !errorHandler) {
-      errorHandler = handler;
+    console.log("setErrorHandler(" + module + ", force=" + force, " +", handler, "):",
+                "existing errorHandler = ", module2errorHandler[module]);
+    if (force || !module2errorHandler[module]) {
+      module2errorHandler[module] = handler;
       console.log("setErrorHandler(" + module + "): set new errorHandler");
     } else {
       console.log("setErrorHandler(" + module + "): not overriding existing errorHandler");
@@ -48,9 +51,7 @@ const wrap = (Wrapped, module) => {
         context.addReducer(resource.stateKey(), resource.reducer);
       });
       context.addReducer('@@error', this.errorReducer.bind(this));
-      if (!errorHandler) {
-        setErrorHandler(this.naiveErrorHandler, false);
-      }
+      setErrorHandler(this.naiveErrorHandler, false);
     }
 
     errorReducer(state = [], action) {
@@ -61,6 +62,8 @@ const wrap = (Wrapped, module) => {
       let typetype = a.pop();
       if (typetype === 'ERROR') {
         let op = a.pop();
+        let errorHandler = module2errorHandler[module];
+        console.log("using error-handler for '" + module + "' =", errorHandler);
         errorHandler(Object.assign({}, action.data, { op: op, error: action.error.message }));
       }
 

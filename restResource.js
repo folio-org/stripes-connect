@@ -150,6 +150,7 @@ export default class restResource {
   } 
 
 
+  // I don't know why, but the scope cannot see that, only theOther
   fetchAction() {
     const that = this;
     const { root, path, pk, headers, GET, records } = this.options;
@@ -163,7 +164,7 @@ export default class restResource {
       return fetch(url, { headers: Object.assign({}, headers, GET.headers) })
         .then(response => {
           if (response.status >= 400) {
-            dispatch(crudActions.fetchError(response));
+            theOther.error('GET', crudActions.fetchError, theOther.module, theOther.name, response.text());
           } else {
             response.json().then(json => {
               dispatch({ type: 'CLEAR_'+key.toUpperCase()});
@@ -172,13 +173,18 @@ export default class restResource {
             });
           }
         }).catch(reason => {
-          // I don't know why, but this scope cannot see that, only theOther
-          console.log("HTTP GET for module '" + theOther.module + "' resource '" + theOther.name + "' failed: ", reason);
-          dispatch(crudActions.fetchError(reason, {
-            module: theOther.module,
-            resource: theOther.name,
-          }));
+          theOther.error(dispatch, 'GET', crudActions.fetchError, theOther.module, theOther.name, reason);
         });
     };
+  }
+
+
+  // This is an ugly fat API, but we need to be able to do all this in a single call
+  error(dispatch, op, creator, module, resource, reason) {
+    console.log("HTTP " + op + " for module '" + module + "' resource '" + resource + "' failed: ", reason);
+    dispatch(creator(reason, {
+      module: module,
+      resource: resource,
+    }));
   }
 }

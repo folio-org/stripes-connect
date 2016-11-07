@@ -50,7 +50,7 @@ const wrap = (Wrapped, module) => {
       resources.forEach(resource => {
         context.addReducer(resource.stateKey(), resource.reducer);
       });
-      context.addReducer('@@error', this.errorReducer.bind(this));
+      context.addReducer('@@error-' + module, this.errorReducer.bind(this));
       setErrorHandler(this.naiveErrorHandler, false);
     }
 
@@ -61,10 +61,14 @@ const wrap = (Wrapped, module) => {
       let a = action.type.split('_');
       let typetype = a.pop();
       if (typetype === 'ERROR') {
-        let op = a.pop();
-        let errorHandler = module2errorHandler[module];
-        console.log("using error-handler for '" + module + "' =", errorHandler);
-        errorHandler(Object.assign({}, action.data, { op: op, error: action.error.message }));
+        if (action.data.module === module) {
+          let op = a.pop();
+          let errorHandler = module2errorHandler[module];
+          console.log("using error-handler for '" + module + "' =", errorHandler);
+          errorHandler(Object.assign({}, action.data, { op: op, error: action.error.message }));
+        } else {
+          console.log("For error in module '" + action.data.module + "', not invoking handler of module '" + module + "'");
+        }
       }
 
       // No change to state

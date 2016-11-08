@@ -14,7 +14,7 @@ const defaults = {
   pk: 'id',
   clientGeneratePk: true,
   fetch: true,
-  headers: { 'X-Okapi-Tenant': 'tenant-id',
+  headers: { 'X-Okapi-Tenant': 'diku',
              'Authorization': 'x'
            },
   POST:   {

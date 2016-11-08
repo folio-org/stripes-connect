@@ -164,7 +164,7 @@ export default class restResource {
       return fetch(url, { headers: Object.assign({}, headers, GET.headers) })
         .then(response => {
           if (response.status >= 400) {
-            theOther.error('GET', crudActions.fetchError, theOther.module, theOther.name, response.text());
+            theOther.error(dispatch, 'GET', crudActions.fetchError, null, theOther.module, theOther.name, response.text());
           } else {
             response.json().then(json => {
               dispatch({ type: 'CLEAR_'+key.toUpperCase()});
@@ -173,18 +173,21 @@ export default class restResource {
             });
           }
         }).catch(reason => {
-          theOther.error(dispatch, 'GET', crudActions.fetchError, theOther.module, theOther.name, reason);
+          theOther.error(dispatch, 'GET', crudActions.fetchError, null, theOther.module, theOther.name, reason);
         });
     };
   }
 
 
   // This is an ugly fat API, but we need to be able to do all this in a single call
-  error(dispatch, op, creator, module, resource, reason) {
+  error(dispatch, op, creator, record, module, resource, reason) {
     console.log("HTTP " + op + " for module '" + module + "' resource '" + resource + "' failed: ", reason);
-    dispatch(creator(reason, {
-      module: module,
-      resource: resource,
-    }));
+    console.log(record);
+    let data = { module: module, resource: resource };
+    // Annoyingly, some redux-crud action creators have different signatures
+    let action = record ?
+        creator(reason, record, data) :
+        creator(reason, data);
+    dispatch(action);
   }
 }

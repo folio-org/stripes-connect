@@ -64,10 +64,12 @@ export default class restResource {
   }
 
   createAction(record) {
+    const that = this;
     const { root, path, pk, clientGeneratePk, headers, POST } = this.options;
     const crudActions = this.crudActions;
     const url = [ root, POST.path || path ].join('/');
     return function(dispatch) {
+      const theOther = that;
       // Optimistic record creation ('clientRecord')
       const cuuid = uuid();
       let clientRecord = { ...record, id: cuuid };
@@ -84,13 +86,15 @@ export default class restResource {
       })
         .then(response => {
           if (response.status >= 400) {
-            dispatch(crudActions.createError(response, clientRecord));
+            theOther.error(dispatch, 'POST1', crudActions.createError, record, theOther.module, theOther.name, response.text());
           } else {
             response.json().then ( (json) => {
               if (json[pk] && !json.id) json.id = json[pk];
               dispatch(crudActions.createSuccess(json, cuuid));
             });
           }
+        }).catch(reason => {
+          theOther.error(dispatch, 'POST2', crudActions.createError, record, theOther.module, theOther.name, reason);
         });
     }
   }

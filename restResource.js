@@ -168,7 +168,9 @@ export default class restResource {
       return fetch(url, { headers: Object.assign({}, headers, GET.headers) })
         .then(response => {
           if (response.status >= 400) {
-            theOther.error(dispatch, 'GET', crudActions.fetchError, null, theOther.module, theOther.name, response.text());
+            response.text().then(text => {
+              theOther.error(dispatch, 'GET', crudActions.fetchError, null, theOther.module, theOther.name, text);
+            });
           } else {
             response.json().then(json => {
               dispatch({ type: 'CLEAR_'+key.toUpperCase()});

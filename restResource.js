@@ -177,7 +177,7 @@ export default class restResource {
             });
           }
         }).catch(reason => {
-          that.error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, reason);
+          that.error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, reason.message);
         });
     };
   }

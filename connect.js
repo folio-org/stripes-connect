@@ -63,7 +63,7 @@ const wrap = (Wrapped, module) => {
           let op = a.pop();
           let errorHandler = module2errorHandler[module];
           console.log("using error-handler for '" + module + "'");
-          errorHandler(Object.assign({}, action.data, { op: op, error: action.error.message }));
+          errorHandler(Object.assign({}, action.data, { op: op, error: action.error }));
         } else {
           console.log("For error in module '" + action.data.module + "', not invoking handler of module '" + module + "'");
         }

@@ -154,7 +154,6 @@ export default class restResource {
   } 
 
 
-  // I don't know why, but the scope cannot see that, only theOther
   fetchAction() {
     const that = this;
     const { root, path, pk, headers, GET, records } = this.options;
@@ -163,13 +162,12 @@ export default class restResource {
     // i.e. only join truthy elements
     const url = [ root, path ].filter(_.identity).join('/');
     return function(dispatch) {
-      const theOther = that;
       dispatch(crudActions.fetchStart());
       return fetch(url, { headers: Object.assign({}, headers, GET.headers) })
         .then(response => {
           if (response.status >= 400) {
             response.text().then(text => {
-              theOther.error(dispatch, 'GET', crudActions.fetchError, null, theOther.module, theOther.name, text);
+              that.error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, text);
             });
           } else {
             response.json().then(json => {
@@ -179,7 +177,7 @@ export default class restResource {
             });
           }
         }).catch(reason => {
-          theOther.error(dispatch, 'GET', crudActions.fetchError, null, theOther.module, theOther.name, reason);
+          that.error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, reason);
         });
     };
   }

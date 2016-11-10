@@ -135,6 +135,7 @@ export default class restResource {
   }
 
   deleteAction(record) {
+    const that = this;
     const { root, path, pk, clientGeneratePk, headers, DELETE } = this.options;
     const crudActions = this.crudActions;
     const resolvedPath = DELETE.path || path;
@@ -151,10 +152,14 @@ export default class restResource {
       })
         .then(response => {
           if (response.status >= 400) {
-            dispatch(crudActions.deleteError(response, record));
+            response.text().then(text => {
+              that.error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, text);
+            });
           } else {
             dispatch(crudActions.deleteSuccess(record));
           }
+        }).catch(reason => {
+          that.error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, reason.message);
         });
     }
   } 

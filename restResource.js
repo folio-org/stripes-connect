@@ -85,7 +85,9 @@ export default class restResource {
       })
         .then(response => {
           if (response.status >= 400) {
-            that.error(dispatch, 'POST1', crudActions.createError, record, that.module, that.name, response.text());
+            response.text().then(text => {
+              that.error(dispatch, 'POST1', crudActions.createError, record, that.module, that.name, text);
+            });
           } else {
             response.json().then ( (json) => {
               if (json[pk] && !json.id) json.id = json[pk];

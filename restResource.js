@@ -86,7 +86,7 @@ export default class restResource {
         .then(response => {
           if (response.status >= 400) {
             response.text().then(text => {
-              that.error(dispatch, 'POST1', crudActions.createError, record, that.module, that.name, text);
+              that.error(dispatch, 'POST1', crudActions.createError, clientRecord, that.module, that.name, text);
             });
           } else {
             response.json().then ( (json) => {
@@ -95,7 +95,7 @@ export default class restResource {
             });
           }
         }).catch(reason => {
-          that.error(dispatch, 'POST2', crudActions.createError, record, that.module, that.name, reason);
+          that.error(dispatch, 'POST2', crudActions.createError, clientRecord, that.module, that.name, reason);
         });
     }
   }

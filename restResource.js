@@ -128,6 +128,8 @@ export default class restResource {
             */
             dispatch(crudActions.updateSuccess(clientRecord));
           }
+        }).catch(reason => {
+          that.error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, reason.message);
         });
     }
   }

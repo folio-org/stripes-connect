@@ -101,6 +101,7 @@ export default class restResource {
   }
 
   updateAction(record) {
+    const that = this;
     const { root, path, pk, clientGeneratePk, headers, PUT } = this.options;
     const crudActions = this.crudActions;
     const url = [ root, PUT.path || path ].join('/');
@@ -115,7 +116,9 @@ export default class restResource {
       })
         .then(response => {
           if (response.status >= 400) {
-            dispatch(crudActions.updateError(response,record));
+            response.text().then(text => {
+              that.error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, text);
+            });
           } else {
             /* Patrons api will not return JSON
             response.json().then ( (json) => {

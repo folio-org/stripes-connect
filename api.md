@@ -1,15 +1,15 @@
 # The Stripes Connect API
 
 <!-- pandoc -f markdown_github-hard_line_breaks api.md > api.html -->
-<!-- ../../okapi/doc/md2toc -l 2 api.md -->
+<!-- ../okapi/doc/md2toc -l 2 api.md -->
 * [Introduction](#introduction)
     * [Note](#note)
 * [The Connection Manifest](#the-connection-manifest)
     * [Resource types](#resource-types)
-    * [Local resources](#local-resources)
-    * [REST resources](#rest-resources)
-    * [Okapi resources](#okapi-resources)
-        * [Example](#example)
+        * [Local resources](#local-resources)
+        * [REST resources](#rest-resources)
+        * [Okapi resources](#okapi-resources)
+    * [Example](#example)
 * [Connecting the component](#connecting-the-component)
 * [Appendices: for developers](#appendices-for-developers)
     * [Appendix A: some implementation details](#appendix-a-some-implementation-details)
@@ -85,7 +85,7 @@ which defaults are provided to tailor the RESTful dialogues in
 accordance with Okapi's conventions.)
 
 
-### Local resources
+#### Local resources
 
 A local resource needs no configuration items -- not even an explicit
 `type`, since the default type is `local`. So its configuration can
@@ -96,7 +96,7 @@ simply be specified as an empty object:
         }
 
 
-### REST resources
+#### REST resources
 
 REST resources are configured by the following additional keys in
 addition to `'type':'rest'`:
@@ -151,7 +151,7 @@ the same keys as described above) that apply only when the specified
 operation is used.
 
 
-### Okapi resources
+#### Okapi resources
 
 Okapi resources are REST resources, but with defaults set to make
 connecting to Okapi convenient:
@@ -163,7 +163,8 @@ connecting to Okapi convenient:
   tenant-ID, specify that the POSTed or PUT body is JSON and expect
   JSON in response.
 
-#### Example
+
+### Example
 
 This manifest (from the Okapi Console component that displays the
 health of running modules) defines two Okapi resources, `health` and

@@ -1,6 +1,5 @@
 # The Stripes Connect API
 
-<!-- pandoc -f markdown_github-hard_line_breaks api.md > api.html -->
 <!-- ../okapi/doc/md2toc -l 2 api.md -->
 * [Introduction](#introduction)
     * [Note](#note)

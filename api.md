@@ -12,14 +12,14 @@
     * [Example](#example)
 * [Connecting the component](#connecting-the-component)
 * [Appendices: for developers](#appendices-for-developers)
-    * [Appendix A: some implementation details](#appendix-a-some-implementation-details)
-    * [Appendix B: unresolved issues](#appendix-b-unresolved-issues)
+    * [Appendix A: how state is stored](#appendix-a-how-state-is-stored)
+    * [Appendix B: some implementation details](#appendix-b-some-implementation-details)
+    * [Appendix C: unresolved issues](#appendix-c-unresolved-issues)
         * [One vs. Many](#one-vs-many)
         * [Metadata](#metadata)
         * [Errors](#errors)
         * [Object counts](#object-counts)
-    * [Appendix C: things still to be documented](#appendix-c-things-still-to-be-documented)
-        * [How state is stored](#how-state-is-stored)
+    * [Appendix D: things still to be documented](#appendix-d-things-still-to-be-documented)
         * [Work through the example of PatronEdit.js](#work-through-the-example-of-patroneditjs)
         * [Work through state-object changed during a CRUD cycle](#work-through-state-object-changed-during-a-crud-cycle)
 
@@ -231,78 +231,7 @@ These sections are only for developers working on Stripes
 itself. Those working on _using_ Stripes to build a UI can ignore them.
 
 
-### Appendix A: some implementation details
-
-When a connected component is invoked, two properties are passed to
-the wrapped component:
-
-* `data`: contains either data associated with a resource (as a
-  JavaScript object whose keys are the names of resources defined in
-  the manifest) or null if the data is pending and has not yet been
-  fetched.
-
-* `mutator`: a JavaScript object with properties named after each
-  resource. The corresponding values are themselves objects whose keys
-  are HTTP methods and whose values are methods that perform the
-  relevant CRUD operation using HTTP and update the internal
-  representation of the state to match.
-  The mutator methods optionally take a record as a parameter,
-  represented as a JavaScript object whose keys are fieldnames and
-  whose values contain the corresponding data. These records are used
-  in the obvious way by the POST, PUT and PATCH operations. For
-  DELETE, the record need only contain the `id` field, so that it
-  suffices to call `mutator.tenants.DELETE({ id: 43 })`.
-
-  
-### Appendix B: unresolved issues
-
-#### One vs. Many
-
-Right now there is no clear standard as to what data is returned by
-Okapi services -- for example, a single record by `id` yields a single
-record; but a query that matches a single record yields an array with
-one element.
-
-#### Metadata
-
-We use the Redux Crud library to, among other things, generate
-actions. It causes a number of compromises such as our needing to
-clear out the Redux state at times, because it is designed for a
-slightly different universe where there is more data re-use.
-
-As part of that, it prefers to treat the responses as lists of records
-that it can merge into its local store which makes having a top level
-of metadata with an array property `patrons` or similar a bit
-incompatible.
-
-We currently pass it a key from the manifest (`records`) if it needs
-to dig deeper to find the records. But that means we just discard the
-top level metadata. It may soon be time to reimplement Redux Crud
-ourselves and take full control of how data is being shuffled
-around. Among other things, it would give the option to let our API be
-more true to intent and transparently expose the data returned by the
-REST request.
-
-#### Errors
-
-Right now we have no real error handling. Maybe we can have
-`props.data.someResource.error` be a special key with an object
-describing the error. We need to surface the HTTP error somehow.
-
-#### Object counts
-
-Can we get a count of holds on an item? How does that API work and
-does our above system mesh with it well enough to provide a pleasant
-developer experience?
-
-
-### Appendix C: things still to be documented
-
-[This section is mostly for Mike's benefit. In time, the material
-touched on in this section will be written up properly and merged into
-the main document.]
-
-#### How state is stored
+### Appendix A: how state is stored
 
 * All state is stored in a single branching structure, the _Redux
   store_. (Module creators should not need to know about details of
@@ -368,6 +297,78 @@ the main document.]
   * Also to be done: a simple implementation of search preferences, as
     a model for how two components (SearchForm and SearchPrefernces)
     can deliberately share data.
+
+
+### Appendix B: some implementation details
+
+When a connected component is invoked, two properties are passed to
+the wrapped component:
+
+* `data`: contains either data associated with a resource (as a
+  JavaScript object whose keys are the names of resources defined in
+  the manifest) or null if the data is pending and has not yet been
+  fetched.
+
+* `mutator`: a JavaScript object with properties named after each
+  resource. The corresponding values are themselves objects whose keys
+  are HTTP methods and whose values are methods that perform the
+  relevant CRUD operation using HTTP and update the internal
+  representation of the state to match.
+  The mutator methods optionally take a record as a parameter,
+  represented as a JavaScript object whose keys are fieldnames and
+  whose values contain the corresponding data. These records are used
+  in the obvious way by the POST, PUT and PATCH operations. For
+  DELETE, the record need only contain the `id` field, so that it
+  suffices to call `mutator.tenants.DELETE({ id: 43 })`.
+
+  
+### Appendix C: unresolved issues
+
+#### One vs. Many
+
+Right now there is no clear standard as to what data is returned by
+Okapi services -- for example, a single record by `id` yields a single
+record; but a query that matches a single record yields an array with
+one element.
+
+#### Metadata
+
+We use the Redux Crud library to, among other things, generate
+actions. It causes a number of compromises such as our needing to
+clear out the Redux state at times, because it is designed for a
+slightly different universe where there is more data re-use.
+
+As part of that, it prefers to treat the responses as lists of records
+that it can merge into its local store which makes having a top level
+of metadata with an array property `patrons` or similar a bit
+incompatible.
+
+We currently pass it a key from the manifest (`records`) if it needs
+to dig deeper to find the records. But that means we just discard the
+top level metadata. It may soon be time to reimplement Redux Crud
+ourselves and take full control of how data is being shuffled
+around. Among other things, it would give the option to let our API be
+more true to intent and transparently expose the data returned by the
+REST request.
+
+#### Errors
+
+Right now we have no real error handling. Maybe we can have
+`props.data.someResource.error` be a special key with an object
+describing the error. We need to surface the HTTP error somehow.
+
+#### Object counts
+
+Can we get a count of holds on an item? How does that API work and
+does our above system mesh with it well enough to provide a pleasant
+developer experience?
+
+
+### Appendix D: things still to be documented
+
+[This section is mostly for Mike's benefit. In time, the material
+touched on in this section will be written up properly and merged into
+the main document.]
 
 #### Work through the example of PatronEdit.js
 

@@ -18,9 +18,8 @@
         * [Metadata](#metadata)
         * [Errors](#errors)
         * [Object counts](#object-counts)
-    * [Appendix D: things still to be documented](#appendix-d-things-still-to-be-documented)
-        * [Work through the example of PatronEdit.js](#work-through-the-example-of-patroneditjs)
-        * [Work through state-object changed during a CRUD cycle](#work-through-state-object-changed-during-a-crud-cycle)
+    * [Appendix D: worked-through example of connected component](#appendix-d-worked-through-example-of-connected-component)
+    * [Appendix E: walk-through of state-object changes during a CRUD cycle](#appendix-e-walk-through-of-state-object-changes-during-a-crud-cycle)
 
 
 
@@ -363,17 +362,13 @@ does our above system mesh with it well enough to provide a pleasant
 developer experience?
 
 
-### Appendix D: things still to be documented
+### Appendix D: worked-through example of connected component
 
-[This section is mostly for Mike's benefit. In time, the material
-touched on in this section will be written up properly and merged into
-the main document.]
+This is in the separate document
+[A component example: the PatronEdit component](https://github.com/folio-org/stripes-core/blob/master/doc/component-example.md)
 
-#### Work through the example of PatronEdit.js
 
-XXX To be written
-
-#### Work through state-object changed during a CRUD cycle
+### Appendix E: walk-through of state-object changes during a CRUD cycle
 
 XXX To be written
 

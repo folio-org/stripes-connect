@@ -10,16 +10,16 @@
         * [Okapi resources](#okapi-resources)
     * [Example](#example)
 * [Connecting the component](#connecting-the-component)
+* [Using the connected component](#using-the-connected-component)
 * [Appendices: for developers](#appendices-for-developers)
     * [Appendix A: how state is stored](#appendix-a-how-state-is-stored)
-    * [Appendix B: some implementation details](#appendix-b-some-implementation-details)
-    * [Appendix C: unresolved issues](#appendix-c-unresolved-issues)
+    * [Appendix B: unresolved issues](#appendix-b-unresolved-issues)
         * [One vs. Many](#one-vs-many)
         * [Metadata](#metadata)
         * [Errors](#errors)
         * [Object counts](#object-counts)
-    * [Appendix D: worked-through example of connected component](#appendix-d-worked-through-example-of-connected-component)
-    * [Appendix E: walk-through of state-object changes during a CRUD cycle](#appendix-e-walk-through-of-state-object-changes-during-a-crud-cycle)
+    * [Appendix C: worked-through example of connected component](#appendix-c-worked-through-example-of-connected-component)
+    * [Appendix D: walk-through of state-object changes during a CRUD cycle](#appendix-d-walk-through-of-state-object-changes-during-a-crud-cycle)
 
 
 
@@ -217,6 +217,34 @@ use
 the Stripes module that contains the connect component. We hope to
 remove this requirement in future.)
 
+
+
+## Using the connected component
+
+When a connected component is invoked, two properties are passed to
+the wrapped component:
+
+* `data`: contains the data associated with the resources in the
+  manifest, as a JavaScript object whose keys are the names of
+  resources. This is null if the data is pending and has not yet been
+  fetched.
+
+* `mutator`: a JavaScript object that enables the component to make
+  changes to its resources. `mutator` is an object whose properties
+  are named after the resources in the manifest. The corresponding
+  values are themselves objects whose keys are HTTP methods and whose
+  values are methods that perform the relevant CRUD operation using
+  HTTP and update the internal representation of the state to match. A
+  typical invocation would be something like
+  `this.props.mutator['users'].POST(data)`.
+
+The mutator methods optionally take a record as a parameter,
+represented as a JavaScript object whose keys are fieldnames and whose
+values contain the corresponding data. These records are used in the
+obvious way by the POST, PUT and PATCH operations. For DELETE, the
+record need only contain the `id` field, so that it suffices to call
+`mutator.tenants.DELETE({ id: 43 })`.
+
 <br/>
 <br/>
 <hr/>
@@ -297,30 +325,7 @@ itself. Those working on _using_ Stripes to build a UI can ignore them.
     can deliberately share data.
 
 
-### Appendix B: some implementation details
-
-When a connected component is invoked, two properties are passed to
-the wrapped component:
-
-* `data`: contains either data associated with a resource (as a
-  JavaScript object whose keys are the names of resources defined in
-  the manifest) or null if the data is pending and has not yet been
-  fetched.
-
-* `mutator`: a JavaScript object with properties named after each
-  resource. The corresponding values are themselves objects whose keys
-  are HTTP methods and whose values are methods that perform the
-  relevant CRUD operation using HTTP and update the internal
-  representation of the state to match.
-  The mutator methods optionally take a record as a parameter,
-  represented as a JavaScript object whose keys are fieldnames and
-  whose values contain the corresponding data. These records are used
-  in the obvious way by the POST, PUT and PATCH operations. For
-  DELETE, the record need only contain the `id` field, so that it
-  suffices to call `mutator.tenants.DELETE({ id: 43 })`.
-
-  
-### Appendix C: unresolved issues
+### Appendix B: unresolved issues
 
 #### One vs. Many
 
@@ -362,13 +367,13 @@ does our above system mesh with it well enough to provide a pleasant
 developer experience?
 
 
-### Appendix D: worked-through example of connected component
+### Appendix C: worked-through example of connected component
 
 This is in the separate document
 [A component example: the PatronEdit component](https://github.com/folio-org/stripes-core/blob/master/doc/component-example.md)
 
 
-### Appendix E: walk-through of state-object changes during a CRUD cycle
+### Appendix D: walk-through of state-object changes during a CRUD cycle
 
 XXX To be written
 

@@ -70,12 +70,12 @@ export default class restResource {
     const url = [ root, POST.path || path ].join('/');
     return function(dispatch) {
       // Optimistic record creation ('clientRecord')
-      const cuuid = uuid();
-      let clientRecord = { ...record, id: cuuid };
-      clientRecord[pk] = cuuid;
+      const clientGeneratedId = record.id ? record.id : uuid();
+      let clientRecord = { ...record, id: clientGeneratedId };
+      clientRecord[pk] = clientGeneratedId;
       dispatch(crudActions.createStart(clientRecord));
       if (clientGeneratePk) {
-        record[pk] = cuuid;
+        record[pk] = clientGeneratedId;
       }
       // Send remote record ('record')
       return fetch(url, {
@@ -91,7 +91,7 @@ export default class restResource {
           } else {
             response.json().then ( (json) => {
               if (json[pk] && !json.id) json.id = json[pk];
-              dispatch(crudActions.createSuccess(json, cuuid));
+              dispatch(crudActions.createSuccess(json, clientGeneratedId));
             });
           }
         }).catch(reason => {

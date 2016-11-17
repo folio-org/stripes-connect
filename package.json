@@ -3,8 +3,8 @@
   "version": "0.0.3-test",
   "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-experiments",
-  "publishConfig" : {
-    "registry" : "https://repository.folio.org/repository/npm-folio/"
+  "publishConfig": {
+    "registry": "https://repository.folio.org/repository/npm-folio/"
   },
   "main": "connect.js",
   "author": "Index Data",
@@ -19,7 +19,7 @@
     "babel-core": "^6.17.0",
     "babel-eslint": "^7.0.0",
     "eslint": "^3.8.0",
-    "eslint-config-airbnb": "^12.0.0",
+    "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
     "eslint-plugin-jsx-a11y": "^2.2.3",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",
-    "redux-crud": "^1.0.0",
-    "node-uuid": "1.4.7"
+    "node-uuid": "1.4.7",
+    "redux-crud": "^1.0.0"
   }
 }

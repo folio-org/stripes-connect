@@ -10,13 +10,13 @@
         * [Okapi resources](#okapi-resources)
     * [Example](#example)
 * [Connecting the component](#connecting-the-component)
+* [Error handling](#error-handling)
 * [Using the connected component](#using-the-connected-component)
 * [Appendices: for developers](#appendices-for-developers)
     * [Appendix A: how state is stored](#appendix-a-how-state-is-stored)
     * [Appendix B: unresolved issues](#appendix-b-unresolved-issues)
         * [One vs. Many](#one-vs-many)
         * [Metadata](#metadata)
-        * [Errors](#errors)
         * [Object counts](#object-counts)
     * [Appendix C: worked-through example of connected component](#appendix-c-worked-through-example-of-connected-component)
     * [Appendix D: walk-through of state-object changes during a CRUD cycle](#appendix-d-walk-through-of-state-object-changes-during-a-crud-cycle)
@@ -219,6 +219,57 @@ remove this requirement in future.)
 
 
 
+## Error handling
+
+By default, errors in communicating with a REST service such as Okapi
+are signalled to the user in an alert-box that reports messages
+such as:
+
+> ERROR: in module 'okapi-console', operation 'CREATE' on resource
+> 'modules' failed, saying: module
+> 30c0046e-0967-4d3c-80fb-98c7c3ef2bb3: Missing dependency:
+> 30c0046e-0967-4d3c-80fb-98c7c3ef2bb3 requires patrons: 1.1
+
+This is on the basis that it's better to announce errors loudly than
+to allow them to pass silently, But applications will often want to
+handle errors in a more sophisticated way. This can be done by
+installing an error-handler function in a component by providing it as
+part of the component's manifest under the special key
+`@errorHandler`.
+
+The handler object is passed an error object which has the following
+elements (all of type string):
+
+* **module** -- the name of the Stripes module in which the error
+  occurred.
+* **op** -- the operation that Stripes Connect was trying to carry out
+  **on behalf of the module: usually one of
+  `FETCH`, `UPDATE`, `CREATE` or `DELETE`.
+* **resource** -- the name of the resource within the component's
+  manifest that Stripes Connect was trying to handle when the error
+  occurred.
+* **error** -- a description of what went wrong.
+
+For example one might define an error-handler that logs the relevant
+information to the JavaScript console, and install it in a component,
+as follows:
+
+        static handler(e) {
+          console.log("TenantList ERROR: in module '" + e.module + "', " +
+                      " operation '" + e.op + "' on " +
+                      " resource '" + e.resource + "' failed, saying: " + e.error);
+        }
+
+        static manifest = {
+          '@errorHandler': TenantList.handler,
+          'tenants': {
+            path: '_/proxy/tenants',
+            type: 'okapi'
+          }
+        };
+
+
+
 ## Using the connected component
 
 When a connected component is invoked, two properties are passed to
@@ -353,12 +404,6 @@ ourselves and take full control of how data is being shuffled
 around. Among other things, it would give the option to let our API be
 more true to intent and transparently expose the data returned by the
 REST request.
-
-#### Errors
-
-Right now we have no real error handling. Maybe we can have
-`props.data.someResource.error` be a special key with an object
-describing the error. We need to surface the HTTP error somehow.
 
 #### Object counts
 

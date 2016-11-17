@@ -197,7 +197,7 @@ export default class restResource {
   // This is an ugly fat API, but we need to be able to do all this in a single call
   error(dispatch, op, creator, record, module, resource, reason) {
     console.log("HTTP " + op + " for module '" + module + "' resource '" + resource + "' failed: ", reason);
-    let data = { module: module, resource: resource };
+    let data = { module: module, resource: resource, op: op };
     // Annoyingly, some redux-crud action creators have different signatures
     let action = record ?
         creator(reason, record, data) :

@@ -4,7 +4,7 @@ import restResource from './restResource';
 // standalone components.
 let system;
 if (OKAPI_URL) {
-  system = {okapi: { 'url':OKAPI_URL }}
+  system = { okapi: { url: OKAPI_URL } };
 } else {
   system = require('stripes-loader!');
 }
@@ -14,30 +14,37 @@ const defaults = {
   pk: 'id',
   clientGeneratePk: true,
   fetch: true,
-  headers: { 'X-Okapi-Tenant': system.okapi.tenant,
-             'Authorization': 'x'
-           },
-  POST:   {
-            headers: { 'Accept': 'application/json',
-                       'Content-Type': 'application/json' }
-          },
+  headers: {
+    'X-Okapi-Tenant': system.okapi.tenant,
+    'Authorization': 'x',
+  },
+  POST: {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
   DELETE: {
-            headers: { 'Accept': "text/plain" }
-          },
-  GET:    { 
-            headers: { 'Accept': 'application/json',
-                       'Content-Type': 'application/json' }
-          },
-  PUT:    {  
-            headers: { 'Accept': 'text/plain',
-                       'Content-Type': 'application/json' }
-          }
-}
+    headers: {
+      'Accept': 'text/plain',
+    },
+  },
+  GET: {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+  PUT: {
+    headers: {
+      'Accept': 'text/plain',
+      'Content-Type': 'application/json',
+    },
+  },
+};
 
 export default class okapiResource extends restResource {
-
-  constructor(name, query = {}, module = null) { 
+  constructor(name, query = {}, module = null) {
     super(name, query, module, defaults);
   }
-
 }

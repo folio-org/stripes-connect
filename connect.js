@@ -119,9 +119,12 @@ const wrap = (Wrapped, module) => {
 };
 
 export const connect = (Component, module) => {
+  if (typeof Component.manifest === 'undefined') return Component;
   const Wrapper = wrap(Component, module);
   const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch)(Wrapper);
   return Connected;
 };
+
+export const connectFor = module => Component => connect(Component, module);
 
 export default connect;

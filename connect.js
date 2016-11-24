@@ -32,9 +32,6 @@ const wrap = (Wrapped, module) => {
   function setErrorHandler(handler, force) {
     if (force || !module2errorHandler[module]) {
       module2errorHandler[module] = handler;
-      console.log(`setErrorHandler(${module}): set new errorHandler`);
-    } else {
-      console.log(`setErrorHandler(${module}): not overriding existing errorHandler`);
     }
   }
 

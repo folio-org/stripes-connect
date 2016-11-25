@@ -51,7 +51,7 @@ const wrap = (Wrapped, module) => {
 
     errorReducer(state = [], action) {
       // Handle error actions. I'm not sure how I feel about dispatching
-      // from a reducer, but it's the only point of universal conctact
+      // from a reducer, but it's the only point of universal contact
       // with all errors.
       const a = action.type.split('_');
       const typetype = a.pop();

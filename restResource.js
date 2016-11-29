@@ -59,6 +59,8 @@ export default class restResource {
           }
         }
         this.options.path = sections.join('/');
+        // TODO: quick hack to enable use of query
+        this.options.path = this.options.path.replace(/([:,?,$]){(.*)}/, (x, ns, name) => _.get(props.location.query, name, ''));
       }
       dispatch(this.fetchAction());
     }

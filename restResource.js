@@ -45,12 +45,12 @@ export default class restResource {
   }
 
   refresh(dispatch, props) {
-    // shallow copy; we'll need to go deeper once templating params
-    this.options = { ...this.optionsTemplate };
+    // deep copy
+    this.options = JSON.parse(JSON.stringify(this.optionsTemplate));
     if (this.options.fetch) {
       // TODO: still not really implemented
       if (this.options.path) {
-        const sections = this.options.path.split('/');
+        const sections = this.optionsTemplate.path.split('/');
         for (let i = 0; i < sections.length; i++) {
           if (sections[i].startsWith(':')) {
             const section = sections[i].substring(1);

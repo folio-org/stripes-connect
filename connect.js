@@ -32,9 +32,6 @@ const wrap = (Wrapped, module) => {
   function setErrorHandler(handler, force) {
     if (force || !module2errorHandler[module]) {
       module2errorHandler[module] = handler;
-      console.log(`setErrorHandler(${module}): set new errorHandler`);
-    } else {
-      console.log(`setErrorHandler(${module}): not overriding existing errorHandler`);
     }
   }
 
@@ -54,7 +51,7 @@ const wrap = (Wrapped, module) => {
 
     errorReducer(state = [], action) {
       // Handle error actions. I'm not sure how I feel about dispatching
-      // from a reducer, but it's the only point of universal conctact
+      // from a reducer, but it's the only point of universal contact
       // with all errors.
       const a = action.type.split('_');
       const typetype = a.pop();
@@ -64,8 +61,6 @@ const wrap = (Wrapped, module) => {
           const errorHandler = module2errorHandler[module];
           console.log(`using error-handler for ${module}`);
           errorHandler(Object.assign({}, action.data, { op: op, error: action.error }));
-        } else {
-          //console.log("For error in module '" + action.data.module + "', not invoking handler of module '" + module + "'");
         }
       }
 

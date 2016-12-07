@@ -62,6 +62,7 @@ export default class restResource {
         // TODO: quick hack to enable use of query
         this.options.path = this.options.path.replace(/([:,?,$]){(.*?)}/, (x, ns, name) => _.get(props.location.query, name, ''));
         // TODO: even worse hack for MongoDB-formatted queries that are omitted when empty. I hate myself. STRIPES-104.
+        // And when we move to PostgreSQL: ?query=[{"field":"'username'","value":"knord","op":"="}]
         this.options.path = this.options.path.replace(/!{query}/, (x) => {
           var q = _.get(props.location.query, 'query', '');
           return q === '' ? '' : '?query={"username":"' + q + '"}';

@@ -79,7 +79,6 @@ const wrap = (Wrapped, module) => {
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.location !== this.props.location) {
-        console.log("YOU CHANGED PLACEW!@");
         this.props.refreshRemote({ ...nextProps });
       }
     }

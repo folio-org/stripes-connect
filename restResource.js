@@ -45,31 +45,32 @@ export default class restResource {
   }
 
   refresh(dispatch, props) {
+    if (this.optionsTemplate.fetch === false) return null;
     // deep copy
     this.options = JSON.parse(JSON.stringify(this.optionsTemplate));
-    if (this.options.fetch) {
-      // TODO: still not really implemented
-      if (this.options.path) {
-        const sections = this.optionsTemplate.path.split('/');
-        for (let i = 0; i < sections.length; i++) {
-          if (sections[i].startsWith(':')) {
-            const section = sections[i].substring(1);
-            // Substitute from component's router params, if found, otherwise from component's props
-            sections[i] = ((props.params && props.params[section]) ? props.params[section] : props[section]);
-          }
+    let dynamicPartsSatisfied = true;
+    this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (x, ns, name) => {
+      switch (ns) {
+        case '?': {
+          const queryParam = _.get(props, ['location', 'query', name], null);
+          if (queryParam === null) dynamicPartsSatisfied = false;
+          return queryParam;
         }
-        this.options.path = sections.join('/');
-        // TODO: quick hack to enable use of query
-        this.options.path = this.options.path.replace(/([:,?,$]){(.*?)}/, (x, ns, name) => _.get(props.location.query, name, ''));
-        // TODO: even worse hack for MongoDB-formatted queries that are omitted when empty. I hate myself. STRIPES-104.
-        // And when we move to PostgreSQL: ?query=[{"field":"'username'","value":"knord","op":"="}]
-        this.options.path = this.options.path.replace(/!{query}/, (x) => {
-          var q = _.get(props.location.query, 'query', '');
-          return q === '' ? '' : '?query={"username":"' + q + '"}';
-        });
+        case ':': {
+          const pathComp = _.get(props, ['params', name], null);
+          if (pathComp === null) dynamicPartsSatisfied = false;
+          return pathComp;
+        }
       }
-      dispatch(this.fetchAction());
+    });
+    if (!dynamicPartsSatisfied) {
+      if (this.options.staticFallback && this.options.staticFallback.path) {
+        this.options.path = this.options.staticFallback.path;
+      } else {
+        return null;
+      }
     }
+    return dispatch(this.fetchAction());
   }
 
   createAction(record) {

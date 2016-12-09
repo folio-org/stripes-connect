@@ -23,7 +23,7 @@ class MyStripesComponent extends Component {
 export default connect(MyStripesComponent, 'moduleName');
 ```
 
-The data manifest is explained in detail in
+The API and data manifest are explained in detail in
 [The Stripes Connect API](api.md);
 A complete worked example of a connected component for editing patrons
 is explained in

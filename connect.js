@@ -16,6 +16,12 @@ const types = {
 const module2errorHandler = {};
 
 const wrap = (Wrapped, module) => {
+  function setErrorHandler(handler, force) {
+    if (force || !module2errorHandler[module]) {
+      module2errorHandler[module] = handler;
+    }
+  }
+
   const resources = [];
   _.forOwn(Wrapped.manifest, (query, name) => {
     if (!name.startsWith('@')) {
@@ -28,13 +34,6 @@ const wrap = (Wrapped, module) => {
       console.log(`WARNING: ${module} ignoring unsupported special manifest entry '${name}'`);
     }
   });
-
-  function setErrorHandler(handler, force) {
-    if (force || !module2errorHandler[module]) {
-      module2errorHandler[module] = handler;
-    }
-  }
-
 
   class Wrapper extends React.Component {
     constructor(props, context) {

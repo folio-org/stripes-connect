@@ -5,7 +5,7 @@ import uuid from 'node-uuid';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true };
 
-export default class restResource {
+export default class RESTResource {
 
   constructor(name, query = {}, module = null, defaults = defaultDefaults) {
     this.name = name;

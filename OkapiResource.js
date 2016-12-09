@@ -1,4 +1,4 @@
-import restResource from './restResource';
+import RESTResource from './RESTResource';
 // TODO: pass in config externally, perhaps returning curried functions
 // ...the OKAPI_URL via webpack.DefinePlugin is an interim measure to enable
 // standalone components.
@@ -43,7 +43,7 @@ const defaults = {
   },
 };
 
-export default class okapiResource extends restResource {
+export default class OkapiResource extends RESTResource {
   constructor(name, query = {}, module = null) {
     super(name, query, module, defaults);
   }

@@ -1,15 +1,15 @@
 import React from 'react';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
-import okapiResource from './okapiResource';
-import restResource from './restResource';
-import localResource from './localResource';
+import OkapiResource from './OkapiResource';
+import RESTResource from './RESTResource';
+import LocalResource from './LocalResource';
 
 const defaultType = 'local';
 const types = {
-  local: localResource,
-  okapi: okapiResource,
-  rest: restResource,
+  local: LocalResource,
+  okapi: OkapiResource,
+  rest: RESTResource,
 };
 
 // Should be doable with a scalar in a closure, but doesn't work right for some reason.

@@ -8,10 +8,8 @@ import { Provider } from 'react-redux';
 import { ServerRouter, createServerRenderContext } from 'react-router';
 import Match from 'react-router/Match';
 
-// somehow this global isn't seen in okapiResource despite the same approach
-// working fine in stripes-core
 global.OKAPI_URL = 'http://localhost:9130';
-import { connect } from '../connect';
+const connect = require('../connect').connect;
 
 chai.should();
 

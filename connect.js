@@ -4,6 +4,7 @@ import { connect as reduxConnect } from 'react-redux';
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
+/* eslint-env browser */
 
 const defaultType = 'local';
 const types = {

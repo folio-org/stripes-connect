@@ -1,4 +1,4 @@
-export default class localResource {
+export default class LocalResource {
 
   constructor(name, query = {}, module = null) {
     this.name = name;

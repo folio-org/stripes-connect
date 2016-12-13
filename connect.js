@@ -36,6 +36,11 @@ const wrap = (Wrapped, module) => {
   });
 
   class Wrapper extends React.Component {
+    static propTypes = {
+      refreshRemote: React.PropTypes.func.isRequired,
+      location: React.PropTypes.string.isRequired,
+    };
+
     constructor(props, context) {
       super();
       if (!(context.addReducer)) {

@@ -11,5 +11,6 @@
     "import/extensions": [ 1, "never" ],
     "no-console": "off",
     "no-alert": "off",
+    "quote-props": "off",
   }
 }

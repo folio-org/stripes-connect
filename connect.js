@@ -48,6 +48,16 @@ const wrap = (Wrapped, module) => {
       setErrorHandler(this.naiveErrorHandler, false);
     }
 
+    componentDidMount() {
+      this.props.refreshRemote({ ...this.props });
+    }
+
+    componentWillReceiveProps(nextProps) {
+      if (nextProps.location !== this.props.location) {
+        this.props.refreshRemote({ ...nextProps });
+      }
+    }
+
     errorReducer(state = [], action) {
       // Handle error actions. I'm not sure how I feel about dispatching
       // from a reducer, but it's the only point of universal contact
@@ -70,16 +80,6 @@ const wrap = (Wrapped, module) => {
     naiveErrorHandler(e) {
       alert(`ERROR: in module ${e.module} operation ${e.op} on resource `
             + `${e.resource} failed, saying: ${e.error}`);
-    }
-
-    componentDidMount() {
-      this.props.refreshRemote({ ...this.props });
-    }
-
-    componentWillReceiveProps(nextProps) {
-      if (nextProps.location !== this.props.location) {
-        this.props.refreshRemote({ ...nextProps });
-      }
     }
 
     render() {

@@ -3,6 +3,8 @@ import RESTResource from './RESTResource';
 // ...the OKAPI_URL via webpack.DefinePlugin is an interim measure to enable
 // standalone components.
 let system;
+
+/* global OKAPI_URL */
 if (OKAPI_URL) {
   system = { okapi: { url: OKAPI_URL } };
 } else {

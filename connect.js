@@ -102,15 +102,17 @@ const wrap = (Wrapped, module) => {
 
   Wrapper.mapState = state => ({
     data: Object.freeze(resources.reduce((result, resource) => {
-      result[resource.name] = Object.freeze(_.get(state, [resource.stateKey()], null));
-      return result;
+      const tmp = {};
+      tmp[resource.name] = Object.freeze(_.get(state, [resource.stateKey()], null));
+      return Object.assign({}, result, tmp);
     }, {})),
   });
 
   Wrapper.mapDispatch = dispatch => ({
     mutator: resources.reduce((result, resource) => {
-      result[resource.name] = resource.getMutator(dispatch);
-      return result;
+      const tmp = {};
+      tmp[resource.name] = resource.getMutator(dispatch);
+      return Object.assign({}, result, tmp);
     }, {}),
     refreshRemote: (params) => {
       resources.forEach((resource) => {

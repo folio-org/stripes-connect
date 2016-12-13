@@ -13,7 +13,7 @@ export default class localResource {
         type: 'STRIPESLOCALSTATE_UPDATE',
         payload: newData,
         meta: {
-          module: module,
+          module,
           resource: name,
         },
       }),
@@ -21,7 +21,7 @@ export default class localResource {
         type: 'STRIPESLOCALSTATE_REPLACE',
         payload: newData,
         meta: {
-          module: module,
+          module,
           resource: name,
         },
       }),

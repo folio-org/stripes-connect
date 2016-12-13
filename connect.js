@@ -36,6 +36,30 @@ const wrap = (Wrapped, module) => {
     }
   });
 
+  function errorReducer(state = [], action) {
+    // Handle error actions. I'm not sure how I feel about dispatching
+    // from a reducer, but it's the only point of universal contact
+    // with all errors.
+    const a = action.type.split('_');
+    const typetype = a.pop();
+    if (typetype === 'ERROR') {
+      if (action.data.module === module) {
+        const op = a.pop();
+        const errorHandler = module2errorHandler[module];
+        console.log(`using error-handler for ${module}`);
+        errorHandler(Object.assign({}, action.data, { op, error: action.error }));
+      }
+    }
+
+    // No change to state
+    return state;
+  }
+
+  function naiveErrorHandler(e) {
+    alert(`ERROR: in module ${e.module} operation ${e.op} on resource `
+          + `${e.resource} failed, saying: ${e.error}`);
+  }
+
   class Wrapper extends React.Component {
     static propTypes = {
       refreshRemote: React.PropTypes.func.isRequired,
@@ -50,8 +74,8 @@ const wrap = (Wrapped, module) => {
       resources.forEach((resource) => {
         context.addReducer(resource.stateKey(), resource.reducer);
       });
-      context.addReducer(`@@error-${module}`, this.errorReducer.bind(this));
-      setErrorHandler(this.naiveErrorHandler, false);
+      context.addReducer(`@@error-${module}`, errorReducer);
+      setErrorHandler(naiveErrorHandler, false);
     }
 
     componentDidMount() {
@@ -62,30 +86,6 @@ const wrap = (Wrapped, module) => {
       if (nextProps.location !== this.props.location) {
         this.props.refreshRemote({ ...nextProps });
       }
-    }
-
-    errorReducer(state = [], action) {
-      // Handle error actions. I'm not sure how I feel about dispatching
-      // from a reducer, but it's the only point of universal contact
-      // with all errors.
-      const a = action.type.split('_');
-      const typetype = a.pop();
-      if (typetype === 'ERROR') {
-        if (action.data.module === module) {
-          const op = a.pop();
-          const errorHandler = module2errorHandler[module];
-          console.log(`using error-handler for ${module}`);
-          errorHandler(Object.assign({}, action.data, { op, error: action.error }));
-        }
-      }
-
-      // No change to state
-      return state;
-    }
-
-    naiveErrorHandler(e) {
-      alert(`ERROR: in module ${e.module} operation ${e.op} on resource `
-            + `${e.resource} failed, saying: ${e.error}`);
     }
 
     render() {

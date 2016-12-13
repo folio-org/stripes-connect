@@ -74,7 +74,7 @@ const wrap = (Wrapped, module) => {
           const op = a.pop();
           const errorHandler = module2errorHandler[module];
           console.log(`using error-handler for ${module}`);
-          errorHandler(Object.assign({}, action.data, { op: op, error: action.error }));
+          errorHandler(Object.assign({}, action.data, { op, error: action.error }));
         }
       }
 

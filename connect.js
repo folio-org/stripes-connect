@@ -91,7 +91,6 @@ const wrap = (Wrapped, module) => {
     }
 
     componentWillReceiveProps(nextProps) {
-      console.log("*** location:", location);
       if (nextProps.location !== this.props.location) {
         this.props.refreshRemote({ ...nextProps });
       }

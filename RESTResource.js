@@ -74,7 +74,9 @@ export default class RESTResource {
           if (pathComp === null) dynamicPartsSatisfied = false;
           return pathComp;
         }
+        default: break;
       }
+      return 'CantHappen';
     });
     if (!dynamicPartsSatisfied) {
       if (this.options.staticFallback && this.options.staticFallback.path) {

@@ -24,9 +24,11 @@ export default class RESTResource {
     this.name = name;
     this.module = module;
     this.crudName = module ? `${module}_${name}` : name;
-    // TODO: actual substitution of params/state
     this.optionsTemplate = _.merge({}, defaults, query);
-    this.options = null;
+    // TODO: This should call the function that parses the template and stay
+    // null until dynamic parts are satisfied---currently mutators will fail
+    // for dynamic manifests
+    this.options = this.optionsTemplate;
     this.crudActions = crud.actionCreatorsFor(this.crudName);
     this.crudReducers = crud.reducersFor(this.crudName,
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });

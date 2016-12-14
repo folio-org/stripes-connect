@@ -63,7 +63,7 @@ const wrap = (Wrapped, module) => {
   class Wrapper extends React.Component {
     static propTypes = {
       refreshRemote: React.PropTypes.func.isRequired,
-      location: React.PropTypes.object.isRequired,
+      location: React.PropTypes.object,
     };
 
     constructor(props, context) {

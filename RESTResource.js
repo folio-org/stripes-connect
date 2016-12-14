@@ -5,6 +5,19 @@ import uuid from 'node-uuid';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true };
 
+
+// This is an ugly fat API, but we need to be able to do all this in a single call
+function error(dispatch, op, creator, record, module, resource, reason) {
+  console.log(`HTTP ${op} for module ${module} resource ${resource} failed: ${reason}`);
+  const data = { module, resource, op };
+  // Annoyingly, some redux-crud action creators have different signatures
+  const action = record ?
+      creator(reason, record, data) :
+      creator(reason, data);
+  dispatch(action);
+}
+
+
 export default class RESTResource {
 
   constructor(name, query = {}, module = null, defaults = defaultDefaults) {
@@ -96,7 +109,7 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              that.error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, text);
+              error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, text);
             });
           } else {
             response.json().then((json) => {
@@ -105,7 +118,7 @@ export default class RESTResource {
             });
           }
         }).catch((reason) => {
-          that.error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, reason);
+          error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, reason);
         });
     };
   }
@@ -127,7 +140,7 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              that.error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, text);
+              error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, text);
             });
           } else {
             /* Patrons api will not return JSON
@@ -139,7 +152,7 @@ export default class RESTResource {
             dispatch(crudActions.updateSuccess(clientRecord));
           }
         }).catch((reason) => {
-          that.error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, reason.message);
+          error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, reason.message);
         });
     };
   }
@@ -163,13 +176,13 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              that.error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, text);
+              error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, text);
             });
           } else {
             dispatch(crudActions.deleteSuccess(record));
           }
         }).catch((reason) => {
-          that.error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, reason.message);
+          error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, reason.message);
         });
     };
   }
@@ -188,7 +201,7 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              that.error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, text);
+              error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, text);
             });
           } else {
             response.json().then((json) => {
@@ -198,20 +211,8 @@ export default class RESTResource {
             });
           }
         }).catch((reason) => {
-          that.error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, reason.message);
+          error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, reason.message);
         });
     };
-  }
-
-
-  // This is an ugly fat API, but we need to be able to do all this in a single call
-  error(dispatch, op, creator, record, module, resource, reason) {
-    console.log(`HTTP ${op} for module ${module} resource ${resource} failed: ${reason}`);
-    const data = { module, resource, op };
-    // Annoyingly, some redux-crud action creators have different signatures
-    const action = record ?
-        creator(reason, record, data) :
-        creator(reason, data);
-    dispatch(action);
   }
 }

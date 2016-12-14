@@ -1,4 +1,4 @@
-import fetch from 'isomorphic-fetch';
+import 'isomorphic-fetch';
 import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'node-uuid';

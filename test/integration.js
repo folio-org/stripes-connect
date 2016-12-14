@@ -7,16 +7,17 @@ import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import { ServerRouter, createServerRenderContext } from 'react-router';
 import Match from 'react-router/Match';
+import thunk from 'redux-thunk';
+import fetchMock from 'fetch-mock';
 
-global.OKAPI_URL = 'http://localhost:9130';
-const connect = require('../connect').connect;
+import connect from '../connect';
 
 chai.should();
 
 const routerContext = createServerRenderContext();
 
 // Provide a redux store and addReducer() function in context
-let reducers = [];
+let reducers = { okapi: (state = {}) => state };
 class Root extends Component {
   addReducer = (key, reducer) => {
     if (reducers[key] === undefined) {
@@ -60,6 +61,16 @@ class Local extends Component {
 };
 Local.manifest = { localResource : {} };
 
+class Remote extends Component {
+  render() {
+    return <div id="somediv"></div>
+  }
+};
+Remote.manifest = { remoteResource: {
+  type: 'okapi',
+  path: 'turnip',
+} };
+
 describe('connect()', () => {
 
   it('should pass through a component with no manifest', () => {
@@ -76,4 +87,46 @@ describe('connect()', () => {
     inst.find(Local).props().data.localResource.boo.should.equal('urns');
   });
   
+  it('should successfully wrap a component with an okapi resource', (done) => {
+    fetchMock
+      .get('http://localhost/turnip',
+         [{ id: 1, someprop: 'someval' }],
+         { headers: { 'Content-Type': 'application/json', } } )
+      .put('http://localhost/turnip',
+         { id: 1, someprop: 'someval' },
+         { headers: { 'Content-Type': 'application/json', } } )
+      .post('http://localhost/turnip',
+         { id: 1, someprop: 'someval' },
+         { headers: { 'Content-Type': 'application/json', } } )
+      .delete('http://localhost/turnip/1',
+         { id: 1, someprop: 'someval' },
+         { headers: { 'Content-Type': 'application/json', } } )
+      .catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Remote, 'test');
+    const inst = mount(<Root store={store} component={Connected}/>);
+
+    inst.find(Remote).props().mutator.remoteResource.PUT({id:1, someval:'new'});
+    fetchMock.lastCall()[1].body.should.equal('{"id":1,"someval":"new"}');
+    fetchMock.lastCall()[1].headers['X-Okapi-Tenant'].should.equal('tenantid');
+
+    // TODO: "Unmatched DELETE to http://localhost/turnip/1", even tried mocking
+    // that url as a separate call with .mock so it includes all methods, but no
+    // luck.
+    // inst.find(Remote).props().mutator.remoteResource.DELETE({id:1});
+
+    inst.find(Remote).props().mutator.remoteResource.POST({someval:'new'});
+    // Confirm UUID is generated
+    fetchMock.lastCall()[1].body.length.should.equal(61);
+
+    setTimeout(() => {
+      inst.find(Remote).props().data.remoteResource[0].someprop.should.equal('someval');
+      fetchMock.restore();
+      done();
+    }, 10);
+  });
 });

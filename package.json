@@ -28,17 +28,19 @@
     "enzyme": "^2.6.0",
     "eslint": "^3.8.0",
     "eslint-config-airbnb": "^13.0.0",
+    "eslint-import-resolver-webpack": "0.7.1",
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.0.1",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.4.1",
+    "fetch-mock": "^5.6.2",
     "jsdom": "^9.8.3",
     "mocha": "^3.1.2",
     "mock-require": "^2.0.0",
     "react-addons-test-utils": "^15.4.0",
     "react-router": "next",
-    "eslint-import-resolver-webpack": "0.7.1",
-        "webpack": "1.11.0"
+    "redux-thunk": "^2.1.0",
+    "webpack": "1.11.0"
   },
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",

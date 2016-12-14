@@ -207,7 +207,7 @@ export default class RESTResource {
   // This is an ugly fat API, but we need to be able to do all this in a single call
   error(dispatch, op, creator, record, module, resource, reason) {
     console.log(`HTTP ${op} for module ${module} resource ${resource} failed: ${reason}`);
-    const data = { module: module, resource: resource, op: op };
+    const data = { module, resource, op };
     // Annoyingly, some redux-crud action creators have different signatures
     const action = record ?
         creator(reason, record, data) :

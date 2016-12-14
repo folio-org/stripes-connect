@@ -116,14 +116,16 @@ export default class RESTResource {
       const clientRecord = { ...record, id: clientGeneratedId };
       clientRecord[pk] = clientGeneratedId;
       dispatch(crudActions.createStart(clientRecord));
+      // Prepare record for remote
+      const remoteRecord = { ...record };
       if (clientGeneratePk) {
-        record[pk] = clientGeneratedId;
+        remoteRecord[pk] = clientGeneratedId;
       }
-      // Send remote record ('record')
+      // Send remote record
       return fetch(url, {
         method: 'POST',
         headers: Object.assign({}, headers, POST.headers),
-        body: JSON.stringify(record),
+        body: JSON.stringify(remoteRecord),
       })
         .then((response) => {
           if (response.status >= 400) {
@@ -132,8 +134,9 @@ export default class RESTResource {
             });
           } else {
             response.json().then((json) => {
-              if (json[pk] && !json.id) json.id = json[pk];
-              dispatch(crudActions.createSuccess(json, clientGeneratedId));
+              const responseRecord = { ...json };
+              if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
+              dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));
             });
           }
         }).catch((reason) => {
@@ -145,7 +148,7 @@ export default class RESTResource {
   updateAction(record) {
     const that = this;
     const crudActions = this.crudActions;
-    const clientRecord = record;
+    const clientRecord = { ...record };
     return (dispatch, getState) => {
       const options = optionsFromState(that.options, getState());
       const { root, path, pk, headers, PUT } = options;
@@ -188,8 +191,9 @@ export default class RESTResource {
                      [root, resolvedPath].join('/')
                      :
                      [root, resolvedPath, record[pk]].join('/'));
-      if (record[pk] && !record.id) record.id = record[pk];
-      dispatch(crudActions.deleteStart(record));
+      const clientRecord = { ...record };
+      if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
+      dispatch(crudActions.deleteStart(clientRecord));
       return fetch(url, {
         method: 'DELETE',
         headers: Object.assign({}, headers, DELETE.headers),
@@ -197,13 +201,13 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, text);
+              error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, that.module, that.name, text);
             });
           } else {
-            dispatch(crudActions.deleteSuccess(record));
+            dispatch(crudActions.deleteSuccess(clientRecord));
           }
         }).catch((reason) => {
-          error(dispatch, 'DELETE', crudActions.deleteError, record, that.module, that.name, reason.message);
+          error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, that.module, that.name, reason.message);
         });
     };
   }

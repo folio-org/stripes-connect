@@ -12,5 +12,6 @@
     "no-console": "off",
     "no-alert": "off",
     "quote-props": "off",
+    "key-spacing": "off",
   }
 }

@@ -63,7 +63,15 @@ const wrap = (Wrapped, module) => {
   class Wrapper extends React.Component {
     static propTypes = {
       refreshRemote: React.PropTypes.func.isRequired,
-      location: React.PropTypes.object,
+      location: React.PropTypes.shape({
+        hostname: React.PropTypes.string, // First two are not defined in some parts of lifecyle
+        port:     React.PropTypes.string,
+        pathname: React.PropTypes.string.isRequired,
+        search:   React.PropTypes.string.isRequired,
+        hash:     React.PropTypes.string.isRequired,
+        // query: null
+        // state: null
+      }),
     };
 
     constructor(props, context) {
@@ -83,6 +91,7 @@ const wrap = (Wrapped, module) => {
     }
 
     componentWillReceiveProps(nextProps) {
+      console.log("*** location:", location);
       if (nextProps.location !== this.props.location) {
         this.props.refreshRemote({ ...nextProps });
       }

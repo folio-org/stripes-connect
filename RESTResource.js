@@ -1,10 +1,25 @@
-import 'isomorphic-fetch';
+import 'isomorphic-fetch'; /* global fetch */
 import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'node-uuid';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true };
 
+const optionsFromState = (options, state) => {
+  if (options.type === 'okapi') {
+    if (typeof state.okapi !== 'object') {
+      throw new Error('State does not contain Okapi settings');
+    }
+    const okapiOptions = {
+      root: state.okapi.url,
+      headers: {
+        'X-Okapi-Tenant': state.okapi.tenant,
+      },
+    };
+    return _.merge({}, options, okapiOptions);
+  }
+  return options;
+};
 
 // This is an ugly fat API, but we need to be able to do all this in a single call
 function error(dispatch, op, creator, record, module, resource, reason) {
@@ -16,7 +31,6 @@ function error(dispatch, op, creator, record, module, resource, reason) {
       creator(reason, data);
   dispatch(action);
 }
-
 
 export default class RESTResource {
 
@@ -92,10 +106,11 @@ export default class RESTResource {
 
   createAction(record) {
     const that = this;
-    const { root, path, pk, clientGeneratePk, headers, POST } = this.options;
     const crudActions = this.crudActions;
-    const url = [root, POST.path || path].join('/');
-    return (dispatch) => {
+    return (dispatch, getState) => {
+      const options = optionsFromState(that.options, getState());
+      const { root, path, pk, clientGeneratePk, headers, POST } = options;
+      const url = [root, POST.path || path].join('/');
       // Optimistic record creation ('clientRecord')
       const clientGeneratedId = record.id ? record.id : uuid();
       const clientRecord = { ...record, id: clientGeneratedId };
@@ -129,12 +144,13 @@ export default class RESTResource {
 
   updateAction(record) {
     const that = this;
-    const { root, path, pk, headers, PUT } = this.options;
     const crudActions = this.crudActions;
-    const url = [root, PUT.path || path].join('/');
     const clientRecord = record;
-    if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
-    return (dispatch) => {
+    return (dispatch, getState) => {
+      const options = optionsFromState(that.options, getState());
+      const { root, path, pk, headers, PUT } = options;
+      const url = [root, PUT.path || path].join('/');
+      if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.updateStart(clientRecord));
       return fetch(url, {
         method: 'PUT',
@@ -163,14 +179,15 @@ export default class RESTResource {
 
   deleteAction(record) {
     const that = this;
-    const { root, path, pk, headers, DELETE } = this.options;
     const crudActions = this.crudActions;
-    const resolvedPath = DELETE.path || path;
-    const url = (resolvedPath.endsWith(record[pk]) ?
-                   [root, resolvedPath].join('/')
-                   :
-                   [root, resolvedPath, record[pk]].join('/'));
-    return (dispatch) => {
+    return (dispatch, getState) => {
+      const options = optionsFromState(that.options, getState());
+      const { root, path, pk, headers, DELETE } = options;
+      const resolvedPath = DELETE.path || path;
+      const url = (resolvedPath.endsWith(record[pk]) ?
+                     [root, resolvedPath].join('/')
+                     :
+                     [root, resolvedPath, record[pk]].join('/'));
       if (record[pk] && !record.id) record.id = record[pk];
       dispatch(crudActions.deleteStart(record));
       return fetch(url, {
@@ -194,12 +211,13 @@ export default class RESTResource {
 
   fetchAction() {
     const that = this;
-    const { root, path, headers, GET, records } = this.options;
     const crudActions = this.crudActions;
     const key = this.stateKey();
-    // i.e. only join truthy elements
-    const url = [root, path].filter(_.identity).join('/');
-    return (dispatch) => {
+    return (dispatch, getState) => {
+      const options = optionsFromState(that.options, getState());
+      const { root, path, headers, GET, records } = options;
+      // i.e. only join truthy elements
+      const url = [root, path].filter(_.identity).join('/');
       dispatch(crudActions.fetchStart());
       return fetch(url, { headers: Object.assign({}, headers, GET.headers) })
         .then((response) => {

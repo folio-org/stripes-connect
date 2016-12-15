@@ -99,8 +99,8 @@ export default class RESTResource {
     });
 
     if (!dynamicPartsSatisfied) {
-      if (this.options.staticFallback && this.options.staticFallback.path) {
-        this.options.path = this.options.staticFallback.path;
+      if (typeof this.options.staticFallback === 'object') {
+        _.merge(this.options, this.options.staticFallback);
       } else {
         return null;
       }

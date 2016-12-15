@@ -1,4 +1,4 @@
-// import mockReq from 'mock-require';
+import 'jsdom-global/register';
 import chai from 'chai';
 import { mount, shallow, render } from 'enzyme';
 

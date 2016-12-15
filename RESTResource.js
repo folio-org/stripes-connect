@@ -81,8 +81,10 @@ export default class RESTResource {
     // Implements dynamic manifest components with ?{syntax}. Namespaces so far:
     // ? - query parameters in current url
     // : - path components as defined by react-router
+    //
+    // eslint-disable-next-line consistent-return
     this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
-      switch (ns) {
+      switch (ns) { // eslint-disable-line default-case
         case '?': {
           const queryParam = _.get(props, ['location', 'query', name], null);
           if (queryParam === null) dynamicPartsSatisfied = false;
@@ -93,9 +95,7 @@ export default class RESTResource {
           if (pathComp === null) dynamicPartsSatisfied = false;
           return pathComp;
         }
-        default: break;
       }
-      return 'CantHappen';
     });
 
     if (!dynamicPartsSatisfied) {

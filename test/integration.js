@@ -114,10 +114,8 @@ describe('connect()', () => {
     fetchMock.lastCall()[1].body.should.equal('{"id":1,"someval":"new"}');
     fetchMock.lastCall()[1].headers['X-Okapi-Tenant'].should.equal('tenantid');
 
-    // TODO: "Unmatched DELETE to http://localhost/turnip/1", even tried mocking
-    // that url as a separate call with .mock so it includes all methods, but no
-    // luck.
-    // inst.find(Remote).props().mutator.remoteResource.DELETE({id:1});
+    inst.find(Remote).props().mutator.remoteResource.DELETE({id:1});
+    fetchMock.lastCall()[0].should.equal('http://localhost/turnip/1');
 
     inst.find(Remote).props().mutator.remoteResource.POST({someval:'new'});
     // Confirm UUID is generated

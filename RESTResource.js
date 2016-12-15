@@ -75,8 +75,7 @@ export default class RESTResource {
 
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return null;
-    // deep copy
-    this.options = JSON.parse(JSON.stringify(this.optionsTemplate));
+    this.options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
     let dynamicPartsSatisfied = true;
     this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (x, ns, name) => {
       switch (ns) {

@@ -77,7 +77,11 @@ export default class RESTResource {
     if (this.optionsTemplate.fetch === false) return null;
     this.options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
     let dynamicPartsSatisfied = true;
-    this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (x, ns, name) => {
+
+    // Implements dynamic manifest components with ?{syntax}. Namespaces so far:
+    // ? - query parameters in current url
+    // : - path components as defined by react-router
+    this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
       switch (ns) {
         case '?': {
           const queryParam = _.get(props, ['location', 'query', name], null);
@@ -93,6 +97,7 @@ export default class RESTResource {
       }
       return 'CantHappen';
     });
+
     if (!dynamicPartsSatisfied) {
       if (this.options.staticFallback && this.options.staticFallback.path) {
         this.options.path = this.options.staticFallback.path;
@@ -100,6 +105,7 @@ export default class RESTResource {
         return null;
       }
     }
+
     return dispatch(this.fetchAction());
   }
 

@@ -76,11 +76,16 @@ export default class RESTResource {
 
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return null;
-    // deep copy
-    this.options = JSON.parse(JSON.stringify(this.optionsTemplate));
+    this.options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
     let dynamicPartsSatisfied = true;
-    this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (x, ns, name) => {
-      switch (ns) {
+
+    // Implements dynamic manifest components with ?{syntax}. Namespaces so far:
+    // ? - query parameters in current url
+    // : - path components as defined by react-router
+    //
+    // eslint-disable-next-line consistent-return
+    this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
+      switch (ns) { // eslint-disable-line default-case
         case '?': {
           const queryParam = _.get(props, ['location', 'query', name], null);
           if (queryParam === null) dynamicPartsSatisfied = false;
@@ -91,17 +96,17 @@ export default class RESTResource {
           if (pathComp === null) dynamicPartsSatisfied = false;
           return pathComp;
         }
-        default: break;
       }
-      return 'CantHappen';
     });
+
     if (!dynamicPartsSatisfied) {
-      if (this.options.staticFallback && this.options.staticFallback.path) {
-        this.options.path = this.options.staticFallback.path;
+      if (typeof this.options.staticFallback === 'object') {
+        _.merge(this.options, this.options.staticFallback);
       } else {
         return null;
       }
     }
+
     return dispatch(this.fetchAction());
   }
 

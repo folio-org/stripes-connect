@@ -115,12 +115,6 @@ addition to `'type':'rest'`:
 * `headers`: A JavaScript object containing HTTP headers: the keys are
   the header names and the values are their content.
 
-> **Note:** in the present code, `headers` contains a map of HTTP
-> verbs to sets of headers. Once we have implemented the more general
-> mechanism for HTTP operation-specific configuration that is
-> described below, we will use that instead, so that HTTP GET headers
-> are in `GET.headers` rather than in `headers.GET`.
-
 * `records`: The name of the key in the returned JSON that contains
   the records. Typically the JSON response from a web service is not
   itself an array of records, but an object containing metadata about
@@ -139,7 +133,7 @@ addition to `'type':'rest'`:
 
 * `fetch`: a component that adds a new record to an end-point would
   usually not need to pre-fetch from that resource. To avoid that, it
-  can set this to true. Default: `false`.
+  can set this to false. Default: `true`.
 
 In addition to these principal pieces of configuration, which apply to
 all operations on the resource, these values can be overridden for
@@ -147,6 +141,9 @@ specific HTTP operations: the entries `GET`, `POST`, `PUT`, `DELETE`
 and `PATCH`, if supplied, are objects containing configuration (using
 the same keys as described above) that apply only when the specified
 operation is used.
+
+Similarly, the same keys provided in `staticFallback` will be used when
+dynamic portions of the config are not satisfied by the current state.
 
 
 #### Okapi resources

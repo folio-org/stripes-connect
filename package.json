@@ -13,8 +13,8 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register test/.setup.js test/**/*.js",
-    "test-watch": "mocha --compilers js:babel-core/register -w --watch-extensions json test/.setup.js test/**/*.js",
+    "test": "mocha --compilers js:babel-core/register",
+    "test-watch": "mocha --compilers js:babel-core/register -w --watch-extensions json",
     "lint": "eslint *.js || true"
   },
   "devDependencies": {
@@ -35,8 +35,8 @@
     "eslint-plugin-react": "^6.4.1",
     "fetch-mock": "^5.6.2",
     "jsdom": "^9.8.3",
+    "jsdom-global": "^2.1.0",
     "mocha": "^3.1.2",
-    "mock-require": "^2.0.0",
     "react-addons-test-utils": "^15.4.0",
     "react-router": "next",
     "redux-thunk": "^2.1.0",

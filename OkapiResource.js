@@ -5,7 +5,7 @@ const defaults = {
   clientGeneratePk: true,
   fetch: true,
   headers: {
-    'Authorization': 'x',
+    'Authorization': 'y', // Just a dummy. Will be X-Okapi-Token going forward.
   },
   POST: {
     headers: {

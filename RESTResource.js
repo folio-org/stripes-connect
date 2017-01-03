@@ -14,7 +14,7 @@ const optionsFromState = (options, state) => {
       root: state.okapi.url,
       headers: {
         'X-Okapi-Tenant': state.okapi.tenant,
-        'X-Okapi-Token' : state.okapi.token,
+        'Authorization' : state.okapi.token,
       },
     };
     return _.merge({}, options, okapiOptions);
@@ -141,7 +141,6 @@ export default class RESTResource {
           } else {
             response.json().then((json) => {
               console.log("response.headers.get(Authorization): ",response.headers.get('Authorization'));
-              console.log("response.headers.get(X-Okapi-Token): ",response.headers.get('X-Okapi-Token'));
               const responseRecord = { ...json };
               if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
               dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));

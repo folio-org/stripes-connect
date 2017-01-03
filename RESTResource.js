@@ -140,7 +140,7 @@ export default class RESTResource {
             });
           } else {
             response.json().then((json) => {
-              console.log("response.headers.get(Authorization): ",response.headers.get('Authorization'));
+              console.log('response.headers.get(Authorization): ', response.headers.get('Authorization'));
               const responseRecord = { ...json };
               if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
               dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));

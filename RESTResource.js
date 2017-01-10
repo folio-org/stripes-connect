@@ -84,7 +84,7 @@ export default class RESTResource {
     // : - path components as defined by react-router
     //
     // eslint-disable-next-line consistent-return
-    this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
+    this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (match, ns, instruction) => {
       switch (ns) { // eslint-disable-line default-case
         case '?': {
           // The following fallback syntax is one small part of what
@@ -92,16 +92,16 @@ export default class RESTResource {
           // of its manual. It's the part we need right now, but we
           // should consider implementing all of it. And needless to
           // say, it should apply to all kinds of substitable.
-          const re = /(.*?):([+-])(.*)/;
+          let name = instruction;
           let fallbackType;
           let fallbackVal;
+          const re = /(.*?):([+-])(.*)/;
           if (re.test(name)) {
-            console.log(name, 'matched fallback syntax');
             const res = re.exec(name);
             name = res[1];
             fallbackType = res[2];
             fallbackVal = res[3];
-            console.log(`fallback name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
+            console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
           }
           let queryParam = _.get(props, ['location', 'query', name], null);
           if (fallbackType === '+') {
@@ -121,7 +121,7 @@ export default class RESTResource {
           return queryParam;
         }
         case ':': {
-          const pathComp = _.get(props, ['params', name], null);
+          const pathComp = _.get(props, ['params', instruction], null);
           if (pathComp === null) dynamicPartsSatisfied = false;
           return pathComp;
         }

@@ -87,7 +87,36 @@ export default class RESTResource {
     this.options.path = this.options.path.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
       switch (ns) { // eslint-disable-line default-case
         case '?': {
-          const queryParam = _.get(props, ['location', 'query', name], null);
+          // The following fallback syntax is one small part of what
+          // Bash implements -- see the "Parameter Expansion" section
+          // of its manual. It's the part we need right now, but we
+          // should consider implementing all of it. And needless to
+          // say, it should apply to all kinds of substitable.
+          const re = /(.*?):([+-])(.*)/;
+          let fallbackType;
+          let fallbackVal;
+          if (re.test(name)) {
+            console.log(name, 'matched fallback syntax');
+            const res = re.exec(name);
+            name = res[1];
+            fallbackType = res[2];
+            fallbackVal = res[3];
+            console.log('fallback name=' + name + ', type=' + fallbackType + ', val=', fallbackVal);
+          }
+          let queryParam = _.get(props, ['location', 'query', name], null);
+          if (fallbackType === '+') {
+            if (queryParam !== null) {
+              console.log('got value for name', name, 'replaced by', fallbackVal);
+              queryParam = fallbackVal;
+            } else {
+              console.log('no value for name', name, 'setting empty');
+              queryParam = '';
+            }
+          }
+          if (queryParam === null && fallbackType === '-') {
+            console.log('no value for name, replaced by', fallbackVal);
+            queryParam = fallbackVal;
+          }
           if (queryParam === null) dynamicPartsSatisfied = false;
           return queryParam;
         }

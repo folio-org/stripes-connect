@@ -101,7 +101,7 @@ export default class RESTResource {
             name = res[1];
             fallbackType = res[2];
             fallbackVal = res[3];
-            console.log('fallback name=' + name + ', type=' + fallbackType + ', val=', fallbackVal);
+            console.log(`fallback name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
           }
           let queryParam = _.get(props, ['location', 'query', name], null);
           if (fallbackType === '+') {

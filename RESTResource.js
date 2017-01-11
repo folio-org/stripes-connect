@@ -85,7 +85,7 @@ function substitutePath(original, props) {
         return queryParam;
       }
       case ':': {
-        const pathComp = _.get(props, ['params', name], null);
+        const pathComp = processFallback(name, ['params'], props);
         if (pathComp === null) dynamicPartsSatisfied = false;
         return pathComp;
       }

@@ -72,12 +72,12 @@ function processFallback(instruction, props) {
 // ? - query parameters in current url
 // : - path components as defined by react-router
 //
-function substitutePath(path, props) {
+function substitutePath(original, props) {
   // console.log('substitutePath(), props = ', props);
   let dynamicPartsSatisfied = true;
 
   // eslint-disable-next-line consistent-return
-  const replaced = path.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
+  const path = original.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
         const queryParam = processFallback(name, props);
@@ -92,8 +92,8 @@ function substitutePath(path, props) {
     }
   });
 
-  // console.log(`substitutePath(${path}) -> ${replaced}, dynamicPartsSatisfied=${dynamicPartsSatisfied}`);
-  return { path: replaced, dynamicPartsSatisfied };
+  // console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
+  return { path, dynamicPartsSatisfied };
 }
 
 

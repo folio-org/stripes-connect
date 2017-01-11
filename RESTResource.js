@@ -80,7 +80,6 @@ function substitutePath(path, props) {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
         const queryParam = processFallback(instruction, props);
-        console.log(`processFallback(${instruction}) -> ${typeof queryParam} ${queryParam}`);
         if (queryParam === null) dynamicPartsSatisfied = false;
         return queryParam;
       }
@@ -92,7 +91,7 @@ function substitutePath(path, props) {
     }
   });
 
-  console.log(`substitutePath(${path}) -> ${replaced}, dynamicPartsSatisfied=${dynamicPartsSatisfied}`);
+  // console.log(`substitutePath(${path}) -> ${replaced}, dynamicPartsSatisfied=${dynamicPartsSatisfied}`);
   return { path: replaced, dynamicPartsSatisfied };
 }
 

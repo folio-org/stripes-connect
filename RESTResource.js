@@ -43,9 +43,9 @@ function processFallback(instruction, getPath, props) {
   let name = instruction;
   let fallbackType;
   let fallbackVal;
-  const re = /(.*?):([+-])(.*)/;
-  if (re.test(name)) {
-    const res = re.exec(name);
+
+  const res = /(.*?):([+-])(.*)/.exec(name);
+  if (res) {
     name = res[1];
     fallbackType = res[2];
     fallbackVal = res[3];

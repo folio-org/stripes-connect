@@ -33,47 +33,54 @@ function error(dispatch, op, creator, record, module, resource, reason) {
   dispatch(action);
 }
 
+// The following fallback syntax is one small part of what
+// Bash implements -- see the "Parameter Expansion" section
+// of its manual. It's the part we need right now, but we
+// should consider implementing all of it. And needless to
+// say, it should apply to all kinds of substitable.
+function processFallback(instruction, props) {
+  let name = instruction;
+  let fallbackType;
+  let fallbackVal;
+  const re = /(.*?):([+-])(.*)/;
+  if (re.test(name)) {
+    const res = re.exec(name);
+    name = res[1];
+    fallbackType = res[2];
+    fallbackVal = res[3];
+    console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
+  }
+  let queryParam = _.get(props, ['location', 'query', name], null);
+  if (fallbackType === '+') {
+    if (queryParam !== null) {
+      console.log('got value for name', name, 'replaced by', fallbackVal);
+      queryParam = fallbackVal;
+    } else {
+      console.log('no value for name', name, 'setting empty');
+      queryParam = '';
+    }
+  }
+  if (queryParam === null && fallbackType === '-') {
+    console.log('no value for name, replaced by', fallbackVal);
+    queryParam = fallbackVal;
+  }
+  return queryParam;
+}
+
 // Implements dynamic manifest components with ?{syntax}. Namespaces so far:
 // ? - query parameters in current url
 // : - path components as defined by react-router
 //
 function substitutePath(path, props) {
+  console.log('substitutePath(), props = ', props);
   let dynamicPartsSatisfied = true;
 
   // eslint-disable-next-line consistent-return
   const replaced = path.replace(/([:,?]){(.*?)}/g, (match, ns, instruction) => {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
-        // The following fallback syntax is one small part of what
-        // Bash implements -- see the "Parameter Expansion" section
-        // of its manual. It's the part we need right now, but we
-        // should consider implementing all of it. And needless to
-        // say, it should apply to all kinds of substitable.
-        let name = instruction;
-        let fallbackType;
-        let fallbackVal;
-        const re = /(.*?):([+-])(.*)/;
-        if (re.test(name)) {
-          const res = re.exec(name);
-          name = res[1];
-          fallbackType = res[2];
-          fallbackVal = res[3];
-          console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
-        }
-        let queryParam = _.get(props, ['location', 'query', name], null);
-        if (fallbackType === '+') {
-          if (queryParam !== null) {
-            console.log('got value for name', name, 'replaced by', fallbackVal);
-            queryParam = fallbackVal;
-          } else {
-            console.log('no value for name', name, 'setting empty');
-            queryParam = '';
-          }
-        }
-        if (queryParam === null && fallbackType === '-') {
-          console.log('no value for name, replaced by', fallbackVal);
-          queryParam = fallbackVal;
-        }
+        const queryParam = processFallback(instruction, props);
+        console.log(`processFallback(${instruction}) -> ${typeof queryParam} ${queryParam}`);
         if (queryParam === null) dynamicPartsSatisfied = false;
         return queryParam;
       }
@@ -85,6 +92,7 @@ function substitutePath(path, props) {
     }
   });
 
+  console.log(`substitutePath(${path}) -> ${replaced}, dynamicPartsSatisfied=${dynamicPartsSatisfied}`);
   return { path: replaced, dynamicPartsSatisfied };
 }
 

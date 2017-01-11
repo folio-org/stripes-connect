@@ -51,21 +51,21 @@ function processFallback(instruction, getPath, props) {
     fallbackVal = res[3];
     console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
   }
-  let queryParam = _.get(props, [].concat(getPath).concat(name), null);
+  let val = _.get(props, [].concat(getPath).concat(name), null);
   if (fallbackType === '+') {
-    if (queryParam !== null) {
-      console.log('got value for name', name, 'replaced by', fallbackVal);
-      queryParam = fallbackVal;
+    if (val !== null) {
+      console.log('got value for name', name, '- replaced by', fallbackVal);
+      val = fallbackVal;
     } else {
-      console.log('no value for name', name, 'setting empty');
-      queryParam = '';
+      console.log('no value for name', name, '- setting empty');
+      val = '';
     }
   }
-  if (queryParam === null && fallbackType === '-') {
-    console.log('no value for name, replaced by', fallbackVal);
-    queryParam = fallbackVal;
+  if (val === null && fallbackType === '-') {
+    console.log('no value for name', name, '- replaced by', fallbackVal);
+    val = fallbackVal;
   }
-  return queryParam;
+  return val;
 }
 
 // Implements dynamic manifest components with ?{syntax}. Namespaces so far:

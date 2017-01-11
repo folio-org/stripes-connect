@@ -39,7 +39,7 @@ function error(dispatch, op, creator, record, module, resource, reason) {
 // implementing all of it. And needless to say, it should apply to all
 // kinds of substitutable.
 //
-function processFallback(instruction, props) {
+function processFallback(instruction, getPath, props) {
   let name = instruction;
   let fallbackType;
   let fallbackVal;
@@ -51,7 +51,7 @@ function processFallback(instruction, props) {
     fallbackVal = res[3];
     console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
   }
-  let queryParam = _.get(props, ['location', 'query', name], null);
+  let queryParam = _.get(props, [].concat(getPath).concat(name), null);
   if (fallbackType === '+') {
     if (queryParam !== null) {
       console.log('got value for name', name, 'replaced by', fallbackVal);
@@ -80,7 +80,7 @@ function substitutePath(original, props) {
   const path = original.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
-        const queryParam = processFallback(name, props);
+        const queryParam = processFallback(name, ['location', 'query'], props);
         if (queryParam === null) dynamicPartsSatisfied = false;
         return queryParam;
       }

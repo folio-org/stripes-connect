@@ -77,15 +77,15 @@ function substitutePath(path, props) {
   let dynamicPartsSatisfied = true;
 
   // eslint-disable-next-line consistent-return
-  const replaced = path.replace(/([:,?]){(.*?)}/g, (match, ns, instruction) => {
+  const replaced = path.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
-        const queryParam = processFallback(instruction, props);
+        const queryParam = processFallback(name, props);
         if (queryParam === null) dynamicPartsSatisfied = false;
         return queryParam;
       }
       case ':': {
-        const pathComp = _.get(props, ['params', instruction], null);
+        const pathComp = _.get(props, ['params', name], null);
         if (pathComp === null) dynamicPartsSatisfied = false;
         return pathComp;
       }

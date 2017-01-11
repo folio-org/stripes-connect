@@ -33,11 +33,12 @@ function error(dispatch, op, creator, record, module, resource, reason) {
   dispatch(action);
 }
 
-// The following fallback syntax is one small part of what
-// Bash implements -- see the "Parameter Expansion" section
-// of its manual. It's the part we need right now, but we
-// should consider implementing all of it. And needless to
-// say, it should apply to all kinds of substitable.
+// The following fallback syntax is one small part of what Bash
+// implements -- see the "Parameter Expansion" section of its
+// manual. It's the part we need right now, but we should consider
+// implementing all of it. And needless to say, it should apply to all
+// kinds of substitutable.
+//
 function processFallback(instruction, props) {
   let name = instruction;
   let fallbackType;

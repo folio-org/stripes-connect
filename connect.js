@@ -76,7 +76,6 @@ const wrap = (Wrapped, module) => {
 
     constructor(props, context) {
       super();
-      console.log('this.context =', this.context);
       this.context = context;
     }
 

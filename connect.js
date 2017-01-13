@@ -80,7 +80,6 @@ const wrap = (Wrapped, module) => {
     }
 
     componentWillMount() {
-      console.log('inserting reducers and error-handler for', this);
       if (!(this.context.addReducer)) {
         throw new Error('No addReducer function available in component context');
       }

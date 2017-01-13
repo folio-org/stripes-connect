@@ -57,12 +57,12 @@ function processFallback(instruction, getPath, props) {
       console.log('got value for name', name, '- replaced by', fallbackVal);
       val = fallbackVal;
     } else {
-      console.log('no value for name', name, '- setting empty');
+      console.log(`no value for name '${name}': setting empty`);
       val = '';
     }
   }
   if (val === null && fallbackType === '-') {
-    console.log('no value for name', name, '- replaced by', fallbackVal);
+    console.log(`no value for name '${name}': replaced by '${fallbackVal}'`);
     val = fallbackVal;
   }
   return val;

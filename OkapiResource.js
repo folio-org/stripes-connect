@@ -5,7 +5,6 @@ const defaults = {
   clientGeneratePk: true,
   fetch: true,
   headers: {
-    'Authorization': 'y', // Authorization to be implemented
   },
   POST: {
     headers: {

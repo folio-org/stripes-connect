@@ -49,20 +49,20 @@ function processFallback(instruction, getPath, props) {
     name = res[1];
     fallbackType = res[2];
     fallbackVal = res[3];
-    console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
+    // console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
   }
   let val = _.get(props, [].concat(getPath).concat(name), null);
   if (fallbackType === '+') {
     if (val !== null) {
-      console.log('got value for name', name, '- replaced by', fallbackVal);
+      console.log(`got value for name '${name}': replaced by '${fallbackVal}'`);
       val = fallbackVal;
     } else {
-      console.log('no value for name', name, '- setting empty');
+      console.log(`no value for name '${name}': setting empty`);
       val = '';
     }
   }
   if (val === null && fallbackType === '-') {
-    console.log('no value for name', name, '- replaced by', fallbackVal);
+    console.log(`no value for name '${name}': replaced by '${fallbackVal}'`);
     val = fallbackVal;
   }
   return val;

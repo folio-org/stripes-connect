@@ -76,13 +76,17 @@ const wrap = (Wrapped, module) => {
 
     constructor(props, context) {
       super();
-      if (!(context.addReducer)) {
+      this.context = context;
+    }
+
+    componentWillMount() {
+      if (!(this.context.addReducer)) {
         throw new Error('No addReducer function available in component context');
       }
       resources.forEach((resource) => {
-        context.addReducer(resource.stateKey(), resource.reducer);
+        this.context.addReducer(resource.stateKey(), resource.reducer);
       });
-      context.addReducer(`@@error-${module}`, errorReducer);
+      this.context.addReducer(`@@error-${module}`, errorReducer);
       setErrorHandler(naiveErrorHandler, false);
     }
 

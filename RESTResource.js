@@ -39,33 +39,33 @@ function error(dispatch, op, creator, record, module, resource, reason) {
 // implementing all of it. And needless to say, it should apply to all
 // kinds of substitutable.
 //
-function processFallback(instruction, getPath, props) {
-  let name = instruction;
-  let fallbackType;
-  let fallbackVal;
+function processFallback(s, getPath, props) {
+  let name = s;
+  let type;
+  let val;
 
-  const res = /(.*?):([+-])(.*)/.exec(name);
-  if (res) {
-    name = res[1];
-    fallbackType = res[2];
-    fallbackVal = res[3];
-    // console.log(`'${instruction}' matched fallback syntax: name='${name}', type='${fallbackType}', val='${fallbackVal}'`);
+  const re = /(.*?):([+-])(.*)/.exec(name);
+  if (re) {
+    name = re[1];
+    type = re[2];
+    val = re[3];
+    // console.log(`'${s}' matched fallback syntax: name='${name}', type='${type}', val='${val}'`);
   }
-  let val = _.get(props, [].concat(getPath).concat(name), null);
-  if (fallbackType === '+') {
-    if (val !== null) {
-      console.log(`got value for name '${name}': replaced by '${fallbackVal}'`);
-      val = fallbackVal;
+  let res = _.get(props, [].concat(getPath).concat(name), null);
+  if (type === '+') {
+    if (res !== null) {
+      console.log(`got value for name '${name}': replaced by '${val}'`);
+      res = val;
     } else {
       console.log(`no value for name '${name}': setting empty`);
-      val = '';
+      res = '';
     }
   }
-  if (val === null && fallbackType === '-') {
-    console.log(`no value for name '${name}': replaced by '${fallbackVal}'`);
-    val = fallbackVal;
+  if (res === null && type === '-') {
+    console.log(`no value for name '${name}': replaced by '${val}'`);
+    res = val;
   }
-  return val;
+  return res;
 }
 
 // Implements dynamic manifest components with ?{syntax}. Namespaces so far:

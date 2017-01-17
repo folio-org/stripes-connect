@@ -14,9 +14,9 @@ const optionsFromState = (options, state) => {
       root: state.okapi.url,
       headers: {
         'X-Okapi-Tenant': state.okapi.tenant,
-        'Authorization' : state.okapi.token,
       },
     };
+    if (state.okapi.token) okapiOptions.headers['X-Okapi-Token'] = state.okapi.token;
     return _.merge({}, options, okapiOptions);
   }
   return options;
@@ -94,6 +94,19 @@ function substitutePath(original, props) {
 
   // console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
   return { path, dynamicPartsSatisfied };
+}
+
+function setOkapiToken(token) {
+  return {
+    type: 'SET_OKAPI_TOKEN',
+    token,
+  }
+}
+
+function clearOkapiToken() {
+  return {
+    type: 'CLEAR_OKAPI_TOKEN',
+  }
 }
 
 
@@ -185,7 +198,10 @@ export default class RESTResource {
             });
           } else {
             response.json().then((json) => {
-              console.log('response.headers.get(Authorization): ', response.headers.get('Authorization'));
+              if (url.endsWith('/authn/login')) {
+                let token = response.headers.get('X-Okapi-Token');
+                dispatch(setOkapiToken(token));
+              }
               const responseRecord = { ...json };
               if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
               if (!responseRecord.id) responseRecord.id = 'anyOldCrap'; // XXX REMOVE THIS CODE as soon as possible -- presently necessary due to the vileness of STRIPES-126

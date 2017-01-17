@@ -54,15 +54,15 @@ function processFallback(s, getPath, props) {
   let res = _.get(props, [].concat(getPath).concat(name), null);
   if (type === '+') {
     if (res !== null) {
-      console.log(`got value for name '${name}': replaced by '${val}'`);
+      // console.log(`got value for name '${name}': replaced by '${val}'`);
       res = val;
     } else {
-      console.log(`no value for name '${name}': setting empty`);
+      // console.log(`no value for name '${name}': setting empty`);
       res = '';
     }
   }
   if (res === null && type === '-') {
-    console.log(`no value for name '${name}': replaced by '${val}'`);
+    // console.log(`no value for name '${name}': replaced by '${val}'`);
     res = val;
   }
   return res;
@@ -97,7 +97,7 @@ function substitutePath(original, props) {
     }
   });
 
-  // console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
+  console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
   return { path, dynamicPartsSatisfied };
 }
 

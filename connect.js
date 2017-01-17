@@ -119,6 +119,7 @@ const wrap = (Wrapped, module) => {
       tmp[resource.name] = Object.freeze(_.get(state, [resource.stateKey()], null));
       return Object.assign({}, result, tmp);
     }, {})),
+    state, // Shallow copy -- a reference so we can implement ${name}
   });
 
   Wrapper.mapDispatch = dispatch => ({

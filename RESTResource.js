@@ -77,7 +77,7 @@ function substitutePath(original, props) {
   let dynamicPartsSatisfied = true;
 
   // eslint-disable-next-line consistent-return
-  const path = original.replace(/([:?]){(.*?)}/g, (match, ns, name) => {
+  const path = original.replace(/([:?$]){(.*?)}/g, (match, ns, name) => {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
         const queryParam = processFallback(name, ['location', 'query'], props);
@@ -88,6 +88,11 @@ function substitutePath(original, props) {
         const pathComp = processFallback(name, ['params'], props);
         if (pathComp === null) dynamicPartsSatisfied = false;
         return pathComp;
+      }
+      case '$': {
+        const localState = processFallback(name, ['state'], props);
+        if (localState === null) dynamicPartsSatisfied = false;
+        return localState;
       }
     }
   });
@@ -100,13 +105,13 @@ function setOkapiToken(token) {
   return {
     type: 'SET_OKAPI_TOKEN',
     token,
-  }
+  };
 }
 
 function clearOkapiToken() {
   return {
     type: 'CLEAR_OKAPI_TOKEN',
-  }
+  };
 }
 
 
@@ -199,7 +204,7 @@ export default class RESTResource {
           } else {
             response.json().then((json) => {
               if (url.endsWith('/authn/login')) {
-                let token = response.headers.get('X-Okapi-Token');
+                const token = response.headers.get('X-Okapi-Token');
                 dispatch(setOkapiToken(token));
               }
               const responseRecord = { ...json };

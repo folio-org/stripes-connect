@@ -77,7 +77,7 @@ function substitutePath(original, props) {
   let dynamicPartsSatisfied = true;
 
   // eslint-disable-next-line consistent-return
-  const path = original.replace(/([:,?]){(.*?)}/g, (match, ns, name) => {
+  const path = original.replace(/([:?]){(.*?)}/g, (match, ns, name) => {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
         const queryParam = processFallback(name, ['location', 'query'], props);

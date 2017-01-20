@@ -13,5 +13,7 @@
     "no-alert": "off",
     "quote-props": "off",
     "key-spacing": "off",
+    "one-var": "off",
+    "one-var-declaration-per-line": [ 1, "initializations" ],
   }
 }

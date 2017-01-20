@@ -159,9 +159,20 @@ export default class RESTResource {
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return null;
     this.options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
-    const { path, dynamicPartsSatisfied } = substitutePath(this.options.path, props);
-    this.options.path = path; // This kind of permanent state-change seems wrong
 
+    let path, dynamicPartsSatisfied;
+    if (typeof this.options.path === 'function') {
+      // Call back to resource-specific code
+      path = this.options.path(_.get(props, ['location', 'query']), props.params);
+      dynamicPartsSatisfied = (path !== undefined);
+    } else {
+      // Substitute into string template
+      const t = substitutePath(this.options.path, props);
+      path = t.path;
+      dynamicPartsSatisfied = t.dynamicPartsSatisfied;
+    }
+
+    this.options.path = path; // This kind of permanent state-change seems wrong
     if (!dynamicPartsSatisfied) {
       if (typeof this.options.staticFallback === 'object') {
         _.merge(this.options, this.options.staticFallback);

@@ -120,7 +120,7 @@ const wrap = (Wrapped, module) => {
       return Object.assign({}, result, tmp);
     }, {})),
     state, // Shallow copy -- a reference so we can implement ${name}
-    // Unfortunately doesn't work: it's the state of the wrapper, and we want that of the wrapped component
+    // Doesn't work: it's the state of the wrapper, and we want that of the wrapped component
   });
 
   Wrapper.mapDispatch = dispatch => ({

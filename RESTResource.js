@@ -193,15 +193,18 @@ export default class RESTResource {
       })
         .then((response) => {
           if (response.status >= 400) {
+            if (url.endsWith('/authn/login')) {
+              dispatch(clearOkapiToken());
+            }
             response.text().then((text) => {
               error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, text);
             });
           } else {
+            if (url.endsWith('/authn/login')) {
+              let token = response.headers.get('X-Okapi-Token');
+              dispatch(setOkapiToken(token));
+            }
             response.json().then((json) => {
-              if (url.endsWith('/authn/login')) {
-                let token = response.headers.get('X-Okapi-Token');
-                dispatch(setOkapiToken(token));
-              }
               const responseRecord = { ...json };
               if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
               if (!responseRecord.id) responseRecord.id = 'anyOldCrap'; // XXX REMOVE THIS CODE as soon as possible -- presently necessary due to the vileness of STRIPES-126

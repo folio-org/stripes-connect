@@ -82,17 +82,17 @@ function substitutePath(original, props) {
       case '?': {
         const queryParam = processFallback(name, ['location', 'query'], props);
         if (queryParam === null) dynamicPartsSatisfied = false;
-        return queryParam;
+        return encodeURIComponent(queryParam);
       }
       case ':': {
         const pathComp = processFallback(name, ['params'], props);
         if (pathComp === null) dynamicPartsSatisfied = false;
-        return pathComp;
+        return encodeURIComponent(pathComp);
       }
       case '$': {
         const localState = processFallback(name, ['state'], props);
         if (localState === null) dynamicPartsSatisfied = false;
-        return localState;
+        return encodeURIComponent(localState);
       }
     }
   });

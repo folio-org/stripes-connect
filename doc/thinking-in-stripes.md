@@ -53,9 +53,20 @@ When programming with stripes-connect, you do not directly interact with the bac
 
 That is all. The stripes-connect library issues the necessary requests, handles the responses, and updates the component's properties; and React then ensures that components whose contents have changed are re-rendered.
 
-### Declarative data manifest
+### Declarative, immutable data manifest
 
-XXX
+A manifest is provided by each connection component class in a UI module. It is a class-level static constant. For example:
+
+	static manifest = Object.freeze({
+	  user: {
+	    type: 'okapi',
+	    path: 'users/:{userid}',
+	  },
+	});
+
+(This manifest declares a single resource, called `user`, which is connected to an Okapi service at a path that depends on the `userid` part of the path in the UI's URL.)
+  
+The manifest is constant, immutable, and identical across all instances of a class -- something that is conventionally indicated in code by freezing the object with `Object.freeze()`. It can best be thought of constituting a set of instructions for transforming local state into remote operations.
 
 ### Modifying local state
 

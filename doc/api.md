@@ -1,5 +1,7 @@
 # The Stripes Connect API
 
+Index Data, 2016-2017.
+
 <!-- ../../okapi/doc/md2toc -l 2 api.md -->
 * [Introduction](#introduction)
     * [Note](#note)

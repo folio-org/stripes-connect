@@ -4,6 +4,8 @@
 
 [The Stripes toolkit](https://github.com/folio-org/stripes-core) aims to make it as easy as possible to write UI modules that commuicate with RESTful Web services. Most importantly, it is the toolkit used to write UI modules for [the FOLIO library services platform](https://www.folio.org/).
 
+This document aims to bring new UI module developers developers up to speed with the concepts behind Stripes (especially stripes-connect), so that they are have a context in which to understand [The Stripes Connect API](api.md)  reference guide.
+
 ## Overview
 
 Stripes consists of several separate JavaScript libraries that work together. The good news is that you don't need to think about most of them in order to create Stripes-based UI modules. They are:
@@ -31,4 +33,23 @@ So you should consider ES6, React and JSX the prerequisites for writing Stripes 
 
 ## Principles of stripes-connect
 
-XXX to do
+When programming with stripes-connect, you do not directly interact with the back-end web-services. There is no sending of requests or handling of responses -- the stripes-connect library deals with all that. Instead, UI modules do two things:
+
+1. They make a declarative statement of what back-end information they are interested, in the form of a _manifest_. The manifest provides information about a number of `resources`, each of which corresponds to data available from the back-end. Most importantly, each resource's `path` specifies how various parts of state -- URL path components and query parameters, local state such as form values, etc. -- is composed into a web-service URL used to access the back-end web-service.
+
+2. They modify local state -- mostly through the use of _mutators_ -- to reflect users' actions, such as searching, sorting, selecing and editing records.
+
+That is all.
+
+### Declarative data manifest
+
+XXX
+
+### Modifying local state
+
+XXX
+
+## Appendix: escaping to redux
+
+XXX
+

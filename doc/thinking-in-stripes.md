@@ -1,5 +1,17 @@
 # Thinking in Stripes
 
+Index Data, 2017.
+  
+<!-- ../../okapi/doc/md2toc -l 2 thinking-in-stripes.md -->
+* [Introduction](#introduction)
+* [Overview](#overview)
+* [Underlying technology](#underlying-technology)
+* [Principles of stripes-connect](#principles-of-stripes-connect)
+    * [Declarative data manifest](#declarative-data-manifest)
+    * [Modifying local state](#modifying-local-state)
+* [Appendix: escaping to redux](#appendix-escaping-to-redux)
+
+
 ## Introduction
 
 [The Stripes toolkit](https://github.com/folio-org/stripes-core) aims to make it as easy as possible to write UI modules that commuicate with RESTful Web services. Most importantly, it is the toolkit used to write UI modules for [the FOLIO library services platform](https://www.folio.org/).

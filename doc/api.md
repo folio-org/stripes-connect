@@ -1,6 +1,6 @@
 # The Stripes Connect API
 
-<!-- ../okapi/doc/md2toc -l 2 api.md -->
+<!-- ../../okapi/doc/md2toc -l 2 api.md -->
 * [Introduction](#introduction)
     * [Note](#note)
 * [The Connection Manifest](#the-connection-manifest)

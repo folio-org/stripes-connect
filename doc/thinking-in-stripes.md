@@ -7,8 +7,9 @@ Index Data, 2017.
 * [Overview](#overview)
 * [Underlying technology](#underlying-technology)
 * [Principles of stripes-connect](#principles-of-stripes-connect)
-    * [Declarative data manifest](#declarative-data-manifest)
+    * [Declarative, immutable data manifest](#declarative-immutable-data-manifest)
     * [Modifying local state](#modifying-local-state)
+    * [Firing actions](#firing-actions)
 * [Appendix: escaping to redux](#appendix-escaping-to-redux)
 
 

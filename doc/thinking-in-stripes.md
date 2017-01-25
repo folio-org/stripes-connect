@@ -73,9 +73,25 @@ The manifest is constant, immutable, and identical across all instances of a cla
 
 ### Modifying local state
 
-XXX
+The manifest is immutable, and shared between all instances of a component. By contrast, each instance of a component has its own local state, and may change it at any time.
+
+State is of several kinds:
+
+* React state, which may be modified at any time using React's standard `setState()` method. This is typically how components keep track of UI elements such as query textboxes and filtering checkboxes -- see the React documentation on [Forms and Controlled Components](https://facebook.github.io/react/docs/forms.html).
+
+* The present URL of the UI application, which typically carries state in both its path and its query: for example, the URL `/users/123?query=smith&sort=username` contains a user-ID `123` in its path, and a query `smith` and sort-specification `username` in query parameters `query` and `sort` respectively.
+
+  (At present, the URL is changed using the standard React Router method, `this.context.router.transitionTo(newUrl)`. In future, this will probably done instead using mutators -- concerning which, see below.)
+
+Stripes-connect detects changes to the state, and issues whatever requests are necessary to obtain relevant data. For example, if the URL changes from `/users/123?query=smith&sort=username` to `/users/123?query=smith&sort=email`, it will issue a new search request with the sort-order modified accordingly.
+
+### Firing actions
+
+Every connected component is given, in its properties, a _mutator_, which is an object containing functions XXX
+
 
 ## Appendix: escaping to redux
 
 XXX
+
 

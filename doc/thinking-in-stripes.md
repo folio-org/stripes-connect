@@ -51,7 +51,7 @@ When programming with stripes-connect, you do not directly interact with the bac
 
 2. They modify local state -- mostly through the use of _mutators_ -- to reflect users' actions, such as searching, sorting, selecing and editing records.
 
-That is all.
+That is all. The stripes-connect library issues the necessary requests, handles the responses, and updates the component's properties; and React then ensures that components whose contents have changed are re-rendered.
 
 ### Declarative data manifest
 

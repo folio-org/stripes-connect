@@ -170,19 +170,21 @@ relative to the default root. In the modules response, the primary key
 is the default, `id`; but in the health response, it is `srvcId`, and
 the manifest must specify this.
 
-        static manifest = {
-          'health': {
+        static manifest = Object.freeze({
+          health: {
             type: 'okapi',
-            pk:   'srvcId',
+            pk: 'srvcId',
             path: '_/discovery/health'
           },
-          'modules': {
+          modules: {
             type: 'okapi',
             path: '_/proxy/modules'
           }
-        };
+        });
 
-
+(It is conventional to freeze manifests -- making them immutable -- to
+document and enforce the fact that they do not change once
+created. See [Thinking in Stripes](thinking-in-stripes.md))
 
 ## Connecting the component
 

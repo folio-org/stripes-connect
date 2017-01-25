@@ -1,7 +1,7 @@
 # Thinking in Stripes
 
 Index Data, 2017.
-  
+
 <!-- ../../okapi/doc/md2toc -l 2 thinking-in-stripes.md -->
 * [Introduction](#introduction)
 * [Overview](#overview)
@@ -18,6 +18,7 @@ Index Data, 2017.
 
 This document aims to bring new UI module developers developers up to speed with the concepts behind Stripes (especially stripes-connect), so that they are have a context in which to understand [The Stripes Connect API](api.md)  reference guide.
 
+
 ## Overview
 
 Stripes consists of several separate JavaScript libraries that work together. The good news is that you don't need to think about most of them in order to create Stripes-based UI modules. They are:
@@ -31,6 +32,7 @@ In general, Stripes Core is configured by a list of UI modules to include, and i
 
 As a module author, you need to know JavaScript, be familiar with UI components (including those available from stripes-components) and understand how to connect to FOLIO web-services.
 
+
 ## Underlying technology
 
 Stripes UI modules are written in **JavaScript** -- specifically, in [EcmaScript 6 (ES6)](http://es6-features.org/), a modern version of JavaScript that fixes many of the problems that made earlier version of the language difficult to work with.
@@ -42,6 +44,7 @@ React works best when used with [**JSX**](https://jsx.github.io/), a simple synt
 So you should consider ES6, React and JSX the prerequisites for writing Stripes UI components.
 
 (Under the hood, stripes-connect uses [Redux](https://github.com/reactjs/redux) to manage its state. But UI module authors do not need to use Redux directly.)
+
 
 ## Principles of stripes-connect
 
@@ -65,7 +68,7 @@ A manifest is provided by each connection component class in a UI module. It is 
 	});
 
 (This manifest declares a single resource, called `user`, which is connected to an Okapi service at a path that depends on the `userid` part of the path in the UI's URL.)
-  
+
 The manifest is constant, immutable, and identical across all instances of a class -- something that is conventionally indicated in code by freezing the object with `Object.freeze()`. It can best be thought of constituting a set of instructions for transforming local state into remote operations.
 
 ### Modifying local state

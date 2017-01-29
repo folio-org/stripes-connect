@@ -71,6 +71,7 @@ function processFallback(s, getPath, props) {
 // Implements dynamic manifest components with ?{syntax}. Namespaces so far:
 // ? - query parameters in current url
 // : - path components as defined by react-router
+// $ - resources
 //
 function substitutePath(original, props) {
   // console.log('substitutePath(), props = ', props);
@@ -90,7 +91,7 @@ function substitutePath(original, props) {
         return encodeURIComponent(pathComp);
       }
       case '$': {
-        const localState = processFallback(name, ['state'], props);
+        const localState = processFallback(name, ['data'], props);
         if (localState === null) dynamicPartsSatisfied = false;
         return encodeURIComponent(localState);
       }

@@ -93,6 +93,8 @@ Every connected component is given, in its properties, a _mutator_, which is an 
 
 ## Principles for designing Stripes UI modules
 
+At least two "styles" are possible when designing the set of components that will make up a Stripes UI modules. It's possible to build modules where one big component does most or all of the stripes-connecting, and drives many much simpler unconnected subcomponents; or a module may consist of many small components that are each stripes-connected to obtain the data they display. Which is better?
+
 The Redux community leans towards fewer connected components where possible, as components that are purely functions of their props are easiest to debug, test and maintain. This is a good rule of thumb for stripes-connected components, too: aim for fewer connected components except where doing that means going more than a little bit out of the way and creating convoluted code.
 
 

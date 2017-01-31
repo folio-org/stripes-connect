@@ -102,20 +102,6 @@ function substitutePath(original, props) {
   return { path, dynamicPartsSatisfied };
 }
 
-function setOkapiToken(token) {
-  return {
-    type: 'SET_OKAPI_TOKEN',
-    token,
-  };
-}
-
-function clearOkapiToken() {
-  return {
-    type: 'CLEAR_OKAPI_TOKEN',
-  };
-}
-
-
 export default class RESTResource {
 
   constructor(name, query = {}, module = null, defaults = defaultDefaults) {
@@ -210,17 +196,10 @@ export default class RESTResource {
       })
         .then((response) => {
           if (response.status >= 400) {
-            if (url.endsWith('/authn/login')) {
-              dispatch(clearOkapiToken());
-            }
             response.text().then((text) => {
               error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, text);
             });
           } else {
-            if (url.endsWith('/authn/login')) {
-              let token = response.headers.get('X-Okapi-Token');
-              dispatch(setOkapiToken(token));
-            }
             response.json().then((json) => {
               const responseRecord = { ...json };
               if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];

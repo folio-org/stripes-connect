@@ -184,7 +184,7 @@ the manifest must specify this.
 
 (It is conventional to freeze manifests -- making them immutable -- to
 document and enforce the fact that they do not change once
-created. See [Thinking in Stripes](thinking-in-stripes.md))
+created. See [Thinking in Stripes](thinking-in-stripes.md).)
 
 ## Connecting the component
 
@@ -244,7 +244,7 @@ elements (all of type string):
 * **module** -- the name of the Stripes module in which the error
   occurred.
 * **op** -- the operation that Stripes Connect was trying to carry out
-  **on behalf of the module: usually one of
+  on behalf of the module: usually one of
   `FETCH`, `UPDATE`, `CREATE` or `DELETE`.
 * **resource** -- the name of the resource within the component's
   manifest that Stripes Connect was trying to handle when the error

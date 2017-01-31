@@ -91,6 +91,11 @@ Stripes-connect detects changes to the state, and issues whatever requests are n
 Every connected component is given, in its properties, a _mutator_, which is an object containing functions XXX
 
 
+## Principles for designing Stripes UI modules
+
+The Redux community leans towards fewer connected components where possible, as components that are purely functions of their props are easiest to debug, test and maintain. This is a good rule of thumb for stripes-connected components, too: aim for fewer connected components except where doing that means going more than a little bit out of the way and creating convoluted code.
+
+
 ## Appendix: escaping to redux
 
 XXX

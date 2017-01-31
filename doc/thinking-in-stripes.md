@@ -10,6 +10,7 @@ Index Data, 2017.
     * [Declarative, immutable data manifest](#declarative-immutable-data-manifest)
     * [Modifying local state](#modifying-local-state)
     * [Firing actions](#firing-actions)
+* [Principles for designing Stripes UI modules](#principles-for-designing-stripes-ui-modules)
 * [Appendix: escaping to redux](#appendix-escaping-to-redux)
 
 

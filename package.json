@@ -38,7 +38,7 @@
     "jsdom-global": "^2.1.0",
     "mocha": "^3.1.2",
     "react-addons-test-utils": "^15.4.0",
-    "react-router": "next",
+    "react-router": "4.0.0-alpha.6",
     "redux-thunk": "^2.1.0",
     "webpack": "1.11.0"
   },

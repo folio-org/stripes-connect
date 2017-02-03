@@ -289,6 +289,9 @@ export default class RESTResource {
       const { root, path, headers, GET, records } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');
+      if (url === that.lastUrl) return;
+      that.lastUrl = url;
+
       dispatch(crudActions.fetchStart());
       return fetch(url, { headers: Object.assign({}, headers, GET.headers) })
         .then((response) => {

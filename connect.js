@@ -91,7 +91,7 @@ const wrap = (Wrapped, module) => {
     }
 
     componentDidMount() {
-      // console.log("componentDidMount about to refreshRemote for", Wrapped.name, this);
+      // console.log('componentDidMount about to refreshRemote for', Wrapped.name, this);
       this.props.refreshRemote({ ...this.props });
     }
 

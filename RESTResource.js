@@ -203,7 +203,6 @@ export default class RESTResource {
             response.json().then((json) => {
               const responseRecord = { ...json };
               if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
-              if (!responseRecord.id) responseRecord.id = 'anyOldCrap'; // XXX REMOVE THIS CODE as soon as possible -- presently necessary due to the vileness of STRIPES-126
               dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));
             });
           }

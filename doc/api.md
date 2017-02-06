@@ -35,9 +35,9 @@ middleware), though other RESTful web services are also supported.
 A Stripes UI is composed of
 [React](https://facebook.github.io/react/)
 components. (You will need to learn at least the basics of React in
-order to use Stripes.) Any component may use the services of Stripes
-Connect to automate communication with back-end services. Such a
-component is known as a "connected component".
+order to use Stripes.) Any component may use the services of Stripesthx
+Connect to automate communication with back-end services. A component
+that does this is known as a "connected component".
 
 In order to take advantage of Stripes Connect, a component must do two
 things: declare a _manifest_, which describes what data elements it
@@ -47,9 +47,9 @@ wants to manage and how to link them to services; and call the
 
 ### Note
 
-This document describes the API as we wish it to be. The present
+This document describes an API that is still in motion. The present
 version of the code implements something similar to this, but not
-identical. In what follows, additional notes mark such divergences.
+identical. Further changes are likely.
 
 
 

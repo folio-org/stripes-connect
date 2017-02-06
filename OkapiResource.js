@@ -4,6 +4,7 @@ const defaults = {
   pk: 'id',
   clientGeneratePk: true,
   fetch: true,
+  clear: true,
   headers: {
   },
   POST: {

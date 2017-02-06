@@ -3,7 +3,7 @@ import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'node-uuid';
 
-const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true };
+const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 
 const optionsFromState = (options, state) => {
   if (options.type === 'okapi') {
@@ -146,7 +146,6 @@ export default class RESTResource {
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return null;
     this.options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
-
     let path, dynamicPartsSatisfied;
     if (typeof this.options.path === 'function') {
       // Call back to resource-specific code
@@ -286,7 +285,7 @@ export default class RESTResource {
     const key = this.stateKey();
     return (dispatch, getState) => {
       const options = optionsFromState(that.options, getState());
-      const { root, path, headers, GET, records } = options;
+      const { root, path, headers, GET, records, clear } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');
       if (url === that.lastUrl) return;
@@ -301,7 +300,9 @@ export default class RESTResource {
             });
           } else {
             response.json().then((json) => {
-              dispatch({ type: `CLEAR_${key.toUpperCase()}` });
+              if (clear) {
+                dispatch({ type: `CLEAR_${key.toUpperCase()}` });
+              }
               const data = (records ? json[records] : json);
               dispatch(crudActions.fetchSuccess(data));
             });

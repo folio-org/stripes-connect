@@ -57,8 +57,8 @@ identical. Further changes are likely.
 
 The manifest is provided as a static member of the component class. It
 is a JavaScript object in which the keys are the names of resources to
-be managed, and the corresponding values are objects specifying how to
-deal with them:
+be managed, and the corresponding values are objects containing
+configuration that specifies how to deal with them:
 
         static manifest = {
           'bibs': { /* ... */ },
@@ -66,10 +66,14 @@ deal with them:
           'patrons': { /* ... */ }
         };
 
+Each resource is a piece of data -- perhaps a single string, perhaps a
+set of structured records. The values of all resources are available
+to components as the `data` property -- in this case,
+`this.props.data.bibs` etc.
 
 ### Resource types
 
-Each resource has several keys. The most important of these is `type`,
+Each resource's configuration has several keys. The most important of these is `type`,
 which determines how the associated data is treated. Currently, three
 types are supported:
 

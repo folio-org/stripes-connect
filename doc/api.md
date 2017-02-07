@@ -173,16 +173,53 @@ address pointing to an Okapi instance.)
 
 ### Path interpretation
 
-XXX todo
+The strings provided as `path`s in manifests can sometimes be simple
+constants, such as `_/proxy/modules` or `item-storage/items`.
+(Such constant paths are often used as part of a `staticFallback`.)
+
+However, more often the precise path varies with aspects of the state,
+such as components of the UI URL's path or query, or the values of
+local resources. This state-dependent path construction can be
+expressed in two ways: most often by substituting values directly into
+a template string; and when the the requirements are complex, by
+calling a function to construct the string from the state.
 
 #### Text substitution and fallback
 
-XXX todo
+The three different kinds of state can be substituted into path
+strings using three different but related syntaxes:
+
+* `:{name}` -- interpolates the value of the named path-component from
+  the UI URL, as extracted by React Router. For example, if the React
+  Router path is `/view/:userid` then the path for accessing the
+  back-end web-service can be expressed as `users/:{userid}` Then when
+  the UI is being accessed as (for example)
+  `http://localhost:3000/users/view/45`, the path will be resolved as
+  `users/45`.
+  
+* `?{name}` -- interpolates the value of the named query parameter
+  from the UI URL. For example, if the path is expressed as
+  `item-storage?query=?{q}` and the UI is accessed at
+  `http://localhost:3000/items?q=water`, the path will be resolved as
+  `http://localhost:3000/item-storage?query=water}`.
+
+* `${name}`-- interpolates the value of the named local resource (see
+  [above](#local-resources) on local resources). In general, the
+  approach here is to store state in a local resource rather than in
+  React-component state. This can be done using something along the
+  lines of `this.props.mutator.sortOrder.replace('title')`. Thereafter
+  the state can be used in a path such as
+  `item-storage?query=?{q} sortby ${sortOrder}`.
+
+XXX todo fallbacks
+
+XXX todo Example: path: 'item-storage/items?query=(author=?{query:-}* or date=?{query:-*} or title=?{query:-}*) ?{sort:+sortby} ?{sort:-}',
 
 #### Functional paths
 
 XXX todo
 
+return undefined if unable
 
 ### Example
 
@@ -319,6 +356,8 @@ values contain the corresponding data. These records are used in the
 obvious way by the POST, PUT and PATCH operations. For DELETE, the
 record need only contain the `id` field, so that it suffices to call
 `mutator.tenants.DELETE({ id: 43 })`.
+
+XXX todo write about STRIPES-123.
 
 <br/>
 <br/>

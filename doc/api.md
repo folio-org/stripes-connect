@@ -111,9 +111,9 @@ addition to `'type':'rest'`:
 * `root`: the base URL of the service that persists the data.
 
 * `path`: the path for this resource below the specified root. The
-  path consists of one or more `/`-separated components: each
-  component may be a literal, or a placeholder of the form `:`_name_,
-  which is replaced at run-time by the value of the named property.
+  path consists of one or more `/`-separated components. See
+  [the **Path Interpretation** section](#path-interpretation) below
+  for details on how this is handled.
 
 * `params`: A JavaScript object containing named parameters to be
   supplied as part of the URL. These are joined with `&` and appended
@@ -121,10 +121,13 @@ addition to `'type':'rest'`:
   The root, path and params together make up the URL that is
   addressed to maintain the resource.
 
+  **NOTE.** The `params` item is not yet implemented -- see
+  [STRIPES-121](https://issues.folio.org/browse/STRIPES-121).
+
 * `headers`: A JavaScript object containing HTTP headers: the keys are
   the header names and the values are their content.
 
-* `records`: The name of the key in the returned JSON that contains
+* `records`: The name of the field in the returned JSON that contains
   the records. Typically the JSON response from a web service is not
   itself an array of records, but an object containing metadata about
   the result (result-count, etc.) and a sub-array that contains the
@@ -152,20 +155,20 @@ the same keys as described above) that apply only when the specified
 operation is used.
 
 Similarly, the same keys provided in `staticFallback` will be used when
-dynamic portions of the config are not satisfied by the current state.
+dynamic portions of the config are not satisfied by the current state
+-- see [below](#text-substitution-and-fallback).
 
 
 #### Okapi resources
 
 Okapi resources are REST resources, but with defaults set to make
-connecting to Okapi convenient:
+connecting to Okapi convenient. In particular, default headers are set
+appropriately for the `GET`, `POST`, `PUT` and `DELETE` operations.
 
-* `root`: defaults to a globally-configured address pointing to an
-  Okapi instance.
-
-* `headers`: are set appropriately for each HTTP operation to send the
-  tenant-ID, specify that the POSTed or PUT body is JSON and expect
-  JSON in response.
+(Also, special-case code that understands Okapi-specific state and
+configuration ensures that the correct tenant-ID is sent with each
+request, and that the `root` is defaulted to a globally-configured
+address pointing to an Okapi instance.)
 
 
 ### Path interpretation

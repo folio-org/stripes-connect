@@ -10,6 +10,9 @@ Index Data, 2016-2017.
         * [Local resources](#local-resources)
         * [REST resources](#rest-resources)
         * [Okapi resources](#okapi-resources)
+    * [Path interpretation](#path-interpretation)
+        * [Text substitution and fallback](#text-substitution-and-fallback)
+        * [Functional paths](#functional-paths)
     * [Example](#example)
 * [Connecting the component](#connecting-the-component)
 * [Error handling](#error-handling)
@@ -163,6 +166,19 @@ connecting to Okapi convenient:
 * `headers`: are set appropriately for each HTTP operation to send the
   tenant-ID, specify that the POSTed or PUT body is JSON and expect
   JSON in response.
+
+
+### Path interpretation
+
+XXX todo
+
+#### Text substitution and fallback
+
+XXX todo
+
+#### Functional paths
+
+XXX todo
 
 
 ### Example

@@ -298,9 +298,38 @@ generated path when no sorting parater is provided in the UI URL.
 
 #### Functional paths
 
-XXX todo
+When the power and flexibility of text substitution and fallbacks are
+not sufficient for expressing how to build the back-end UI, arbitrary
+JavaScript can be used instead. If the value of a resource's `path` is
+a function rather than a string, then that function is invoked
+whenever a path is needed. It is passed three parameters:
 
-return undefined if unable
+* An object containing the UI URL's query parameters (as accessed by
+  `?{name}`).
+
+* An object containing the UI URL's path components (as accessed by
+  `:{name}`).
+
+* An object containing the component's resources' data (as accessed by
+  `$name}`).
+
+The function must return a string to use as the path, or `undefined`
+if it is unable to do this because a required piece of state is
+missing. In the latter case, the path from `staticFallback` will be
+used if it is defined.
+
+So the function would usually be defined along these lines:
+
+        static manifest = Object.freeze({
+          users: {
+            type: 'okapi',
+            path: (queryParams, pathComponents, resourceData) => {
+              if (queryParams.x) return `users/${queryParams.x}`;
+              return undefined;
+            }
+          }
+        });
+
 
 ### Example manifest
 

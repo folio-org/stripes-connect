@@ -13,9 +13,11 @@ Index Data, 2016-2017.
     * [Path interpretation](#path-interpretation)
         * [A note on terminology](#a-note-on-terminology)
         * [Overview](#overview)
-        * [Text substitution and fallback](#text-substitution-and-fallback)
+        * [Text substitution](#text-substitution)
+        * [Fallbacks](#fallbacks)
+        * [Example path](#example-path)
         * [Functional paths](#functional-paths)
-    * [Example](#example)
+    * [Example manifest](#example-manifest)
 * [Connecting the component](#connecting-the-component)
 * [Error handling](#error-handling)
 * [Using the connected component](#using-the-connected-component)
@@ -266,7 +268,7 @@ only if the names path-component, query parameter or local resource
 _does_ exist: `${name:+val}` yields either the constant `val` or an
 empty string, according as `${name}` is or is not defined.
 
-#### Example
+#### Example path
 
 Putting these facilities together, the following `path` could be
 defined for the `items` resource in a UI module for inventory
@@ -300,7 +302,7 @@ XXX todo
 
 return undefined if unable
 
-### Example
+### Example manifest
 
 This manifest (from the Okapi Console component that displays the
 health of running modules) defines two Okapi resources, `health` and

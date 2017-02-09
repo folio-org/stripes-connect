@@ -149,7 +149,7 @@ export default class RESTResource {
     let path, dynamicPartsSatisfied;
     if (typeof this.options.path === 'function') {
       // Call back to resource-specific code
-      path = this.options.path(_.get(props, ['location', 'query']), props.params);
+      path = this.options.path(_.get(props, ['location', 'query']), props.params, props.data);
       dynamicPartsSatisfied = (path !== undefined);
     } else {
       // Substitute into string template

@@ -11,6 +11,8 @@ Index Data, 2016-2017.
         * [REST resources](#rest-resources)
         * [Okapi resources](#okapi-resources)
     * [Path interpretation](#path-interpretation)
+        * [A note on terminology](#a-note-on-terminology)
+        * [Overview](#overview)
         * [Text substitution and fallback](#text-substitution-and-fallback)
         * [Functional paths](#functional-paths)
     * [Example](#example)
@@ -173,6 +175,26 @@ address pointing to an Okapi instance.)
 
 ### Path interpretation
 
+#### A note on terminology
+
+Since we will be talkingh a lot about URLs in this section, to avoid
+confusion we must introduce little bit of terminology. We use _UI URL_
+to refer to the URL of the user interface, which the human user can
+see in the URL bar of the browser -- for example,
+
+> `http://ui.folio.org:3000/users?query=price&sort=Name&filterActive=true`
+
+And we use _back-end URL_ to refer to the URLs of resources provided
+by back-end services such as Okapi, which the UI itself invokes, and
+which are not visible to the human user -- for example,
+
+> `http://okapi.folio.org:9130/users?query=title=(username="price*" or personal.first_name="price*" or personal.last_name="price*") and active=true sortby personal.last_name personal.first_name`
+
+The purpose of the `path` in a manifest resource (in conjunction with
+the `root`) is to specify how the back-end URL is generated.
+
+#### Overview
+
 The strings provided as `path`s in manifests can sometimes be simple
 constants, such as `_/proxy/modules` or `item-storage/items`.
 (Such constant paths are often used as part of a `staticFallback`.)
@@ -184,7 +206,7 @@ expressed in two ways: most often by substituting values directly into
 a template string; and when the the requirements are complex, by
 calling a function to construct the string from the state.
 
-#### Text substitution and fallback
+#### Text substitution
 
 The three different kinds of state can be substituted into path
 strings using three different but related syntaxes:
@@ -194,26 +216,83 @@ strings using three different but related syntaxes:
   Router path is `/view/:userid` then the path for accessing the
   back-end web-service can be expressed as `users/:{userid}` Then when
   the UI is being accessed as (for example)
-  `http://localhost:3000/users/view/45`, the path will be resolved as
+  `http://ui.folio.org:3000/users/view/45`, the path will be resolved as
   `users/45`.
   
 * `?{name}` -- interpolates the value of the named query parameter
   from the UI URL. For example, if the path is expressed as
   `item-storage?query=?{q}` and the UI is accessed at
-  `http://localhost:3000/items?q=water`, the path will be resolved as
-  `http://localhost:3000/item-storage?query=water}`.
+  `http://ui.folio.org:3000/items?q=water`, the path will be resolved as
+  `item-storage?query=water`.
 
 * `${name}`-- interpolates the value of the named local resource (see
   [above](#local-resources) on local resources). In general, the
   approach here is to store state in a local resource rather than in
-  React-component state. This can be done using something along the
-  lines of `this.props.mutator.sortOrder.replace('title')`. Thereafter
-  the state can be used in a path such as
+  React-component state. Given a local resource `sortOrder`, this can
+  be done using something along the lines of
+  `this.props.mutator.sortOrder.replace('title')`, most likely from an
+  event hander. The state can then be used in a path such as
   `item-storage?query=?{q} sortby ${sortOrder}`.
 
-XXX todo fallbacks
+#### Fallbacks
 
-XXX todo Example: path: 'item-storage/items?query=(author=?{query:-}* or date=?{query:-*} or title=?{query:-}*) ?{sort:+sortby} ?{sort:-}',
+In general, all the nominated pieces of state -- UI URL
+path-components, UI URL query parameters and local state -- must be
+present in order for these textual substitutions to be performed. If
+something is missing -- for example, when the path
+`item-storage?query=?{q}` is evaluated in a context where the UI URL
+does not have a query parameter `q` -- then susbtitution fails, and
+the path from the `staticFallback` part of the configuration is used
+instead.
+
+However, extended syntax, modelled on [that of the BASH shell](https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html),
+may be used with any of the three kinds of substitution to provide a
+fallback value, used when the state is missing:
+
+* `:{name:-val}` yields the value of the named UI URL path-component
+  if any, or the constant `val` if it is undefined.
+
+* `?{name:-val}` yields the value of the named UI URL query parameter
+  if any, or the constant `val` if it is absent.
+
+* `${name:-val}` yields the value of the named local resource
+  if any, or the constant `val` if it is undefined.
+
+This syntax is useful for providing a default search-term, default
+sort-order, etc.
+
+In addition, further BASH-like syntax allows a value to be provided
+only if the names path-component, query parameter or local resource
+_does_ exist: `${name:+val}` yields either the constant `val` or an
+empty string, according as `${name}` is or is not defined.
+
+#### Example
+
+Putting these facilities together, the following `path` could be
+defined for the `items` resource in a UI module for inventory
+management:
+
+> `item-storage/items?query=(author=?{q:-}* or title=?{q:-}*) ?{sort:+sortby} ?{sort:-}`
+
+This consults two query parameters of the UI URL, each of them
+twice. The `q` parameter contains a search term amd `sort` the name of
+the CQL field to sort the results by.
+
+`?{q}` appears twice because the `query` parameter of the back-end URL
+contains a CQL query that searches for the term in both the `author`
+and `title` fields. In both cases, an empty fallback value is
+specified (`?{q:-}`): this works because the query is followed by a
+wildcard character (`*`) in both cases, so that when the query itself
+is empty the whole search-term becomes `*`.
+
+`?{sort}` appears twice: once to generate the `sortby` keyword that
+instoduces the optional sorting clause in CQL, and once to interpolate
+the sort criterion itself. When no sort criteron is specified, the
+`sortby` keyword is not included at all, since it is generated as a
+fallback value that is active only when the `sort` query parameter is
+present (`{sort:+sortby}`). Similarly, the value itself falls back to
+an empty string, so that there is no sorting clause at all in the
+generated path when no sorting parater is provided in the UI URL.
 
 #### Functional paths
 

@@ -10,6 +10,7 @@ Index Data, 2016-2017.
         * [Local resources](#local-resources)
         * [REST resources](#rest-resources)
         * [Okapi resources](#okapi-resources)
+    * [Example manifest](#example-manifest)
     * [Path interpretation](#path-interpretation)
         * [A note on terminology](#a-note-on-terminology)
         * [Overview](#overview)
@@ -17,7 +18,6 @@ Index Data, 2016-2017.
         * [Fallbacks](#fallbacks)
         * [Example path](#example-path)
         * [Functional paths](#functional-paths)
-    * [Example manifest](#example-manifest)
 * [Connecting the component](#connecting-the-component)
 * [Error handling](#error-handling)
 * [Using the connected component](#using-the-connected-component)
@@ -173,6 +173,32 @@ appropriately for the `GET`, `POST`, `PUT` and `DELETE` operations.
 configuration ensures that the correct tenant-ID is sent with each
 request, and that the `root` is defaulted to a globally-configured
 address pointing to an Okapi instance.)
+
+
+### Example manifest
+
+This manifest (from the Okapi Console component that displays the
+health of running modules) defines two Okapi resources, `health` and
+`modules`, providing paths for both of them that are interpreted
+relative to the default root. In the modules response, the primary key
+is the default, `id`; but in the health response, it is `srvcId`, and
+the manifest must specify this.
+
+        static manifest = Object.freeze({
+          health: {
+            type: 'okapi',
+            pk: 'srvcId',
+            path: '_/discovery/health'
+          },
+          modules: {
+            type: 'okapi',
+            path: '_/proxy/modules'
+          }
+        });
+
+(It is conventional to freeze manifests -- making them immutable -- to
+document and enforce the fact that they do not change once
+created. See [Thinking in Stripes](thinking-in-stripes.md).)
 
 
 ### Path interpretation
@@ -331,30 +357,6 @@ So the function would usually be defined along these lines:
         });
 
 
-### Example manifest
-
-This manifest (from the Okapi Console component that displays the
-health of running modules) defines two Okapi resources, `health` and
-`modules`, providing paths for both of them that are interpreted
-relative to the default root. In the modules response, the primary key
-is the default, `id`; but in the health response, it is `srvcId`, and
-the manifest must specify this.
-
-        static manifest = Object.freeze({
-          health: {
-            type: 'okapi',
-            pk: 'srvcId',
-            path: '_/discovery/health'
-          },
-          modules: {
-            type: 'okapi',
-            path: '_/proxy/modules'
-          }
-        });
-
-(It is conventional to freeze manifests -- making them immutable -- to
-document and enforce the fact that they do not change once
-created. See [Thinking in Stripes](thinking-in-stripes.md).)
 
 ## Connecting the component
 

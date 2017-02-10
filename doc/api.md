@@ -42,7 +42,7 @@ middleware), though other RESTful web services are also supported.
 A Stripes UI is composed of
 [React](https://facebook.github.io/react/)
 components. (You will need to learn at least the basics of React in
-order to use Stripes.) Any component may use the services of Stripesthx
+order to use Stripes.) Any component may use the services of Stripes
 Connect to automate communication with back-end services. A component
 that does this is known as a "connected component".
 
@@ -179,7 +179,7 @@ address pointing to an Okapi instance.)
 
 #### A note on terminology
 
-Since we will be talkingh a lot about URLs in this section, to avoid
+Since we will be talking a lot about URLs in this section, to avoid
 confusion we must introduce little bit of terminology. We use _UI URL_
 to refer to the URL of the user interface, which the human user can
 see in the URL bar of the browser -- for example,
@@ -205,7 +205,7 @@ However, more often the precise path varies with aspects of the state,
 such as components of the UI URL's path or query, or the values of
 local resources. This state-dependent path construction can be
 expressed in two ways: most often by substituting values directly into
-a template string; and when the the requirements are complex, by
+a template string; and when the requirements are complex, by
 calling a function to construct the string from the state.
 
 #### Text substitution
@@ -243,7 +243,7 @@ path-components, UI URL query parameters and local state -- must be
 present in order for these textual substitutions to be performed. If
 something is missing -- for example, when the path
 `item-storage?query=?{q}` is evaluated in a context where the UI URL
-does not have a query parameter `q` -- then susbtitution fails, and
+does not have a query parameter `q` -- then substitution fails, and
 the path from the `staticFallback` part of the configuration is used
 instead.
 
@@ -277,7 +277,7 @@ management:
 > `item-storage/items?query=(author=?{q:-}* or title=?{q:-}*) ?{sort:+sortby} ?{sort:-}`
 
 This consults two query parameters of the UI URL, each of them
-twice. The `q` parameter contains a search term amd `sort` the name of
+twice. The `q` parameter contains a search term and `sort` the name of
 the CQL field to sort the results by.
 
 `?{q}` appears twice because the `query` parameter of the back-end URL
@@ -288,13 +288,13 @@ wildcard character (`*`) in both cases, so that when the query itself
 is empty the whole search-term becomes `*`.
 
 `?{sort}` appears twice: once to generate the `sortby` keyword that
-instoduces the optional sorting clause in CQL, and once to interpolate
-the sort criterion itself. When no sort criteron is specified, the
+introduces the optional sorting clause in CQL, and once to interpolate
+the sort criterion itself. When no sort criterion is specified, the
 `sortby` keyword is not included at all, since it is generated as a
 fallback value that is active only when the `sort` query parameter is
 present (`{sort:+sortby}`). Similarly, the value itself falls back to
 an empty string, so that there is no sorting clause at all in the
-generated path when no sorting parater is provided in the UI URL.
+generated path when no sorting parameter is provided in the UI URL.
 
 #### Functional paths
 

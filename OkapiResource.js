@@ -16,6 +16,7 @@ const defaults = {
   DELETE: {
     headers: {
       'Accept': 'text/plain',
+      'Content-Type': 'application/json',
     },
   },
   GET: {

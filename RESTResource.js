@@ -109,10 +109,6 @@ export default class RESTResource {
     this.module = module;
     this.crudName = module ? `${module}_${name}` : name;
     this.optionsTemplate = _.merge({}, defaults, query);
-    // TODO: This should call the function that parses the template and stay
-    // null until dynamic parts are satisfied---currently mutators will fail
-    // for dynamic manifests
-    this.options = this.optionsTemplate;
     this.crudActions = crud.actionCreatorsFor(this.crudName);
     this.crudReducers = crud.List.reducersFor(this.crudName,
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
@@ -145,36 +141,36 @@ export default class RESTResource {
 
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return null;
-    this.options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
+    const options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
     let path, dynamicPartsSatisfied;
-    if (typeof this.options.path === 'function') {
+    if (typeof options.path === 'function') {
       // Call back to resource-specific code
-      path = this.options.path(_.get(props, ['location', 'query']), props.params, props.data);
+      path = options.path(_.get(props, ['location', 'query']), props.params, props.data);
       dynamicPartsSatisfied = (path !== undefined);
     } else {
       // Substitute into string template
-      const t = substitutePath(this.options.path, props);
+      const t = substitutePath(options.path, props);
       path = t.path;
       dynamicPartsSatisfied = t.dynamicPartsSatisfied;
     }
 
-    this.options.path = path; // This kind of permanent state-change seems wrong
+    options.path = path;
     if (!dynamicPartsSatisfied) {
-      if (typeof this.options.staticFallback === 'object') {
-        _.merge(this.options, this.options.staticFallback);
+      if (typeof options.staticFallback === 'object') {
+        _.merge(options, options.staticFallback);
       } else {
         return null;
       }
     }
 
-    return dispatch(this.fetchAction());
+    return dispatch(this.fetchAction(options));
   }
 
   createAction(record) {
     const that = this;
     const crudActions = this.crudActions;
     return (dispatch, getState) => {
-      const options = optionsFromState(that.options, getState());
+      const options = optionsFromState(that.optionsTemplate, getState());
       const { root, path, pk, clientGeneratePk, headers, POST } = options;
       const url = [root, POST.path || path].join('/');
       // Optimistic record creation ('clientRecord')
@@ -216,7 +212,7 @@ export default class RESTResource {
     const crudActions = this.crudActions;
     const clientRecord = { ...record };
     return (dispatch, getState) => {
-      const options = optionsFromState(that.options, getState());
+      const options = optionsFromState(that.optionsTemplate, getState());
       const { root, path, pk, headers, PUT } = options;
       const url = [root, PUT.path || path].join('/');
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
@@ -250,7 +246,7 @@ export default class RESTResource {
     const that = this;
     const crudActions = this.crudActions;
     return (dispatch, getState) => {
-      const options = optionsFromState(that.options, getState());
+      const options = optionsFromState(that.optionsTemplate, getState());
       const { root, path, pk, headers, DELETE } = options;
       const resolvedPath = DELETE.path || path;
       const url = (resolvedPath.endsWith(record[pk]) ?
@@ -279,12 +275,12 @@ export default class RESTResource {
   }
 
 
-  fetchAction() {
+  fetchAction(initialOptions) {
     const that = this;
     const crudActions = this.crudActions;
     const key = this.stateKey();
     return (dispatch, getState) => {
-      const options = optionsFromState(that.options, getState());
+      const options = optionsFromState(initialOptions, getState());
       const { root, path, headers, GET, records, clear } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');

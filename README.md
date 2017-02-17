@@ -24,7 +24,7 @@ export default connect(MyStripesComponent, 'moduleName');
 ```
 
 The API and data manifest are explained in detail in
-[The Stripes Connect API](api.md);
+[The Stripes Connect API](doc/api.md).
 A complete worked example of a connected component for editing patrons
 is explained in
-[A component example: the **PatronEdit** component](../stripes-core/doc/component-example.md).
+[A component example: the **PatronEdit** component](https://github.com/folio-org/stripes-core/blob/master/doc/component-example.md).

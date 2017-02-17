@@ -1,7 +1,7 @@
 import 'isomorphic-fetch'; /* global fetch */
 import crud from 'redux-crud';
 import _ from 'lodash';
-import uuid from 'node-uuid';
+import uuid from 'uuid';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 

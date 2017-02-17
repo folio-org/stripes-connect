@@ -114,7 +114,7 @@ export default class RESTResource {
     // for dynamic manifests
     this.options = this.optionsTemplate;
     this.crudActions = crud.actionCreatorsFor(this.crudName);
-    this.crudReducers = crud.reducersFor(this.crudName,
+    this.crudReducers = crud.List.reducersFor(this.crudName,
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
     // JavaScript methods are not bound to their instance by default
     this.reducer = this.reducer.bind(this);

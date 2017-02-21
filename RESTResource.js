@@ -5,7 +5,7 @@ import uuid from 'uuid';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 
-const optionsFromState = (options, state) => {
+function optionsFromState(options, state) {
   if (options.type === 'okapi') {
     if (typeof state.okapi !== 'object') {
       throw new Error('State does not contain Okapi settings');
@@ -17,10 +17,11 @@ const optionsFromState = (options, state) => {
       },
     };
     if (state.okapi.token) okapiOptions.headers['X-Okapi-Token'] = state.okapi.token;
-    return _.merge({}, options, okapiOptions);
+    return okapiOptions;
   }
-  return options;
-};
+  return {};
+}
+
 
 // This is an ugly fat API, but we need to be able to do all this in a single call
 function error(dispatch, op, creator, record, module, resource, reason) {
@@ -76,27 +77,36 @@ function processFallback(s, getPath, props) {
 function substitutePath(original, props) {
   // console.log('substitutePath(), props = ', props);
   let dynamicPartsSatisfied = true;
+  let path;
 
-  // eslint-disable-next-line consistent-return
-  const path = original.replace(/([:?$]){(.*?)}/g, (match, ns, name) => {
-    switch (ns) { // eslint-disable-line default-case
-      case '?': {
-        const queryParam = processFallback(name, ['location', 'query'], props);
-        if (queryParam === null) dynamicPartsSatisfied = false;
-        return encodeURIComponent(queryParam);
+  if (typeof original === 'function') {
+    // Call back to resource-specific code
+    path = original(_.get(props, ['location', 'query']), props.params, props.data);
+    dynamicPartsSatisfied = (path !== undefined);
+  } else if (typeof original === 'string') {
+    // eslint-disable-next-line consistent-return
+    path = original.replace(/([:?$]){(.*?)}/g, (match, ns, name) => {
+      switch (ns) { // eslint-disable-line default-case
+        case '?': {
+          const queryParam = processFallback(name, ['location', 'query'], props);
+          if (queryParam === null) dynamicPartsSatisfied = false;
+          return encodeURIComponent(queryParam);
+        }
+        case ':': {
+          const pathComp = processFallback(name, ['params'], props);
+          if (pathComp === null) dynamicPartsSatisfied = false;
+          return encodeURIComponent(pathComp);
+        }
+        case '$': {
+          const localState = processFallback(name, ['data'], props);
+          if (localState === null) dynamicPartsSatisfied = false;
+          return encodeURIComponent(localState);
+        }
       }
-      case ':': {
-        const pathComp = processFallback(name, ['params'], props);
-        if (pathComp === null) dynamicPartsSatisfied = false;
-        return encodeURIComponent(pathComp);
-      }
-      case '$': {
-        const localState = processFallback(name, ['data'], props);
-        if (localState === null) dynamicPartsSatisfied = false;
-        return encodeURIComponent(localState);
-      }
-    }
-  });
+    });
+  } else {
+    throw new Error('Invalid path');
+  }
 
   console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
   return { path, dynamicPartsSatisfied };
@@ -118,12 +128,30 @@ export default class RESTResource {
 
   getMutator(dispatch) {
     return {
-      DELETE: record => dispatch(this.deleteAction(record)),
-      PUT: record => dispatch(this.updateAction(record)),
-      POST: record => dispatch(this.createAction(record)),
+      DELETE: (record, props) => dispatch(this.deleteAction(record, props)),
+      PUT: (record, props) => dispatch(this.updateAction(record, props)),
+      POST: (record, props) => dispatch(this.createAction(record, props)),
     };
   }
 
+  // We should move optionsFromState to OkapiResource and override this there
+  verbOptions = (verb, state, props) => {
+    const options = _.merge({},
+      this.optionsTemplate,
+      this.optionsTemplate[verb],
+      optionsFromState(this.optionsTemplate, state));
+    if (options.path && props) {
+      const subbed = substitutePath(options.path, props);
+      if (subbed.dynamicPartsSatisfied) {
+        options.path = subbed.path;
+      } else if (typeof options.staticFallback === 'object') {
+        _.merge(options, options.staticFallback);
+      } else {
+        return null;
+      }
+    }
+    return options;
+  }
   reducer(state = [], action) {
     switch (action.type) {
       // extra reducer (beyond redux-crud generated reducers)
@@ -141,38 +169,17 @@ export default class RESTResource {
 
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return null;
-    const options = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
-    let path, dynamicPartsSatisfied;
-    if (typeof options.path === 'function') {
-      // Call back to resource-specific code
-      path = options.path(_.get(props, ['location', 'query']), props.params, props.data);
-      dynamicPartsSatisfied = (path !== undefined);
-    } else {
-      // Substitute into string template
-      const t = substitutePath(options.path, props);
-      path = t.path;
-      dynamicPartsSatisfied = t.dynamicPartsSatisfied;
-    }
-
-    options.path = path;
-    if (!dynamicPartsSatisfied) {
-      if (typeof options.staticFallback === 'object') {
-        _.merge(options, options.staticFallback);
-      } else {
-        return null;
-      }
-    }
-
-    return dispatch(this.fetchAction(options));
+    return dispatch(this.fetchAction(props));
   }
 
-  createAction(record) {
+  createAction = (record, props) => {
     const that = this;
     const crudActions = this.crudActions;
     return (dispatch, getState) => {
-      const options = optionsFromState(that.optionsTemplate, getState());
-      const { root, path, pk, clientGeneratePk, headers, POST } = options;
-      const url = [root, POST.path || path].join('/');
+      const options = this.verbOptions('POST', getState(), props);
+      if (options === null) return null; // needs dynamic parts that aren't available
+      const { root, path, pk, clientGeneratePk, headers } = options;
+      const url = [root, path].join('/');
       // Optimistic record creation ('clientRecord')
       const clientGeneratedId = record.id ? record.id : uuid();
       const clientRecord = { ...record, id: clientGeneratedId };
@@ -186,7 +193,7 @@ export default class RESTResource {
       // Send remote record
       return fetch(url, {
         method: 'POST',
-        headers: Object.assign({}, headers, POST.headers),
+        headers,
         body: JSON.stringify(remoteRecord),
       })
         .then((response) => {
@@ -207,19 +214,20 @@ export default class RESTResource {
     };
   }
 
-  updateAction(record) {
+  updateAction = (record, props) => {
     const that = this;
     const crudActions = this.crudActions;
     const clientRecord = { ...record };
     return (dispatch, getState) => {
-      const options = optionsFromState(that.optionsTemplate, getState());
-      const { root, path, pk, headers, PUT } = options;
-      const url = [root, PUT.path || path].join('/');
+      const options = this.verbOptions('PUT', getState(), props);
+      if (options === null) return null; // needs dynamic parts that aren't available
+      const { root, path, pk, headers } = options;
+      const url = [root, path].join('/');
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.updateStart(clientRecord));
       return fetch(url, {
         method: 'PUT',
-        headers: Object.assign({}, headers, PUT.headers),
+        headers,
         body: JSON.stringify(record),
       })
         .then((response) => {
@@ -242,23 +250,23 @@ export default class RESTResource {
     };
   }
 
-  deleteAction(record) {
+  deleteAction = (record, props) => {
     const that = this;
     const crudActions = this.crudActions;
     return (dispatch, getState) => {
-      const options = optionsFromState(that.optionsTemplate, getState());
-      const { root, path, pk, headers, DELETE } = options;
-      const resolvedPath = DELETE.path || path;
-      const url = (resolvedPath.endsWith(record[pk]) ?
-                     [root, resolvedPath].join('/')
+      const options = this.verbOptions('DELETE', getState(), props);
+      if (options === null) return null; // needs dynamic parts that aren't available
+      const { root, path, pk, headers } = options;
+      const url = (path.endsWith(record[pk]) ?
+                     [root, path].join('/')
                      :
-                     [root, resolvedPath, record[pk]].join('/'));
+                     [root, path, record[pk]].join('/'));
       const clientRecord = { ...record };
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.deleteStart(clientRecord));
       return fetch(url, {
         method: 'DELETE',
-        headers: Object.assign({}, headers, DELETE.headers),
+        headers,
       })
         .then((response) => {
           if (response.status >= 400) {
@@ -275,20 +283,21 @@ export default class RESTResource {
   }
 
 
-  fetchAction(initialOptions) {
+  fetchAction = (props) => {
     const that = this;
     const crudActions = this.crudActions;
     const key = this.stateKey();
     return (dispatch, getState) => {
-      const options = optionsFromState(initialOptions, getState());
-      const { root, path, headers, GET, records, clear } = options;
+      const options = this.verbOptions('GET', getState(), props);
+      if (options === null) return null; // needs dynamic parts that aren't available
+      const { root, path, headers, records, clear } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');
-      if (url === that.lastUrl) return;
+      if (url === that.lastUrl) return; // TODO return a successful promise?
       that.lastUrl = url;
 
       dispatch(crudActions.fetchStart());
-      return fetch(url, { headers: Object.assign({}, headers, GET.headers) })
+      return fetch(url, { headers })
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {

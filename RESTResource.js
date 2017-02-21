@@ -108,6 +108,7 @@ function substitutePath(original, props) {
     throw new Error('Invalid path');
   }
 
+  if (typeof original === 'function') original = '<FUNCTION>';
   console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
   return { path, dynamicPartsSatisfied };
 }

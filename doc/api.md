@@ -454,13 +454,18 @@ the wrapped component:
   fetched.
 
 * `mutator`: a JavaScript object that enables the component to make
-  changes to its resources. `mutator` is an object whose properties
-  are named after the resources in the manifest. The corresponding
-  values are themselves objects whose keys are HTTP methods and whose
-  values are methods that perform the relevant CRUD operation using
-  HTTP and update the internal representation of the state to match. A
-  typical invocation would be something like
-  `this.props.mutator['users'].POST(data)`.
+  changes to its resources. See below.
+
+
+The `mutator` is an object whose properties are named after the
+resources in the manifest. The corresponding values are themselves
+objects -- one per resource.
+
+Each resource's mutator object has keys that are HTTP methods: the
+corresponding values are methods that perform the relevant CRUD
+operation using HTTP, and update the internal representation of the
+state to match. A typical invocation would be something like
+`this.props.mutator.users.POST(data)`.
 
 The mutator methods optionally take a record as a parameter,
 represented as a JavaScript object whose keys are fieldnames and whose
@@ -468,6 +473,17 @@ values contain the corresponding data. These records are used in the
 obvious way by the POST, PUT and PATCH operations. For DELETE, the
 record need only contain the `id` field, so that it suffices to call
 `mutator.tenants.DELETE({ id: 43 })`.
+
+Mutator methods return
+[promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise). These
+can be used to run some code when the remote operation successfully
+completes -- or when it fails. For example:
+
+	this.props.mutator.users.POST(data).then(() => {
+	  console.log('POST OK');
+	}).catch((reason) => {
+	  alert('POST failed: ' + reason);
+	});
 
 XXX todo write about STRIPES-123.
 

@@ -485,13 +485,9 @@ completes -- or when it fails. For example:
 	  alert('POST failed: ' + reason);
 	});
 
-XXX todo write about STRIPES-123.
-
 <br/>
 <br/>
 <hr/>
-
-
 
 ## Appendices: for developers
 

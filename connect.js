@@ -121,10 +121,10 @@ const wrap = (Wrapped, module) => {
     }, {})),
   });
 
-  Wrapper.mapDispatch = dispatch => ({
+  Wrapper.mapDispatch = (dispatch, ownProps) => ({
     mutator: resources.reduce((result, resource) => {
       const tmp = {};
-      tmp[resource.name] = resource.getMutator(dispatch);
+      tmp[resource.name] = resource.getMutator(dispatch, ownProps);
       return Object.assign({}, result, tmp);
     }, {}),
     refreshRemote: (params) => {

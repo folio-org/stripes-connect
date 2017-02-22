@@ -127,11 +127,11 @@ export default class RESTResource {
     this.reducer = this.reducer.bind(this);
   }
 
-  getMutator(dispatch) {
+  getMutator(dispatch, props) {
     return {
-      DELETE: (record, props) => dispatch(this.deleteAction(record, props)),
-      PUT: (record, props) => dispatch(this.updateAction(record, props)),
-      POST: (record, props) => dispatch(this.createAction(record, props)),
+      DELETE: (record) => dispatch(this.deleteAction(record, props)),
+      PUT: (record) => dispatch(this.updateAction(record, props)),
+      POST: (record) => dispatch(this.createAction(record, props)),
     };
   }
 

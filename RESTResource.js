@@ -98,7 +98,7 @@ function substitutePath(original, props) {
           return encodeURIComponent(pathComp);
         }
         case '$': {
-          const localState = processFallback(name, ['data'], props);
+          const localState = processFallback(name.split('.'), ['data'], props);
           if (localState === null) dynamicPartsSatisfied = false;
           return encodeURIComponent(localState);
         }

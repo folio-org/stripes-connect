@@ -108,7 +108,7 @@ function substitutePath(original, props) {
     throw new Error('Invalid path');
   }
 
-  if (typeof original === 'function') original = '<FUNCTION>';
+  if (typeof original === 'function') original = '<FUNCTION>'; // eslint-disable-line no-param-reassign
   console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
   return { path, dynamicPartsSatisfied };
 }
@@ -129,9 +129,9 @@ export default class RESTResource {
 
   getMutator(dispatch, props) {
     return {
-      DELETE: (record) => dispatch(this.deleteAction(record, props)),
-      PUT: (record) => dispatch(this.updateAction(record, props)),
-      POST: (record) => dispatch(this.createAction(record, props)),
+      DELETE: record => dispatch(this.deleteAction(record, props)),
+      PUT: record => dispatch(this.updateAction(record, props)),
+      POST: record => dispatch(this.createAction(record, props)),
     };
   }
 
@@ -294,7 +294,7 @@ export default class RESTResource {
       const { root, path, headers, records, clear } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');
-      if (url === that.lastUrl) return; // TODO return a successful promise?
+      if (url === that.lastUrl) return null; // TODO return a successful promise?
       that.lastUrl = url;
 
       dispatch(crudActions.fetchStart());

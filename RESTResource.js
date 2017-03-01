@@ -87,7 +87,7 @@ export function substitutePath(original, props) {
   if (typeof original === 'function') {
     // Call back to resource-specific code
     path = original(_.get(props, ['location', 'query']), props.params, props.data);
-    dynamicPartsSatisfied = (typeof(path) === 'string');
+    dynamicPartsSatisfied = (typeof path === 'string');
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
     path = original.replace(/([:?$]){(.*?)}/g, (match, ns, name) => {
@@ -149,7 +149,7 @@ export default class RESTResource {
       optionsFromState(this.optionsTemplate, state));
     if (options.path && props) {
       const subbed = substitutePath(options.path, props);
-      if (typeof(subbed) === 'string') {
+      if (typeof subbed === 'string') {
         options.path = subbed;
       } else if (typeof options.staticFallback === 'object') {
         _.merge(options, options.staticFallback);

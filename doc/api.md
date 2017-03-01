@@ -398,10 +398,8 @@ By default, errors in communicating with a REST service such as Okapi
 are signalled to the user in an alert-box that reports messages
 such as:
 
-> ERROR: in module 'okapi-console', operation 'CREATE' on resource
-> 'modules' failed, saying: module
-> 30c0046e-0967-4d3c-80fb-98c7c3ef2bb3: Missing dependency:
-> 30c0046e-0967-4d3c-80fb-98c7c3ef2bb3 requires patrons: 1.1
+> ERROR: in module okapi-console, operation CREATE on resource
+> 'modules' failed with HTTP status 403, saying: Missing Tenant
 
 This is on the basis that it's better to announce errors loudly than
 to allow them to pass silently, But applications will often want to
@@ -421,7 +419,15 @@ elements (all of type string):
 * **resource** -- the name of the resource within the component's
   manifest that Stripes Connect was trying to handle when the error
   occurred.
-* **error** -- a description of what went wrong.
+* **status** -- the HTTP status of an operation that failed: this is
+  provided only for HTTP operations, and is null for other kinds of
+  errors.
+* **error** -- a textual description of what went wrong. For HTTP
+  errors, where `status` is defined, this may or may not also be
+  defined: for example, a 404 Not Found status may not be accompanied
+  by additional explanatory text. For for non-HTTP errors, `error` is
+  always defined. So at least one of `status` and `error` is
+  guaranteed to be present.
 
 For example one might define an error-handler that logs the relevant
 information to the JavaScript console, and install it in a component,

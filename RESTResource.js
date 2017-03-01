@@ -24,8 +24,13 @@ function optionsFromState(options, state) {
 
 
 // This is an ugly fat API, but we need to be able to do all this in a single call
+//
+// 'reason' may be a simple string or a { status, message } object. It
+// makes no difference to redux-crud, which simply passes it through
+// blindly. Our errorReducer picks it apart as needed.
+//
 function error(dispatch, op, creator, record, module, resource, reason) {
-  console.log(`HTTP ${op} for module ${module} resource ${resource} failed: ${reason}`);
+  console.log(`HTTP ${op} for module ${module} resource ${resource} failed:`, reason);
   const data = { module, resource, op };
   // Annoyingly, some redux-crud action creators have different signatures
   const action = record ?
@@ -201,7 +206,8 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, text);
+              error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name,
+                    { status: response.status, message: text });
             });
           } else {
             response.json().then((json) => {
@@ -235,7 +241,8 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, text);
+              error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name,
+                    { status: response.status, message: text });
             });
           } else {
             /* Patrons api will not return JSON
@@ -273,7 +280,8 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, that.module, that.name, text);
+              error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, that.module, that.name,
+                    { status: response.status, message: text });
             });
           } else {
             dispatch(crudActions.deleteSuccess(clientRecord));
@@ -303,7 +311,8 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, text);
+              error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name,
+                    { status: response.status, message: text });
             });
           } else {
             response.json().then((json) => {

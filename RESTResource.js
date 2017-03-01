@@ -74,7 +74,7 @@ function processFallback(s, getPath, props) {
 // : - path components as defined by react-router
 // $ - resources
 //
-function substitutePath(original, props) {
+export function substitutePath(original, props) {
   // console.log('substitutePath(), props = ', props);
   let dynamicPartsSatisfied = true;
   let path;
@@ -82,7 +82,7 @@ function substitutePath(original, props) {
   if (typeof original === 'function') {
     // Call back to resource-specific code
     path = original(_.get(props, ['location', 'query']), props.params, props.data);
-    dynamicPartsSatisfied = (path !== undefined);
+    dynamicPartsSatisfied = (typeof(path) === 'string');
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
     path = original.replace(/([:?$]){(.*?)}/g, (match, ns, name) => {
@@ -110,7 +110,7 @@ function substitutePath(original, props) {
 
   if (typeof original === 'function') original = '<FUNCTION>'; // eslint-disable-line no-param-reassign
   console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
-  return { path, dynamicPartsSatisfied };
+  return dynamicPartsSatisfied ? path : null;
 }
 
 export default class RESTResource {
@@ -143,8 +143,8 @@ export default class RESTResource {
       optionsFromState(this.optionsTemplate, state));
     if (options.path && props) {
       const subbed = substitutePath(options.path, props);
-      if (subbed.dynamicPartsSatisfied) {
-        options.path = subbed.path;
+      if (typeof(subbed) === 'string') {
+        options.path = subbed;
       } else if (typeof options.staticFallback === 'object') {
         _.merge(options, options.staticFallback);
       } else {

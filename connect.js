@@ -64,6 +64,7 @@ const wrap = (Wrapped, module) => {
   }
 
   function naiveErrorHandler(e) {
+    // eslint-disable-next-line prefer-template
     alert(`ERROR: in module ${e.module}, operation ${e.op} on resource `
           + `'${e.resource}' failed`
           + (e.status ? ` with HTTP status ${e.status}` : '')

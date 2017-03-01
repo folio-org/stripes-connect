@@ -64,8 +64,10 @@ const wrap = (Wrapped, module) => {
   }
 
   function naiveErrorHandler(e) {
-    alert(`ERROR: in module ${e.module} operation ${e.op} on resource `
-          + `${e.resource} failed, saying: ${e.error}`);
+    alert(`ERROR: in module ${e.module}, operation ${e.op} on resource `
+          + `'${e.resource}' failed`
+          + (e.status ? ` with HTTP status ${e.status}` : '')
+          + (e.error ? `, saying: ${e.error}` : ''));
   }
 
   class Wrapper extends React.Component {

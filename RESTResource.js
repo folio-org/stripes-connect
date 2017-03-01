@@ -108,8 +108,9 @@ export function substitutePath(original, props) {
     throw new Error('Invalid path');
   }
 
-  if (typeof original === 'function') original = '<FUNCTION>'; // eslint-disable-line no-param-reassign
-  console.log(`substitutePath(${original}) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
+  console.log(`substitutePath(${
+    (typeof original === 'function') ? '<FUNCTION>' : original
+  }) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
   return dynamicPartsSatisfied ? path : null;
 }
 

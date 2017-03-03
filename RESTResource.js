@@ -30,7 +30,6 @@ function optionsFromState(options, state) {
 // blindly. Our errorReducer picks it apart as needed.
 //
 function error(dispatch, op, creator, record, module, resource, reason) {
-  console.log(`HTTP ${op} for module ${module} resource ${resource} failed:`, reason);
   const data = { module, resource, op };
   // Annoyingly, some redux-crud action creators have different signatures
   const action = record ?

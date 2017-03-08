@@ -73,19 +73,33 @@ function processFallback(s, getPath, props) {
   return res;
 }
 
+// If we restructure the state into a per-module hierarchy we
+// won't need to go through this dance STRIPES-238
+function mockProps(state, module) {
+  const mock = { data: {} };
+  Object.keys(state).forEach((key) => {
+    const re = new RegExp(`^${module}.(.*)`);
+    const res = re.exec(key);
+    if (Array.isArray(res) && res.length > 1) {
+      mock.data[res[1]] = state[key];
+    }
+  });
+  return mock;
+}
+
 // Implements dynamic manifest components with ?{syntax}. Namespaces so far:
 // ? - query parameters in current url
 // : - path components as defined by react-router
 // $ - resources
 //
-export function substitutePath(original, props) {
+export function substitutePath(original, props, state, module) {
   // console.log('substitutePath(), props = ', props);
   let dynamicPartsSatisfied = true;
   let path;
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    path = original(_.get(props, ['location', 'query']), props.params, props.data);
+    path = original(_.get(props, ['location', 'query']), props.params, mockProps(state, module).data);
     dynamicPartsSatisfied = (typeof path === 'string');
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
@@ -102,7 +116,7 @@ export function substitutePath(original, props) {
           return encodeURIComponent(pathComp);
         }
         case '$': {
-          const localState = processFallback(name.split('.'), ['data'], props);
+          const localState = processFallback(name.split('.'), ['data'], mockProps(state, module));
           if (localState === null) dynamicPartsSatisfied = false;
           return encodeURIComponent(localState);
         }
@@ -147,7 +161,7 @@ export default class RESTResource {
       this.optionsTemplate[verb],
       optionsFromState(this.optionsTemplate, state));
     if (options.path && props) {
-      const subbed = substitutePath(options.path, props);
+      const subbed = substitutePath(options.path, props, state, this.module);
       if (typeof subbed === 'string') {
         options.path = subbed;
       } else if (typeof options.staticFallback === 'object') {

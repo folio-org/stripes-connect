@@ -1,8 +1,9 @@
 export default class LocalResource {
 
-  constructor(name, query = {}, module = null) {
+  constructor(name, query = {}, module = null, logger) {
     this.name = name;
     this.module = module;
+    this.logger = logger; // not presently needed, but may be down the line
     this.reducer = this.reducer.bind(this);
   }
 

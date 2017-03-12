@@ -92,14 +92,14 @@ function mockProps(state, module) {
 // : - path components as defined by react-router
 // $ - resources
 //
-export function substitutePath(original, props, state, module) {
+export function substitutePath(original, props, state, module, logger) {
   // console.log('substitutePath(), props = ', props);
   let dynamicPartsSatisfied = true;
   let path;
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    path = original(_.get(props, ['location', 'query']), props.params, mockProps(state, module).data);
+    path = original(_.get(props, ['location', 'query']), props.params, mockProps(state, module).data, logger);
     dynamicPartsSatisfied = (typeof path === 'string');
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
@@ -126,7 +126,7 @@ export function substitutePath(original, props, state, module) {
     throw new Error('Invalid path');
   }
 
-  console.log(`substitutePath(${
+  logger.log('path', `substitutePath(${
     (typeof original === 'function') ? '<FUNCTION>' : original
   }) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
   return dynamicPartsSatisfied ? path : null;
@@ -134,9 +134,10 @@ export function substitutePath(original, props, state, module) {
 
 export default class RESTResource {
 
-  constructor(name, query = {}, module = null, defaults = defaultDefaults) {
+  constructor(name, query = {}, module = null, logger, defaults = defaultDefaults) {
     this.name = name;
     this.module = module;
+    this.logger = logger;
     this.crudName = module ? `${module}_${name}` : name;
     this.optionsTemplate = _.merge({}, defaults, query);
     this.crudActions = crud.actionCreatorsFor(this.crudName);
@@ -161,7 +162,7 @@ export default class RESTResource {
       this.optionsTemplate[verb],
       optionsFromState(this.optionsTemplate, state));
     if (options.path && props) {
-      const subbed = substitutePath(options.path, props, state, this.module);
+      const subbed = substitutePath(options.path, props, state, this.module, this.logger);
       if (typeof subbed === 'string') {
         options.path = subbed;
       } else if (typeof options.staticFallback === 'object') {

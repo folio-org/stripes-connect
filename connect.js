@@ -18,7 +18,7 @@ const types = {
 // Should be doable with a scalar in a closure, but doesn't work right for some reason.
 const module2errorHandler = {};
 
-const wrap = (Wrapped, module) => {
+const wrap = (Wrapped, module, logger) => {
   function setErrorHandler(handler, force) {
     if (force || !module2errorHandler[module]) {
       module2errorHandler[module] = handler;
@@ -29,7 +29,7 @@ const wrap = (Wrapped, module) => {
   _.forOwn(Wrapped.manifest, (query, name) => {
     if (!name.startsWith('@')) {
       // Regular manifest entries describe resources
-      const resource = new types[query.type || defaultType](name, query, module);
+      const resource = new types[query.type || defaultType](name, query, module, logger);
       resources.push(resource);
     } else if (name === '@errorHandler') {
       setErrorHandler(query);
@@ -152,13 +152,18 @@ const wrap = (Wrapped, module) => {
   return Wrapper;
 };
 
-export const connect = (Component, module) => {
+const defaultLogger = function() {};
+defaultLogger.log = function(cat, ...args) {
+  console.log(`stripes-connect (${cat})`, ...args);
+}
+
+export const connect = (Component, module, logger) => {
   if (typeof Component.manifest === 'undefined') return Component;
-  const Wrapper = wrap(Component, module);
+  const Wrapper = wrap(Component, module, logger || defaultLogger);
   const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch)(Wrapper);
   return Connected;
 };
 
-export const connectFor = module => Component => connect(Component, module);
+export const connectFor = (module, logger) => Component => connect(Component, module, logger);
 
 export default connect;

@@ -152,10 +152,10 @@ const wrap = (Wrapped, module, logger) => {
   return Wrapper;
 };
 
-const defaultLogger = function() {};
-defaultLogger.log = function(cat, ...args) {
+const defaultLogger = () => {};
+defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
-}
+};
 
 export const connect = (Component, module, logger) => {
   if (typeof Component.manifest === 'undefined') return Component;

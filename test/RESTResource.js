@@ -4,7 +4,6 @@ import { substitutePath, RESTResource } from '../RESTResource';
 
 should();
 
-const module = 'somemodule';
 const state = {
   somemodule_top: 'somestring',
   somemodule_nested: {
@@ -21,6 +20,7 @@ const props = {
     },
   },
 };
+const module = 'somemodule';
 
 // Modified from connect.js, as we don't want to export it there just so we can import it here
 const defaultLogger = () => {};

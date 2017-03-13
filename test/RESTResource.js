@@ -39,18 +39,24 @@ describe('RESTResource', () => {
         .should.equal('/whatever/water/anyways');
     });
     it('replaces resources', () => {
-      substitutePath('${top}', props, state, module, defaultLogger).should.equal('somestring');
-      substitutePath('${nested.bird}', props, state, module, defaultLogger).should.equal('innerstring');
+      substitutePath('${top}', props, state, module, defaultLogger)
+        .should.equal('somestring');
+      substitutePath('${nested.bird}', props, state, module, defaultLogger)
+        .should.equal('innerstring');
     });
     it('handles multiple', () => {
-      substitutePath('/?{q}/${top}/:{id}', props, state, module, defaultLogger).should.equal('/water/somestring/42');
+      substitutePath('/?{q}/${top}/:{id}', props, state, module, defaultLogger)
+        .should.equal('/water/somestring/42');
     });
     it('runs functions', () => {
-      substitutePath((a, b, c) => a.q + b.id + c.top, props, state, module, defaultLogger).should.equal('water42somestring');
+      substitutePath((a, b, c) => a.q + b.id + c.top, props, state, module, defaultLogger)
+        .should.equal('water42somestring');
     });
     it('fails appropriately', () => {
-      expect(substitutePath('${nothere}', props, state, module, defaultLogger)).to.equal(null);
-      expect(substitutePath(() => undefined, props, state, module, defaultLogger)).to.equal(null);
+      expect(substitutePath('${nothere}', props, state, module, defaultLogger))
+        .to.equal(null);
+      expect(substitutePath(() => undefined, props, state, module, defaultLogger))
+        .to.equal(null);
     });
   });
 });

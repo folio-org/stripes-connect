@@ -28,34 +28,36 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
+const args = [props, state, module, defaultLogger];
+
 describe('RESTResource', () => {
   describe('substitutePath()', () => {
     it('replaces path components', () => {
-      substitutePath('/whatever/:{id}', props, state, module, defaultLogger)
+      substitutePath('/whatever/:{id}', ...args)
         .should.equal('/whatever/42');
     });
     it('replaces query parameters', () => {
-      substitutePath('/whatever/?{q}/anyways', props, state, module, defaultLogger)
+      substitutePath('/whatever/?{q}/anyways', ...args)
         .should.equal('/whatever/water/anyways');
     });
     it('replaces resources', () => {
-      substitutePath('${top}', props, state, module, defaultLogger)
+      substitutePath('${top}', ...args)
         .should.equal('somestring');
-      substitutePath('${nested.bird}', props, state, module, defaultLogger)
+      substitutePath('${nested.bird}', ...args)
         .should.equal('innerstring');
     });
     it('handles multiple', () => {
-      substitutePath('/?{q}/${top}/:{id}', props, state, module, defaultLogger)
+      substitutePath('/?{q}/${top}/:{id}', ...args)
         .should.equal('/water/somestring/42');
     });
     it('runs functions', () => {
-      substitutePath((a, b, c) => a.q + b.id + c.top, props, state, module, defaultLogger)
+      substitutePath((a, b, c) => a.q + b.id + c.top, ...args)
         .should.equal('water42somestring');
     });
     it('fails appropriately', () => {
-      expect(substitutePath('${nothere}', props, state, module, defaultLogger))
+      expect(substitutePath('${nothere}', ...args))
         .to.equal(null);
-      expect(substitutePath(() => undefined, props, state, module, defaultLogger))
+      expect(substitutePath(() => undefined, ...args))
         .to.equal(null);
     });
   });

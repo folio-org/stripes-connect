@@ -22,29 +22,35 @@ const props = {
   },
 };
 
+// Copied from connect.js, as we don't want to export it there just so we can import it here
+const defaultLogger = () => {};
+defaultLogger.log = (cat, ...args) => {
+  console.log(`stripes-connect (${cat})`, ...args);
+};
+
 describe('RESTResource', () => {
   describe('substitutePath()', () => {
     it('replaces path components', () => {
-      substitutePath('/whatever/:{id}', props, state, module)
+      substitutePath('/whatever/:{id}', props, state, module, defaultLogger)
         .should.equal('/whatever/42');
     });
     it('replaces query parameters', () => {
-      substitutePath('/whatever/?{q}/anyways', props, state, module)
+      substitutePath('/whatever/?{q}/anyways', props, state, module, defaultLogger)
         .should.equal('/whatever/water/anyways');
     });
     it('replaces resources', () => {
-      substitutePath('${top}', props, state, module).should.equal('somestring');
-      substitutePath('${nested.bird}', props, state, module).should.equal('innerstring');
+      substitutePath('${top}', props, state, module, defaultLogger).should.equal('somestring');
+      substitutePath('${nested.bird}', props, state, module, defaultLogger).should.equal('innerstring');
     });
     it('handles multiple', () => {
-      substitutePath('/?{q}/${top}/:{id}', props, state, module).should.equal('/water/somestring/42');
+      substitutePath('/?{q}/${top}/:{id}', props, state, module, defaultLogger).should.equal('/water/somestring/42');
     });
     it('runs functions', () => {
-     substitutePath((a, b, c) => a.q + b.id + c.top, props, state, module).should.equal('water42somestring');
+      substitutePath((a, b, c) => a.q + b.id + c.top, props, state, module, defaultLogger).should.equal('water42somestring');
     });
     it('fails appropriately', () => {
-      expect(substitutePath('${nothere}', props, state, module)).to.equal(null);
-      expect(substitutePath(() => undefined, props, state, module)).to.equal(null);
+      expect(substitutePath('${nothere}', props, state, module, defaultLogger)).to.equal(null);
+      expect(substitutePath(() => undefined, props, state, module, defaultLogger)).to.equal(null);
     });
   });
 });

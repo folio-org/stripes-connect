@@ -11,13 +11,13 @@ const state = {
   },
 };
 const props = {
-  params: {
-    id: '42',
+  match: {
+    params: {
+      id: '42',
+    },
   },
   location: {
-    query: {
-      q: 'water',
-    },
+    search: '?q=water',
   },
 };
 const module = 'somemodule';

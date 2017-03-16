@@ -5,8 +5,7 @@ import { mount, shallow, render } from 'enzyme';
 import React, { Component, PropTypes } from 'react';
 import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
-import { ServerRouter, createServerRenderContext } from 'react-router';
-import Match from 'react-router/Match';
+import { StaticRouter } from 'react-router';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 
@@ -14,7 +13,7 @@ import connect from '../connect';
 
 chai.should();
 
-const routerContext = createServerRenderContext();
+const routerContext = {};
 
 // Provide a redux store and addReducer() function in context
 let reducers = { okapi: (state = {}) => state };
@@ -36,9 +35,9 @@ class Root extends Component {
     const { component:ToTest } = this.props;
     return (
       <Provider store={this.props.store}>
-        <ServerRouter context={routerContext} location="/">
+        <StaticRouter context={routerContext} location="/">
           <ToTest />
-        </ServerRouter>
+        </StaticRouter>
       </Provider>
     );
   }

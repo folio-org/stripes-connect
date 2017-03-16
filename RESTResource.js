@@ -2,6 +2,7 @@ import 'isomorphic-fetch'; /* global fetch */
 import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'uuid';
+import queryString from 'query-string';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 
@@ -94,24 +95,25 @@ function mockProps(state, module) {
 //
 export function substitutePath(original, props, state, module, logger) {
   // console.log('substitutePath(), props = ', props);
+  const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
   let dynamicPartsSatisfied = true;
   let path;
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    path = original(_.get(props, ['location', 'query']), props.params, mockProps(state, module).data, logger);
+    path = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, logger);
     dynamicPartsSatisfied = (typeof path === 'string');
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
     path = original.replace(/([:?$]){(.*?)}/g, (match, ns, name) => {
       switch (ns) { // eslint-disable-line default-case
         case '?': {
-          const queryParam = processFallback(name, ['location', 'query'], props);
+          const queryParam = processFallback(name, [], parsedQuery);
           if (queryParam === null) dynamicPartsSatisfied = false;
           return encodeURIComponent(queryParam);
         }
         case ':': {
-          const pathComp = processFallback(name, ['params'], props);
+          const pathComp = processFallback(name, ['match', 'params'], props);
           if (pathComp === null) dynamicPartsSatisfied = false;
           return encodeURIComponent(pathComp);
         }
@@ -317,6 +319,7 @@ export default class RESTResource {
       const { root, path, headers, records, clear } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');
+      console.log(url);
       if (url === that.lastUrl) return null; // TODO return a successful promise?
       that.lastUrl = url;
 

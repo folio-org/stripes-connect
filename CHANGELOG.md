@@ -1,10 +1,12 @@
 # Change history for stripes-connect
 
-## (IN PROGRESS)
+## [0.2.0](https://github.com/folio-org/stripes-connect/tree/v0.2.0) (2017-03-??)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.1.0...v0.2.0)
 
-* Fix test-suite to correctly invoke logger-extended API of `RESTResource.js`'s internal function `substitutePath`.
+* Switch to using the new release of [React Router](https://reacttraining.com/react-router/). This significantly changes the API for URL-derived props and for changing the URL. In addition to their detailed documentation you may also find [this commit](https://github.com/folio-org/ui-items/commit/adf24349efef3bf2dc5928c8a76a5991369577b9) illustrative.
 
-## [0.1.0](https://github.com/folio-org/stripes-connect/tree/v0.1.0) (Sun Mar 12 23:28:01 GMT 2017)
+## [0.1.0](https://github.com/folio-org/stripes-connect/tree/v0.1.0) (2017-03-12)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.0.9..v0.1.0)
 
 * `connect()` now accepts and uses an optional third argument, `logger` -- a logger fulfilling the API exemplified by [stripes-logger](https://github.com/folio-org/stripes-logger). If no argument is passed, a very basic logger is used that simply falls back to console.log
 * The logger object is now used for some (not yet all) internal logging, and is also passed to path functions.

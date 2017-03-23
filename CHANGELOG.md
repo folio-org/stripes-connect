@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## [0.2.0](https://github.com/folio-org/stripes-connect/tree/v0.2.0) (2017-03-??)
+## [0.2.0](https://github.com/folio-org/stripes-connect/tree/v0.2.0) (2017-03-23)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.1.0...v0.2.0)
 
 * Switch to using the new release of [React Router](https://reacttraining.com/react-router/). This significantly changes the API for URL-derived props and for changing the URL. In addition to their detailed documentation you may also find [this commit](https://github.com/folio-org/ui-items/commit/adf24349efef3bf2dc5928c8a76a5991369577b9) illustrative.

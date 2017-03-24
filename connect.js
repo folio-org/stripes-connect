@@ -90,6 +90,8 @@ const wrap = (Wrapped, module, logger) => {
     constructor(props, context) {
       super();
       this.context = context;
+      this.logger = logger;
+      Wrapper.logger = logger;
     }
 
     componentWillMount() {
@@ -104,12 +106,13 @@ const wrap = (Wrapped, module, logger) => {
     }
 
     componentDidMount() {
-      // console.log('componentDidMount about to refreshRemote for', Wrapped.name, this);
+      this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
       this.props.refreshRemote({ ...this.props });
     }
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.location !== this.props.location) {
+        this.logger.log('connect', `componentWillReceiveProps about to refreshRemote for ${Wrapped.name}`);
         this.props.refreshRemote({ ...nextProps });
       }
     }
@@ -143,6 +146,7 @@ const wrap = (Wrapped, module, logger) => {
     refreshRemote: (params) => {
       resources.forEach((resource) => {
         if (resource.refresh) {
+          Wrapper.logger.log('connect', `refreshing resource '${resource.name}' for <${Wrapped.name}>`);
           resource.refresh(dispatch, params);
         }
       });

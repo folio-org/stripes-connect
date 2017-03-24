@@ -319,7 +319,6 @@ export default class RESTResource {
       const { root, path, headers, records, clear } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');
-      console.log(url);
       if (url === that.lastUrl) return null; // TODO return a successful promise?
       that.lastUrl = url;
 

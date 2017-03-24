@@ -157,9 +157,14 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
-export const connect = (Component, module, logger) => {
-  if (typeof Component.manifest === 'undefined') return Component;
-  const Wrapper = wrap(Component, module, logger || defaultLogger);
+export const connect = (Component, module, loggerArg) => {
+  const logger = loggerArg || defaultLogger;
+  if (typeof Component.manifest === 'undefined') {
+    logger.log('connect', `not connecting <${Component.name}> for '${module}': no manifest`);
+    return Component;
+  }
+  logger.log('connect', `connecting <${Component.name}> for '${module}'`);
+  const Wrapper = wrap(Component, module, logger);
   const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch)(Wrapper);
   return Connected;
 };

@@ -336,6 +336,7 @@ export default class RESTResource {
                 dispatch({ type: `CLEAR_${key.toUpperCase()}` });
               }
               const data = (records ? json[records] : json);
+              this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               dispatch(crudActions.fetchSuccess(data));
             });
           }

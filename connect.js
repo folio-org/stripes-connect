@@ -95,6 +95,7 @@ const wrap = (Wrapped, module, logger) => {
     }
 
     componentWillMount() {
+      // this.logger.log('connect', `in componentWillMount for ${Wrapped.name}`);
       if (!(this.context.addReducer)) {
         throw new Error('No addReducer function available in component context');
       }
@@ -111,6 +112,7 @@ const wrap = (Wrapped, module, logger) => {
     }
 
     componentWillReceiveProps(nextProps) {
+      // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
       if (nextProps.location !== this.props.location) {
         this.logger.log('connect', `componentWillReceiveProps about to refreshRemote for ${Wrapped.name}`);
         this.props.refreshRemote({ ...nextProps });

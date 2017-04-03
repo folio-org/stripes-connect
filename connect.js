@@ -107,14 +107,14 @@ const wrap = (Wrapped, module, logger) => {
     }
 
     componentDidMount() {
-      this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
+      // this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
       this.props.refreshRemote({ ...this.props });
     }
 
     componentWillReceiveProps(nextProps) {
       // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
       if (nextProps.location !== this.props.location) {
-        this.logger.log('connect', `componentWillReceiveProps about to refreshRemote for ${Wrapped.name}`);
+        // this.logger.log('connect', `componentWillReceiveProps about to refreshRemote for ${Wrapped.name}`);
         this.props.refreshRemote({ ...nextProps });
       }
     }
@@ -166,7 +166,7 @@ defaultLogger.log = (cat, ...args) => {
 export const connect = (Component, module, loggerArg) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component.manifest === 'undefined') {
-    logger.log('connect', `not connecting <${Component.name}> for '${module}': no manifest`);
+    logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
     return Component;
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);

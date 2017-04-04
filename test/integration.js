@@ -91,7 +91,7 @@ describe('connect()', () => {
       .get('http://localhost/turnip',
          [{ id: 1, someprop: 'someval' }],
          { headers: { 'Content-Type': 'application/json', } } )
-      .put('http://localhost/turnip',
+      .put('http://localhost/turnip/1',
          { id: 1, someprop: 'someval' },
          { headers: { 'Content-Type': 'application/json', } } )
       .post('http://localhost/turnip',

@@ -246,7 +246,10 @@ export default class RESTResource {
       const options = this.verbOptions('PUT', getState(), props);
       if (options === null) return null; // needs dynamic parts that aren't available
       const { root, path, pk, headers } = options;
-      const url = [root, path].join('/');
+      const url = (path.endsWith(record[pk]) ?
+                     [root, path].join('/')
+                     :
+                     [root, path, record[pk]].join('/'));
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.updateStart(clientRecord));
       return fetch(url, {

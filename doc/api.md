@@ -236,8 +236,8 @@ calling a function to construct the string from the state.
 
 #### Text substitution
 
-The three different kinds of state can be substituted into path
-strings using three different but related syntaxes:
+The four different kinds of state can be substituted into path
+strings using four different but related syntaxes:
 
 * `:{name}` -- interpolates the value of the named path-component from
   the UI URL, as extracted by React Router. For example, if the React
@@ -253,7 +253,7 @@ strings using three different but related syntaxes:
   `http://ui.folio.org:3000/items?q=water`, the path will be resolved as
   `item-storage?query=water`.
 
-* `${name}`-- interpolates the value of the named local resource (see
+* `${name}` -- interpolates the value of the named local resource (see
   [above](#local-resources) on local resources). In general, the
   approach here is to store state in a local resource rather than in
   React-component state. Given a local resource `sortOrder`, this can
@@ -262,10 +262,17 @@ strings using three different but related syntaxes:
   event hander. The state can then be used in a path such as
   `item-storage?query=?{q} sortby ${sortOrder}`.
 
+* `!{name}` -- interpolates the value of the named property from the
+  present React component. For example, if the path is
+  `perms/users/!{user.username}/permissions` and the component has a
+  `user` prop which is an object containing a `username` field with
+  value `fred`, the path will be resolved as
+  `perms/users/fred/permissions`.
+
 #### Fallbacks
 
 In general, all the nominated pieces of state -- UI URL
-path-components, UI URL query parameters and local state -- must be
+path-components, UI URL query parameters, local state and props -- must be
 present in order for these textual substitutions to be performed. If
 something is missing -- for example, when the path
 `item-storage?query=?{q}` is evaluated in a context where the UI URL
@@ -284,6 +291,9 @@ fallback value, used when the state is missing:
   if any, or the constant `val` if it is absent.
 
 * `${name:-val}` yields the value of the named local resource
+  if any, or the constant `val` if it is undefined.
+
+* `!{name:-val}` yields the value of the named component property
   if any, or the constant `val` if it is undefined.
 
 This syntax is useful for providing a default search-term, default

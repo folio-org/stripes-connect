@@ -1,5 +1,14 @@
 # Change history for stripes-connect
 
+## [0.3.0](https://github.com/folio-org/stripes-connect/tree/v0.3.0) (2017-04-06)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.2.0...v0.3.0)
+
+* Add support for new `!{prop.subprop}` syntax in path strings,
+  substituting in the value of a property from the component. Document
+  this in the API guide. Fixes STRIPES-299.
+* Remove the obsolete stub `api.md` file from the root directory. The
+  API guide has been in the `doc` directory for a long tine now.
+
 ## [0.2.0](https://github.com/folio-org/stripes-connect/tree/v0.2.0) (2017-03-23)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.1.0...v0.2.0)
 

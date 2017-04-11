@@ -5,6 +5,8 @@ const defaults = {
   clientGeneratePk: true,
   fetch: true,
   clear: true,
+  limitParam: 'limit',
+  offsetParam: 'offset',
   headers: {
   },
   POST: {

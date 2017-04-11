@@ -128,6 +128,12 @@ addition to `'type':'rest'`:
   **NOTE.** The `params` item is not yet implemented -- see
   [STRIPES-121](https://issues.folio.org/browse/STRIPES-121).
 
+* `limitParam`: the name of the parameter controlling the number of results per
+  request.
+
+* `offsetParam`: the name of the parameter controlling the number of results to
+  skip.
+
 * `headers`: A JavaScript object containing HTTP headers: the keys are
   the header names and the values are their content.
 
@@ -137,6 +143,13 @@ addition to `'type':'rest'`:
   the result (result-count, etc.) and a sub-array that contains the
   actual records. The `records` item specifies the name of that
   sub-array within the top-level response object.
+
+* `recordsRequired`: The maximum number of records to fetch. If further records
+  are available, multiple requests will be made until this count is satisfied
+via limitParam/offsetParam.
+
+* `perRequest`: How many records to fetch per request (via limitParam). *not
+  yet fully implemented, pending STRIPES-121*
 
 * `pk`: The name of the key in the returned records that contains
   the primary key. (Defaults to `id` for both REST and Okapi

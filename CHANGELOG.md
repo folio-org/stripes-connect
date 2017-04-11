@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## In progress
+
+* Initial support for paging. Documented in the API guide, particularly the requiredRecords manifest entry.
+
 ## [0.3.0](https://github.com/folio-org/stripes-connect/tree/v0.3.0) (2017-04-06)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.2.0...v0.3.0)
 

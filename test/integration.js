@@ -70,6 +70,19 @@ Remote.manifest = { remoteResource: {
   path: 'turnip',
 } };
 
+class Paged extends Component {
+  render() {
+    return <div id="somediv"></div>
+  }
+};
+Paged.manifest = { pagedResource: {
+  type: 'okapi',
+  path: 'turnip?q=dinner',
+  records: 'records',
+  recordsRequired: 15,
+  perRequest: 5,
+} };
+
 describe('connect()', () => {
 
   it('should pass through a component with no manifest', () => {
@@ -122,6 +135,35 @@ describe('connect()', () => {
 
     setTimeout(() => {
       inst.find(Remote).props().data.remoteResource[0].someprop.should.equal('someval');
+      fetchMock.restore();
+      done();
+    }, 10);
+  });
+
+  it('should make multiple requests for a paged resource', (done) => {
+    fetchMock
+      .get('http://localhost/turnip?q=dinner',
+        {records:[{"id":"58e5356fe84698a0a279a903","name":"Alberta"},{"id":"58e5356f364668c082d3d87a","name":"David"},{"id":"58e5356ff56928961932c1db","name":"Roxie"},{"id":"58e5356ff66b0af6f1332145","name":"Tammy"},{"id":"58e5356fd18c30d6c63503c6","name":"Sanford"}],total_records:13},
+        { headers: { 'Content-Type': 'application/json', } } )
+      .get('http://localhost/turnip?q=dinner&offset=5',
+        {records:[{"id":"58e55786065039ceb9acb0e2","name":"Lucas"},{"id":"58e55786e2106a216fdb5629","name":"Kirkland"},{"id":"58e55786819013f1e810d28e","name":"Clarke"},{"id":"58e55786e51f01bc81b11f32","name":"Acevedo"},{"id":"58e55786791c37697eec2bc2","name":"Earnestine"}],total_records:13},
+
+        { headers: { 'Content-Type': 'application/json', } } )
+      .get('http://localhost/turnip?q=dinner&offset=10',
+        {records:[{"id":"58e557e48b8b56d0bea22460","name":"Dillon"},{"id":"58e557e46120e13590013272","name":"Cain"},{"id":"58e557e41c2e37143a990445","name":"Gordon"}],total_records:13},
+
+        { headers: { 'Content-Type': 'application/json', } } )
+      .catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Paged, 'test');
+    const inst = mount(<Root store={store} component={Connected}/>);
+
+    setTimeout(() => {
+      inst.find(Paged).props().data.pagedResource.length.should.equal(13);
       fetchMock.restore();
       done();
     }, 10);

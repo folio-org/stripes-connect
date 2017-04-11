@@ -148,6 +148,7 @@ export default class RESTResource {
     this.crudName = module ? `${module}_${name}` : name;
     this.optionsTemplate = _.merge({}, defaults, query);
     this.crudActions = crud.actionCreatorsFor(this.crudName);
+    this.pagedFetchSuccess = this.crudActions.fetchSuccess;
     this.crudReducers = crud.List.reducersFor(this.crudName,
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
     // JavaScript methods are not bound to their instance by default
@@ -180,6 +181,7 @@ export default class RESTResource {
     }
     return options;
   }
+
   reducer(state = [], action) {
     switch (action.type) {
       // extra reducer (beyond redux-crud generated reducers)
@@ -188,6 +190,36 @@ export default class RESTResource {
         return [];
       default:
         return this.crudReducers(state, action);
+    }
+  }
+
+  pagingReducer = (state = [], action) => {
+    switch (action.type) {
+      case `CLEAR_${this.stateKey().toUpperCase()}`: {
+        return [];
+      }
+      case `PAGE_START_${this.stateKey().toUpperCase()}`: {
+        const newPage = {
+          records: null,
+          url: action.meta.url,
+          isComplete: false,
+        };
+        return [...state, newPage];
+      }
+      case `PAGE_SUCCESS_${this.stateKey().toUpperCase()}`: {
+        let allDone = false;
+        const newState = state.reduce((acc, val) => {
+          allDone = allDone && val.isComplete;
+          if (action.meta.url === val.url) {
+            return acc.concat(Object.assign({}, val,
+              { isComplete: true, records: action.payload }));
+          }
+          return acc.concat(val);
+        }, []);
+        return newState;
+      }
+      default:
+        return state;
     }
   }
 
@@ -316,7 +348,6 @@ export default class RESTResource {
     };
   }
 
-
   fetchAction = (props) => {
     const that = this;
     const crudActions = this.crudActions;
@@ -345,7 +376,14 @@ export default class RESTResource {
               }
               const data = (records ? json[records] : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
-              dispatch(crudActions.fetchSuccess(data));
+              const reqd = options.recordsRequired;
+              const perPage = options.perRequest;
+              const total = json.total_records;
+              if (reqd && total && total > perPage && reqd > perPage) {
+                dispatch(this.fetchMore(options, total, data, url));
+              } else {
+                dispatch(crudActions.fetchSuccess(data));
+              }
             });
           }
         }).catch((reason) => {
@@ -353,4 +391,44 @@ export default class RESTResource {
         });
     };
   }
+
+  fetchMore = (options, total, firstData, firstURL) => {
+    const { root, path, headers, records, recordsRequired: reqd,
+            perRequest: limit, offsetParam } = options;
+    return (dispatch) => {
+      dispatch(this.fetchPageStart(firstURL));
+      for (let offset = limit; offset < reqd; offset += limit) {
+        // TODO assumes there are already other parameters on the URL
+        // this is temporary, STRIPES-121 will split parameters out
+        const url = `${root}/${path}&${offsetParam}=${offset}`;
+        dispatch(this.fetchPageStart(url));
+        fetch(url, { headers })
+          .then((response) => {
+            if (response.status >= 400) {
+              // TODO error
+            } else {
+              response.json().then((json) => {
+                const data = (records ? json[records] : json);
+                dispatch(this.fetchPageSuccess(url, data));
+              });
+            }
+          }).catch((err) => {
+            // TODO error
+            console.log('PAGE FETCH ERROR', err);
+          });
+      }
+      dispatch(this.fetchPageSuccess(firstURL, firstData));
+    };
+  }
+
+  fetchPageStart = url => ({
+    type: `PAGE_START_${this.stateKey().toUpperCase()}`,
+    meta: { url },
+  })
+
+  fetchPageSuccess = (url, data) => ({
+    type: `PAGE_SUCCESS_${this.stateKey().toUpperCase()}`,
+    payload: data,
+    meta: { url },
+  })
 }

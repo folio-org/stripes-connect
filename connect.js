@@ -100,6 +100,29 @@ const wrap = (Wrapped, module, logger) => {
         throw new Error('No addReducer function available in component context');
       }
       resources.forEach((resource) => {
+        // Hopefully paging can all be absorbed into the resource in some future
+        // rearchitecting (we might also reiterate these function definitions a
+        // few million less times)
+        if (resource.pagingReducer) {
+          const pagingKey = `${resource.stateKey()}_paging`;
+          this.context.addReducer(pagingKey, resource.pagingReducer);
+          const store = this.context.store;
+          const onPageSuccess = (paging) => {
+            const records = paging.reduce((acc, val) => acc.concat(val.records), []);
+            store.dispatch(resource.pagedFetchSuccess(records));
+          };
+          const onPageChange = (paging) => {
+            const allDone = paging.reduce((acc, val) => acc && val.isComplete, true);
+            if (allDone && paging.length > 0) onPageSuccess(paging);
+          };
+          let currentPaging;
+          const pagingListener = () => {
+            const previousPaging = currentPaging;
+            currentPaging = store.getState()[pagingKey];
+            if (currentPaging !== previousPaging) onPageChange(currentPaging);
+          };
+          store.subscribe(pagingListener);
+        }
         this.context.addReducer(resource.stateKey(), resource.reducer);
       });
       this.context.addReducer(`@@error-${module}`, errorReducer);
@@ -129,6 +152,7 @@ const wrap = (Wrapped, module, logger) => {
 
   Wrapper.contextTypes = {
     addReducer: React.PropTypes.func,
+    store: React.PropTypes.object,
   };
 
   Wrapper.mapState = state => ({

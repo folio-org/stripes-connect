@@ -4,36 +4,41 @@ export default class LocalResource {
     this.name = name;
     this.module = module;
     this.logger = logger; // not presently needed, but may be down the line
-    this.reducer = this.reducer.bind(this);
+    this.query = query;
   }
 
-  getMutator(dispatch) {
-    const { name, module } = this;
-    return {
-      update: newData => dispatch({
-        type: 'STRIPESLOCALSTATE_UPDATE',
-        payload: newData,
-        meta: {
-          module,
-          resource: name,
-        },
-      }),
-      replace: newData => dispatch({
-        type: 'STRIPESLOCALSTATE_REPLACE',
-        payload: newData,
-        meta: {
-          module,
-          resource: name,
-        },
-      }),
-    };
+  init = (store) => {
+    if (!(this.stateKey() in store) && this.query.initialValue) {
+      store.dispatch(this.replaceAction(this.query.initialValue));
+    }
   }
 
-  stateKey() {
-    return `${this.module}-${this.name}`;
-  }
+  getMutator = dispatch => ({
+    update: newData => dispatch(this.updateAction(newData)),
+    replace: newData => dispatch(this.replaceAction(newData)),
+  })
 
-  actionApplies(action) {
+  updateAction = newData => ({
+    type: 'STRIPESLOCALSTATE_UPDATE',
+    payload: newData,
+    meta: {
+      module: this.module,
+      resource: this.name,
+    },
+  })
+
+  replaceAction = newData => ({
+    type: 'STRIPESLOCALSTATE_REPLACE',
+    payload: newData,
+    meta: {
+      module: this.module,
+      resource: this.name,
+    },
+  })
+
+  stateKey = () => `${this.module}-${this.name}`;
+
+  actionApplies = (action) => {
     if (action.meta && action.meta.module && action.meta.resource) {
       const key = `${action.meta.module}-${action.meta.resource}`;
       return key === this.stateKey();
@@ -41,15 +46,18 @@ export default class LocalResource {
     return false;
   }
 
-  reducer(state = {}, action) {
+  reducer = (state = {}, action) => {
     if (this.actionApplies(action)) {
       switch (action.type) {
-        case 'STRIPESLOCALSTATE_UPDATE':
+        case 'STRIPESLOCALSTATE_UPDATE': {
           return Object.assign({}, state, action.payload);
-        case 'STRIPESLOCALSTATE_REPLACE':
+        }
+        case 'STRIPESLOCALSTATE_REPLACE': {
           return action.payload;
-        default:
+        }
+        default: {
           return state;
+        }
       }
     } else {
       return state;

@@ -58,7 +58,7 @@ class Local extends Component {
     return <div id="somediv"></div>
   }
 };
-Local.manifest = { localResource : {} };
+Local.manifest = { localResource : { initialValue: 'hi' } };
 
 class Remote extends Component {
   render() {
@@ -93,6 +93,7 @@ describe('connect()', () => {
     const store = createStore((state) => state, {});
     const Connected = connect(Local, 'test');
     const inst = mount(<Root store={store} component={Connected}/>);
+    inst.find(Local).props().data.localResource.should.equal('hi');
     inst.find(Local).props().mutator.localResource.replace({boo:'ya'});
     inst.find(Local).props().data.localResource.boo.should.equal('ya');
     inst.find(Local).props().mutator.localResource.update({boo:'urns'});

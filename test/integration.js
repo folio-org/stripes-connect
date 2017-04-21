@@ -77,7 +77,8 @@ class Paged extends Component {
 };
 Paged.manifest = { pagedResource: {
   type: 'okapi',
-  path: 'turnip?q=dinner',
+  path: 'turnip',
+  params: { q: 'dinner' },
   records: 'records',
   recordsRequired: 15,
   perRequest: 5,

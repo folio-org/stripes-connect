@@ -125,6 +125,9 @@ addition to `'type':'rest'`:
   The root, path and params together make up the URL that is
   addressed to maintain the resource.
 
+  **NOTE.** The `params` item is not yet implemented -- see
+  [STRIPES-121](https://issues.folio.org/browse/STRIPES-121).
+
 * `limitParam`: the name of the parameter controlling the number of results per
   request.
 

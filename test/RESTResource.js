@@ -1,6 +1,6 @@
 import { should, expect } from 'chai';
 
-import { substitutePath, RESTResource } from '../RESTResource';
+import { substitute, RESTResource } from '../RESTResource';
 
 should();
 
@@ -31,33 +31,33 @@ defaultLogger.log = (cat, ...args) => {
 const args = [props, state, module, defaultLogger];
 
 describe('RESTResource', () => {
-  describe('substitutePath()', () => {
+  describe('substitute()', () => {
     it('replaces path components', () => {
-      substitutePath('/whatever/:{id}', ...args)
+      substitute('/whatever/:{id}', ...args)
         .should.equal('/whatever/42');
     });
     it('replaces query parameters', () => {
-      substitutePath('/whatever/?{q}/anyways', ...args)
+      substitute('/whatever/?{q}/anyways', ...args)
         .should.equal('/whatever/water/anyways');
     });
     it('replaces resources', () => {
-      substitutePath('${top}', ...args)
+      substitute('${top}', ...args)
         .should.equal('somestring');
-      substitutePath('${nested.bird}', ...args)
+      substitute('${nested.bird}', ...args)
         .should.equal('innerstring');
     });
     it('handles multiple', () => {
-      substitutePath('/?{q}/${top}/:{id}', ...args)
+      substitute('/?{q}/${top}/:{id}', ...args)
         .should.equal('/water/somestring/42');
     });
     it('runs functions', () => {
-      substitutePath((a, b, c) => a.q + b.id + c.top, ...args)
+      substitute((a, b, c) => a.q + b.id + c.top, ...args)
         .should.equal('water42somestring');
     });
     it('fails appropriately', () => {
-      expect(substitutePath('${nothere}', ...args))
+      expect(substitute('${nothere}', ...args))
         .to.equal(null);
-      expect(substitutePath(() => undefined, ...args))
+      expect(substitute(() => undefined, ...args))
         .to.equal(null);
     });
   });

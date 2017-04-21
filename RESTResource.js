@@ -93,50 +93,50 @@ function mockProps(state, module) {
 // : - path components as defined by react-router
 // $ - resources
 //
-export function substitutePath(original, props, state, module, logger) {
-  // console.log('substitutePath(), props = ', props);
+//
+export function substitute(original, props, state, module, logger) {
   const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
   let dynamicPartsSatisfied = true;
-  let path;
+  let result;
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    path = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, logger);
-    dynamicPartsSatisfied = (typeof path === 'string');
+    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, logger);
+    dynamicPartsSatisfied = (typeof result === 'string');
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
-    path = original.replace(/([:?$!]){(.*?)}/g, (match, ns, name) => {
+    result = original.replace(/([:?$!]){(.*?)}/g, (match, ns, name) => {
       switch (ns) { // eslint-disable-line default-case
         case '?': {
           const queryParam = processFallback(name, [], parsedQuery);
           if (queryParam === null) dynamicPartsSatisfied = false;
-          return encodeURIComponent(queryParam);
+          return queryParam;
         }
         case ':': {
           const pathComp = processFallback(name, ['match', 'params'], props);
           if (pathComp === null) dynamicPartsSatisfied = false;
-          return encodeURIComponent(pathComp);
+          return pathComp;
         }
         case '$': {
           const localState = processFallback(name.split('.'), ['data'], mockProps(state, module));
           if (localState === null) dynamicPartsSatisfied = false;
-          return encodeURIComponent(localState);
+          return localState;
         }
         case '!': {
           const prop = processFallback('user.username'.split('.'), [], props);
           if (prop === null) dynamicPartsSatisfied = false;
-          return encodeURIComponent(prop);
+          return prop;
         }
       }
     });
   } else {
-    throw new Error('Invalid path');
+    throw new Error('Invalid type passed to RESTResource.substitute()');
   }
 
-  logger.log('path', `substitutePath(${
+  logger.log('substitute', `substitute(${
     (typeof original === 'function') ? '<FUNCTION>' : original
-  }) -> ${path}, satisfied=${dynamicPartsSatisfied}`);
-  return dynamicPartsSatisfied ? path : null;
+  }) -> ${result}, satisfied=${dynamicPartsSatisfied}`);
+  return dynamicPartsSatisfied ? result : null;
 }
 
 export default class RESTResource {
@@ -169,14 +169,25 @@ export default class RESTResource {
       this.optionsTemplate,
       this.optionsTemplate[verb],
       optionsFromState(this.optionsTemplate, state));
-    if (options.path && props) {
-      const subbed = substitutePath(options.path, props, state, this.module, this.logger);
-      if (typeof subbed === 'string') {
-        options.path = subbed;
-      } else if (typeof options.staticFallback === 'object') {
-        _.merge(options, options.staticFallback);
-      } else {
-        return null;
+    if (props) {
+      // path
+      if (typeof options.path === 'string') {
+        const subbed = substitute(options.path, props, state, this.module, this.logger);
+        if (typeof subbed === 'string') {
+          options.path = subbed;
+        } else if (typeof options.staticFallback === 'object') {
+          _.merge(options, options.staticFallback);
+        } else {
+          options.path = null;
+        }
+      }
+
+      // params
+      if (typeof options.params === 'object') {
+        options.params = _.mapValues(options.params, param =>
+          substitute(param, props, state, this.module, this.logger));
+        options.path += '?';
+        options.path += queryString.stringify(options.params);
       }
     }
     return options;

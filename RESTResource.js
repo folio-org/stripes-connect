@@ -171,14 +171,14 @@ export default class RESTResource {
       optionsFromState(this.optionsTemplate, state));
     if (props) {
       // path
-      if (typeof options.path === 'string') {
+      if (options.path) {
         const subbed = substitute(options.path, props, state, this.module, this.logger);
         if (typeof subbed === 'string') {
           options.path = subbed;
         } else if (typeof options.staticFallback === 'object') {
           _.merge(options, options.staticFallback);
         } else {
-          options.path = null;
+          return null;
         }
       }
 
@@ -186,10 +186,26 @@ export default class RESTResource {
       if (typeof options.params === 'object') {
         options.params = _.mapValues(options.params, param =>
           substitute(param, props, state, this.module, this.logger));
+      } else if (typeof options.params === 'function') {
+        const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
+        options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, this.logger);
+        if (options.params === null) return null;
+      }
+      if (typeof options.params === 'object') {
+        // any parameter being null (ie. because template doesn't have a resource it needs)
+        // is equivalent to that happening in the path
+        if (_.values(options.params).reduce((acc, val) => acc || (val === null), false)) {
+          if (typeof options.staticFallback === 'object') {
+            _.merge(options, options.staticFallback);
+          } else {
+            return null;
+          }
+        }
         options.path += '?';
         options.path += queryString.stringify(options.params);
       }
     }
+
     return options;
   }
 

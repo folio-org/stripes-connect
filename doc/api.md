@@ -288,7 +288,8 @@ something is missing -- for example, when the path
 `item-storage?query=?{q}` is evaluated in a context where the UI URL
 does not have a query parameter `q` -- then substitution fails, and
 the path from the `staticFallback` part of the configuration is used
-instead.
+if present. If not, no action is taken until the necessary information
+is available.
 
 However, extended syntax, modelled on [that of the BASH shell](https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html),
 may be used with any of the three kinds of substitution to provide a
@@ -342,13 +343,13 @@ present (`{sort:+sortby}`). Similarly, the value itself falls back to
 an empty string, so that there is no sorting clause at all in the
 generated path when no sorting parameter is provided in the UI URL.
 
-#### Functional paths
+#### Functional paths and parameters
 
-When the power and flexibility of text substitution and fallbacks are
-not sufficient for expressing how to build the back-end UI, arbitrary
-JavaScript can be used instead. If the value of a resource's `path` is
-a function rather than a string, then that function is invoked
-whenever a path is needed. It is passed three parameters:
+When the power and flexibility of text substitution and fallbacks are not
+sufficient for expressing how to build the back-end UI, arbitrary
+JavaScript can be used instead. If the value of a resource's `path` or one
+of its `params` is a function rather than a string, then that function is
+invoked whenever a path is needed. It is passed three parameters:
 
 * An object containing the UI URL's query parameters (as accessed by
   `?{name}`).
@@ -359,7 +360,7 @@ whenever a path is needed. It is passed three parameters:
 * An object containing the component's resources' data (as accessed by
   `$name}`).
 
-The function must return a string to use as the path, or `undefined`
+The function must return a string to use as the path, or `null`
 if it is unable to do this because a required piece of state is
 missing. In the latter case, the path from `staticFallback` will be
 used if it is defined.
@@ -375,6 +376,10 @@ So the function would usually be defined along these lines:
             }
           }
         });
+
+Similarly, the entire `params` object can be replaced by a function that takes
+the above arguments and returns, instead of a string, an object to map to the
+parameters to be sent with requests. Or null if it lacks necessary information.
 
 
 

@@ -84,6 +84,19 @@ Paged.manifest = { pagedResource: {
   perRequest: 5,
 } };
 
+class Functional extends Component {
+  render() {
+    return <div id="somediv"></div>
+  }
+};
+Functional.manifest = { functionalResource: {
+  type: 'okapi',
+  path: () => 'turnip',
+  GET: {
+    params: () => ({ q: 'dinner' }),
+  }
+} };
+
 describe('connect()', () => {
 
   it('should pass through a component with no manifest', () => {
@@ -166,6 +179,27 @@ describe('connect()', () => {
 
     setTimeout(() => {
       inst.find(Paged).props().data.pagedResource.length.should.equal(13);
+      fetchMock.restore();
+      done();
+    }, 10);
+  });
+
+  it('should run manifest functions', (done) => {
+    fetchMock
+      .get('http://localhost/turnip?q=dinner',
+        [{"id":"58e5356fe84698a0a279a903","name":"Alberta"},{"id":"58e5356f364668c082d3d87a","name":"David"},{"id":"58e5356ff56928961932c1db","name":"Roxie"},{"id":"58e5356ff66b0af6f1332145","name":"Tammy"},{"id":"58e5356fd18c30d6c63503c6","name":"Sanford"}],
+        { headers: { 'Content-Type': 'application/json', } } )
+      .catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Functional, 'test');
+    const inst = mount(<Root store={store} component={Connected}/>);
+
+    setTimeout(() => {
+      inst.find(Functional).props().data.functionalResource.length.should.equal(5);
       fetchMock.restore();
       done();
     }, 10);

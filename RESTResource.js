@@ -204,6 +204,16 @@ export default class RESTResource {
         options.path += '?';
         options.path += queryString.stringify(options.params);
       }
+
+      // recordsRequired
+      if (typeof options.recordsRequired === 'string' || typeof options.recordsRequired === 'function') {
+        const tmplReqd = Number.parseInt(substitute(options.recordsRequired, props, state, this.module, this.logger), 10);
+        if (tmplReqd > 0) {
+          options.recordsRequired = tmplReqd;
+        } else {
+          return null;
+        }
+      }
     }
 
     return options;
@@ -385,8 +395,10 @@ export default class RESTResource {
       const { root, path, headers, records, clear } = options;
       // i.e. only join truthy elements
       const url = [root, path].filter(_.identity).join('/');
-      if (url === that.lastUrl) return null; // TODO return a successful promise?
+      // noop if the URL and recordsRequired didn't change
+      if (url === that.lastUrl && options.recordsRequired === that.lastReqd) return null;
       that.lastUrl = url;
+      that.lastReqd = options.recordsRequired;
 
       dispatch(crudActions.fetchStart());
       return fetch(url, { headers })

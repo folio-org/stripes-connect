@@ -143,10 +143,7 @@ const wrap = (Wrapped, module, logger) => {
 
     componentWillReceiveProps(nextProps) {
       // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
-      // if (nextProps.location !== this.props.location) {
-        // this.logger.log('connect', `componentWillReceiveProps about to refreshRemote for ${Wrapped.name}`);
-        this.props.refreshRemote({ ...nextProps });
-      // }
+      this.props.refreshRemote({ ...nextProps });
     }
 
     render() {

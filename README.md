@@ -23,8 +23,19 @@ class MyStripesComponent extends Component {
 export default connect(MyStripesComponent, 'moduleName');
 ```
 
-The API and data manifest are explained in detail in
+## Documentation
+
+* The API and data manifest are explained in detail in
 [The Stripes Connect API](doc/api.md).
-A complete worked example of a connected component for editing patrons
+* A complete worked example of a connected component for editing patrons
 is explained in
 [A component example: the **PatronEdit** component](https://github.com/folio-org/stripes-core/blob/master/doc/component-example.md).
+
+## Additional information
+
+See [stripes-core](https://github.com/folio-org/stripes-core).
+
+See project [STRIPES](https://issues.folio.org/browse/STRIPES)
+at the [FOLIO issue tracker](http://dev.folio.org/community/guide-issues).
+
+Other FOLIO Developer documentation is at [dev.folio.org](http://dev.folio.org/)

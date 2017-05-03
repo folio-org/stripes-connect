@@ -88,6 +88,42 @@ function mockProps(state, module) {
   return mock;
 }
 
+// returns null if templated values are incomplete
+// if pk is provided append to path if not present
+function urlFromOptions(options, pk) {
+  const o = Object.assign({}, options);
+  if (o.path === null) return null;
+  if (o.params === null) return null;
+
+  if (typeof o.params === 'object') {
+    // any parameter being null (ie. because template doesn't have a resource it needs)
+    // is equivalent to that happening in the path
+    if (_.values(o.params).reduce((acc, val) => acc || (val === null), false)) {
+      if (typeof o.staticFallback === 'object') {
+        _.merge(o, o.staticFallback);
+      } else {
+        return null;
+      }
+    }
+  }
+
+  if (o.perRequest && o.limitParam) {
+    const newParams = {};
+    newParams[o.limitParam] = o.perRequest;
+    o.params = _.merge({}, o.params, newParams);
+  }
+
+  const path = (!pk || o.path.endsWith(pk)) ?
+      // // i.e. only join truthy elements
+      // const url = [root, path].filter(_.identity).join('/');
+    [o.root, o.path].join('/') : [o.root, o.path, pk].join('/');
+
+  if (typeof o.params === 'object') {
+    return `${path}?${queryString.stringify(o.params)}`;
+  }
+  return path;
+}
+
 // Implements dynamic manifest components with ?{syntax}. Namespaces so far:
 // ? - query parameters in current url
 // : - path components as defined by react-router
@@ -178,7 +214,7 @@ export default class RESTResource {
         } else if (typeof options.staticFallback === 'object') {
           _.merge(options, options.staticFallback);
         } else {
-          return null;
+          options.path = null;
         }
       }
 
@@ -189,20 +225,6 @@ export default class RESTResource {
       } else if (typeof options.params === 'function') {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
         options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, this.logger);
-        if (options.params === null) return null;
-      }
-      if (typeof options.params === 'object') {
-        // any parameter being null (ie. because template doesn't have a resource it needs)
-        // is equivalent to that happening in the path
-        if (_.values(options.params).reduce((acc, val) => acc || (val === null), false)) {
-          if (typeof options.staticFallback === 'object') {
-            _.merge(options, options.staticFallback);
-          } else {
-            return null;
-          }
-        }
-        options.path += '?';
-        options.path += queryString.stringify(options.params);
       }
 
       // recordsRequired
@@ -274,9 +296,9 @@ export default class RESTResource {
     const crudActions = this.crudActions;
     return (dispatch, getState) => {
       const options = this.verbOptions('POST', getState(), props);
-      if (options === null) return null; // needs dynamic parts that aren't available
-      const { root, path, pk, clientGeneratePk, headers } = options;
-      const url = [root, path].join('/');
+      const { pk, clientGeneratePk, headers } = options;
+      const url = urlFromOptions(options);
+      if (url === null) return null; // needs dynamic parts that aren't available
       // Optimistic record creation ('clientRecord')
       const clientGeneratedId = record.id ? record.id : uuid();
       const clientRecord = { ...record, id: clientGeneratedId };
@@ -318,12 +340,9 @@ export default class RESTResource {
     const clientRecord = { ...record };
     return (dispatch, getState) => {
       const options = this.verbOptions('PUT', getState(), props);
-      if (options === null) return null; // needs dynamic parts that aren't available
-      const { root, path, pk, headers } = options;
-      const url = (path.endsWith(record[pk]) ?
-                     [root, path].join('/')
-                     :
-                     [root, path, record[pk]].join('/'));
+      const { pk, headers } = options;
+      const url = urlFromOptions(options, record[pk]);
+      if (url === null) return null;
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.updateStart(clientRecord));
       return fetch(url, {
@@ -358,11 +377,9 @@ export default class RESTResource {
     return (dispatch, getState) => {
       const options = this.verbOptions('DELETE', getState(), props);
       if (options === null) return null; // needs dynamic parts that aren't available
-      const { root, path, pk, headers } = options;
-      const url = (path.endsWith(record[pk]) ?
-                     [root, path].join('/')
-                     :
-                     [root, path, record[pk]].join('/'));
+      const { pk, headers } = options;
+      const url = urlFromOptions(options, record[pk]);
+      if (url === null) return null;
       const clientRecord = { ...record };
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.deleteStart(clientRecord));
@@ -391,10 +408,9 @@ export default class RESTResource {
     const key = this.stateKey();
     return (dispatch, getState) => {
       const options = this.verbOptions('GET', getState(), props);
-      if (options === null) return null; // needs dynamic parts that aren't available
-      const { root, path, headers, records, clear } = options;
-      // i.e. only join truthy elements
-      const url = [root, path].filter(_.identity).join('/');
+      const url = urlFromOptions(options);
+      if (url === null) return null;
+      const { headers, records, clear } = options;
       // noop if the URL and recordsRequired didn't change
       if (url === that.lastUrl && options.recordsRequired === that.lastReqd) return null;
       that.lastUrl = url;
@@ -432,14 +448,15 @@ export default class RESTResource {
   }
 
   fetchMore = (options, total, firstData, firstURL) => {
-    const { root, path, headers, records, recordsRequired: reqd,
+    const { headers, records, recordsRequired: reqd,
             perRequest: limit, offsetParam } = options;
     return (dispatch) => {
       dispatch(this.fetchPageStart(firstURL));
       for (let offset = limit; offset < reqd; offset += limit) {
-        // TODO assumes there are already other parameters on the URL
-        // this is temporary, STRIPES-121 will split parameters out
-        const url = `${root}/${path}&${offsetParam}=${offset}`;
+        const newOptions = {};
+        newOptions.params = {};
+        newOptions.params[offsetParam] = offset;
+        const url = urlFromOptions(_.merge({}, options, newOptions));
         dispatch(this.fetchPageStart(url));
         fetch(url, { headers })
           .then((response) => {

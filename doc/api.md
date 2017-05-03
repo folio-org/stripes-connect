@@ -145,8 +145,7 @@ addition to `'type':'rest'`:
   are available, multiple requests will be made until this count is satisfied
 via limitParam/offsetParam.
 
-* `perRequest`: How many records to fetch per request (via limitParam). *not
-  yet fully implemented, pending STRIPES-121*
+* `perRequest`: How many records to fetch per request (via limitParam).
 
 * `pk`: The name of the key in the returned records that contains
   the primary key. (Defaults to `id` for both REST and Okapi

@@ -1,10 +1,12 @@
 # Change history for stripes-connect
 
-## In progress
+## [1.0.0](https://github.com/folio-org/stripes-connect/tree/v1.0.0) (2017-05-09)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.3.0...v1.0.0)
 
 * Initial support for paging. Documented in the API guide, particularly the `requiredRecords` manifest entry.
 * Query parameters now broken out into a `params` property in the manifest.
 * Remove the old _Thinking in Stripes_ document, which is now a section in the _Stripes Module Developer's Guide_ in stripes-core.
+* Bump to major version 1, so that semantic versioning will start working correctly, allowing NPM dependencies to identify forwards-compatible newer minor versions.
 
 ## [0.3.0](https://github.com/folio-org/stripes-connect/tree/v0.3.0) (2017-04-06)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.2.0...v0.3.0)

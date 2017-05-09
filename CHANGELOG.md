@@ -2,8 +2,9 @@
 
 ## In progress
 
-* Initial support for paging. Documented in the API guide, particularly the requiredRecords manifest entry.
+* Initial support for paging. Documented in the API guide, particularly the `requiredRecords` manifest entry.
 * Query parameters now broken out into a `params` property in the manifest.
+* Remove the old _Thinking in Stripes_ document, which is now a section in the _Stripes Module Developer's Guide_ in stripes-core.
 
 ## [0.3.0](https://github.com/folio-org/stripes-connect/tree/v0.3.0) (2017-04-06)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.2.0...v0.3.0)

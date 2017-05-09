@@ -4,9 +4,10 @@ Index Data, 2017.
 
 <!-- ../../okapi/doc/md2toc -l 2 thinking-in-stripes.md -->
 * [Introduction](#introduction)
-* [Overview](#overview)
+* [How Stripes fits together](#how-stripes-fits-together)
 * [Underlying technology](#underlying-technology)
 * [Principles of stripes-connect](#principles-of-stripes-connect)
+    * [Overview](#overview)
     * [Declarative, immutable data manifest](#declarative-immutable-data-manifest)
     * [Modifying local state](#modifying-local-state)
     * [Firing actions](#firing-actions)
@@ -21,7 +22,7 @@ Index Data, 2017.
 This document aims to bring new UI module developers up to speed with the concepts behind Stripes (especially stripes-connect), so that they are have a context in which to understand [The Stripes Connect API](api.md) reference guide.
 
 
-## Overview
+## How Stripes fits together
 
 Stripes consists of several separate JavaScript libraries that work together. The good news is that you don't need to think about most of them in order to create Stripes-based UI modules. They are:
 
@@ -50,17 +51,21 @@ So you should consider ES6, React and JSX the prerequisites for writing Stripes 
 
 ## Principles of stripes-connect
 
-When programming with stripes-connect, you do not directly interact with the back-end web-services. There is no sending of requests or handling of responses -- the stripes-connect library deals with all that. Instead, UI modules do two things:
+### Overview
 
-1. They make a declarative statement of what back-end information they are interested, in the form of a _manifest_. The manifest provides information about a number of `resources`, each of which corresponds to data available from the back-end. Most importantly, each resource's `path` specifies how various parts of state -- URL path components and query parameters, local state such as form values, etc. -- is composed into a web-service URL used to access the back-end web-service.
+When programming with stripes-connect, you do not directly interact with the back-end web-services. There is no sending of requests or handling of responses -- the stripes-connect library deals with all that. Instead, UI components do three things:
 
-2. They modify local state -- mostly through the use of _mutators_ -- to reflect users' actions, such as searching, sorting, selecting and editing records.
+1. They make a declarative statement of what back-end information they are interested, in the form of a _manifest_. The manifest provides information about a number of _resources_, each of which corresponds to data available from the back-end. Most importantly, each resource's `path` specifies how various parts of state -- URL path components and query parameters, local state such as form values, etc. -- is composed into a web-service URL used to access the back-end web-service. XXX note that other parameter, such as `query`, now also come into play. Update needed here.
+
+3. They access this information via the `data` property that is passed into the component -- `this.props.data.NAME` for the data associated with the resource called _NAME_.
+
+3. They modify local state, through the use of _mutators_, to reflect users' actions, such as searching, sorting, selecting and editing records.
 
 That is all. The stripes-connect library issues the necessary requests, handles the responses, and updates the component's properties; and React then ensures that components whose contents have changed are re-rendered.
 
 ### Declarative, immutable data manifest
 
-A manifest is provided by each connection component class in a UI module. It is a class-level static constant. For example:
+A manifest is provided by each connected component class in a UI module. It is a class-level static constant. For example:
 
 	static manifest = Object.freeze({
 	  user: {
@@ -71,7 +76,7 @@ A manifest is provided by each connection component class in a UI module. It is 
 
 (This manifest declares a single resource, called `user`, which is connected to an Okapi service at a path that depends on the `userid` part of the path in the UI's URL.)
 
-The manifest is constant, immutable, and identical across all instances of a class -- something that is conventionally indicated in code by freezing the object with `Object.freeze()`. It can best be thought of as constituting a set of instructions for transforming local state into remote operations.
+The manifest is constant, immutable, and identical across all instances of a class -- something that is conventionally indicated in code by freezing the object with `Object.freeze()`. It can be thought of as constituting a set of instructions for transforming local state into remote operations.
 
 ### Modifying local state
 
@@ -81,9 +86,11 @@ State is of several kinds:
 
 * React state, which may be modified at any time using React's standard `setState()` method. This is typically how components keep track of UI elements such as query textboxes and filtering checkboxes -- see the React documentation on [Forms and Controlled Components](https://facebook.github.io/react/docs/forms.html).
 
+* Stripes-connect resources of type `local` (as opposed to `rest` or `okapi`). Changing these does not cause a change on a remote resource, only locally. They differ from the React state in that they are persistent across renderings of the same component: for example, is a UI module's search-term is held in a local resource rather than in React state, it will still be there on returning to that module from another one within the same Stripes application.
+
 * The present URL of the UI application, which typically carries state in both its path and its query: for example, the URL `/users/123?query=smith&sort=username` contains a user-ID `123` in its path, and a query `smith` and sort-specification `username` in query parameters `query` and `sort` respectively.
 
-  (At present, the URL is changed using the standard React Router method, `this.context.router.transitionTo(newUrl)`. In future, this will probably done instead using mutators -- concerning which, see below.)
+  (At present, the URL is changed using the standard React Router method, `this.props.history.push(newUrl)`, or more often the stripes-components utility function `transitionToParams`. In future, this will probably done instead using mutators -- concerning which, see below.)
 
 Stripes-connect detects changes to the state, and issues whatever requests are necessary to obtain relevant data. For example, if the URL changes from `/users/123?query=smith&sort=username` to `/users/123?query=smith&sort=email`, it will issue a new search request with the sort-order modified accordingly.
 
@@ -97,6 +104,8 @@ Every connected component is given, in its properties, a _mutator_, which is an 
 At least two "styles" are possible when designing the set of components that will make up a Stripes UI modules. It's possible to build modules where one big component does most or all of the stripes-connecting, and drives many much simpler unconnected subcomponents; or a module may consist of many small components that are each stripes-connected to obtain the data they display. Which is better?
 
 The Redux community leans towards fewer connected components where possible, as components that are purely functions of their props are easiest to debug, test and maintain. This is a good rule of thumb for stripes-connected components, too: aim for fewer connected components except where doing that means going more than a little bit out of the way and creating convoluted code.
+
+XXX but note the implications when avoid permission errors from WSAPIs.
 
 
 ## Appendix: escaping to redux

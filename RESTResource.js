@@ -138,7 +138,7 @@ export function substitute(original, props, state, module, logger) {
   if (typeof original === 'function') {
     // Call back to resource-specific code
     result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, logger);
-    dynamicPartsSatisfied = (typeof result === 'string');
+    dynamicPartsSatisfied = (result !== null);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
     result = original.replace(/([:?$!]){(.*?)}/g, (match, ns, name) => {

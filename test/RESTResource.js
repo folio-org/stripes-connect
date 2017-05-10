@@ -58,7 +58,7 @@ describe('RESTResource', () => {
       expect(substitute('${nothere}', ...args))
         .to.equal(null);
       expect(substitute(() => undefined, ...args))
-        .to.equal(null);
+        .to.equal(undefined);
     });
   });
 });

@@ -162,19 +162,17 @@ const wrap = (Wrapped, module, logger) => {
   };
 
   Wrapper.mapState = state => ({
-    data: Object.freeze(resources.reduce((result, resource) => {
-      const tmp = {};
-      tmp[resource.name] = Object.freeze(_.get(state, [resource.stateKey()], null));
-      return Object.assign({}, result, tmp);
-    }, {})),
+    data: Object.freeze(resources.reduce((result, resource) => ({
+      ...result,
+      [resource.name]: Object.freeze(_.get(state, [resource.stateKey()], null)),
+    }), {})),
   });
 
   Wrapper.mapDispatch = (dispatch, ownProps) => ({
-    mutator: resources.reduce((result, resource) => {
-      const tmp = {};
-      tmp[resource.name] = resource.getMutator(dispatch, ownProps);
-      return Object.assign({}, result, tmp);
-    }, {}),
+    mutator: resources.reduce((result, resource) => ({
+      ...result,
+      [resource.name]: resource.getMutator(dispatch, ownProps),
+    }), {}),
     refreshRemote: (params) => {
       resources.forEach((resource) => {
         if (resource.refresh) {

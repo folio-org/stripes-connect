@@ -76,6 +76,8 @@ const wrap = (Wrapped, module, logger) => {
   class Wrapper extends React.Component {
     static propTypes = {
       refreshRemote: React.PropTypes.func.isRequired,
+      // We use it, but via ...props, so:
+      // eslint-disable-next-line react/no-unused-prop-types
       location: React.PropTypes.shape({
         hostname: React.PropTypes.string, // First two are not defined in some parts of lifecyle
         port:     React.PropTypes.string,

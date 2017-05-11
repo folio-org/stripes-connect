@@ -245,7 +245,7 @@ export default class RESTResource {
     switch (action.type) {
       case `${this.stateKey().toUpperCase()}_FETCH_SUCCESS`: {
         if (Array.isArray(action.records)) return [...action.records];
-        return [_.clone(action.records)]; 
+        return [_.clone(action.records)];
       }
       default: {
         return this.crudReducers(state, action);
@@ -411,7 +411,7 @@ export default class RESTResource {
       const options = this.verbOptions('GET', getState(), props);
       const url = urlFromOptions(options);
       if (url === null) return null;
-      const { headers, records, clear } = options;
+      const { headers, records } = options;
       // noop if the URL and recordsRequired didn't change
       if (url === that.lastUrl && options.recordsRequired === that.lastReqd) return null;
       that.lastUrl = url;
@@ -476,7 +476,7 @@ export default class RESTResource {
     };
   }
 
-  pagingStart = () => ({ type: `${this.stateKey().toUpperCase()}_PAGING_START`, })
+  pagingStart = () => ({ type: `${this.stateKey().toUpperCase()}_PAGING_START` })
 
   fetchPageStart = url => ({
     type: `${this.stateKey().toUpperCase()}_PAGE_START`,

@@ -181,7 +181,7 @@ export default class RESTResource {
     this.name = name;
     this.module = module;
     this.logger = logger;
-    this.crudName = module ? `${module}_${name}` : name;
+    this.crudName = module ? `${_.snakeCase(module)}_${_.snakeCase(name)}` : _.snakeCase(name);
     this.optionsTemplate = _.merge({}, defaults, query);
     this.crudActions = crud.actionCreatorsFor(this.crudName);
     this.pagedFetchSuccess = this.crudActions.fetchSuccess;
@@ -243,21 +243,22 @@ export default class RESTResource {
 
   reducer(state = [], action) {
     switch (action.type) {
-      // extra reducer (beyond redux-crud generated reducers)
-      // for clearing a list before populating from new fetch
-      case `CLEAR_${this.stateKey().toUpperCase()}`:
-        return [];
-      default:
+      case `${this.stateKey().toUpperCase()}_FETCH_SUCCESS`: {
+        if (Array.isArray(action.records)) return [...action.records];
+        return [_.clone(action.records)]; 
+      }
+      default: {
         return this.crudReducers(state, action);
+      }
     }
   }
 
   pagingReducer = (state = [], action) => {
     switch (action.type) {
-      case `CLEAR_${this.stateKey().toUpperCase()}`: {
+      case `${this.stateKey().toUpperCase()}_PAGING_START`: {
         return [];
       }
-      case `PAGE_START_${this.stateKey().toUpperCase()}`: {
+      case `${this.stateKey().toUpperCase()}_PAGE_START`: {
         const newPage = {
           records: null,
           url: action.meta.url,
@@ -265,7 +266,7 @@ export default class RESTResource {
         };
         return [...state, newPage];
       }
-      case `PAGE_SUCCESS_${this.stateKey().toUpperCase()}`: {
+      case `${this.stateKey().toUpperCase()}_PAGE_SUCCESS`: {
         let allDone = false;
         const newState = state.reduce((acc, val) => {
           allDone = allDone && val.isComplete;
@@ -426,9 +427,6 @@ export default class RESTResource {
             });
           } else {
             response.json().then((json) => {
-              if (clear) {
-                dispatch({ type: `CLEAR_${key.toUpperCase()}` });
-              }
               const data = (records ? json[records] : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               const reqd = options.recordsRequired;
@@ -451,6 +449,7 @@ export default class RESTResource {
     const { headers, records, recordsRequired: reqd,
             perRequest: limit, offsetParam } = options;
     return (dispatch) => {
+      dispatch(this.pagingStart());
       dispatch(this.fetchPageStart(firstURL));
       for (let offset = limit; offset < reqd; offset += limit) {
         const newOptions = {};
@@ -477,13 +476,15 @@ export default class RESTResource {
     };
   }
 
+  pagingStart = () => ({ type: `${this.stateKey().toUpperCase()}_PAGING_START`, })
+
   fetchPageStart = url => ({
-    type: `PAGE_START_${this.stateKey().toUpperCase()}`,
+    type: `${this.stateKey().toUpperCase()}_PAGE_START`,
     meta: { url },
   })
 
   fetchPageSuccess = (url, data) => ({
-    type: `PAGE_SUCCESS_${this.stateKey().toUpperCase()}`,
+    type: `${this.stateKey().toUpperCase()}_PAGE_SUCCESS`,
     payload: data,
     meta: { url },
   })

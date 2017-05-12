@@ -121,7 +121,7 @@ const wrap = (Wrapped, module, logger) => {
           const pagingListener = () => {
             const previousPaging = currentPaging;
             currentPaging = store.getState()[pagingKey];
-            if (currentPaging !== previousPaging) onPageChange(currentPaging);
+            if (currentPaging && currentPaging !== previousPaging) onPageChange(currentPaging);
           };
           store.subscribe(pagingListener);
         }

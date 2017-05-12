@@ -161,12 +161,17 @@ const wrap = (Wrapped, module, logger) => {
     store: React.PropTypes.object,
   };
 
-  Wrapper.mapState = state => ({
-    data: Object.freeze(resources.reduce((result, resource) => ({
-      ...result,
-      [resource.name]: Object.freeze(_.get(state, [resource.stateKey()], null)),
-    }), {})),
-  });
+  Wrapper.mapState = (state) => {
+    const newProps = {
+      data: Object.freeze(resources.reduce((result, resource) => ({
+        ...result,
+        [resource.name]: Object.freeze(_.get(state, [resource.stateKey()], null)),
+      }), {})),
+    };
+    // TODO Generalise this into a pass-through option on connectFor
+    if (typeof state.okapi === 'object') newProps.okapi = state.okapi;
+    return newProps;
+  };
 
   Wrapper.mapDispatch = (dispatch, ownProps) => ({
     mutator: resources.reduce((result, resource) => ({

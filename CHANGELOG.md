@@ -1,8 +1,9 @@
 # Change history for stripes-connect
 
-## Ongoing (N.B. backwards incompatible)
+## Ongoing 2.0.0 (N.B. backwards incompatible)
 * Remove 'clear' manifest option and ability to merge resources.
 * Manifest functions are permitted to return more than just strings.
+* Pass through 'okapi' property from the store as a prop, eventually we will make this a general facility.
 
 
 ## [1.0.0](https://github.com/folio-org/stripes-connect/tree/v1.0.0) (2017-05-09)

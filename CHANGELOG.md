@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## Ongoing (N.B. backwards incompatible)
+* Remove 'clear' manifest option and ability to merge resources.
+* Manifest functions are permitted to return more than just strings.
+
+
 ## [1.0.0](https://github.com/folio-org/stripes-connect/tree/v1.0.0) (2017-05-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v0.3.0...v1.0.0)
 

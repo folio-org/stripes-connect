@@ -159,7 +159,7 @@ export function substitute(original, props, state, module, logger) {
           return localState;
         }
         case '!': {
-          const prop = processFallback('user.username'.split('.'), [], props);
+          const prop = processFallback(name.split('.'), [], props);
           if (prop === null) dynamicPartsSatisfied = false;
           return prop;
         }

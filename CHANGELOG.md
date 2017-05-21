@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## IN PROGRESS
+
+* Fix implementation of `!{prop.subprop}` in manifest-path substitution.
+
 ## [2.0.0](https://github.com/folio-org/stripes-connect/tree/v2.0.0) (2017-05-12)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v1.0.0...v2.0.0)
 * Remove 'clear' manifest option and ability to merge resources.

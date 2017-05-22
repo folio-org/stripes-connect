@@ -1,11 +1,13 @@
 # Change history for stripes-connect
 
-## IN PROGRESS
+## [2.1.0](https://github.com/folio-org/stripes-connect/tree/v2.1.0) (2017-05-22)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.0.0...v2.1.0)
 
 * Fix implementation of `!{prop.subprop}` in manifest-path substitution.
 
 ## [2.0.0](https://github.com/folio-org/stripes-connect/tree/v2.0.0) (2017-05-12)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v1.0.0...v2.0.0)
+
 * Remove 'clear' manifest option and ability to merge resources.
 * Manifest functions are permitted to return more than just strings.
 * Pass through 'okapi' property from the store as a prop, eventually we will make this a general facility.

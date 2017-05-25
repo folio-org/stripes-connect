@@ -145,7 +145,15 @@ const wrap = (Wrapped, module, logger) => {
 
     componentWillReceiveProps(nextProps) {
       // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
-      this.props.refreshRemote({ ...nextProps });
+      if (this.componentShouldRefreshRemote(nextProps)) {
+        this.props.refreshRemote({ ...nextProps });
+      }
+    }
+
+    componentShouldRefreshRemote(nextProps) {
+      // Under exactly what conditions should a change of props cause
+      // a refresh? See STRIPES-393. For now, retain the "always" functionality.
+      return true;
     }
 
     render() {

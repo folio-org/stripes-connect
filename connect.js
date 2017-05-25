@@ -152,8 +152,20 @@ const wrap = (Wrapped, module, logger) => {
 
     componentShouldRefreshRemote(nextProps) {
       // Under exactly what conditions should a change of props cause
-      // a refresh? See STRIPES-393. For now, retain the "always" functionality.
-      return true;
+      // a refresh? See STRIPES-393. For now, we do this is the UI URL
+      // or any local resource has changed.
+      if (nextProps.location !== this.props.location) return true;
+      const data = this.props.data;
+      for (const key of Object.keys(data)) {
+        const m = Wrapped.manifest[key];
+        const type = m.type || defaultType;
+        if (type === 'local') {
+          const same = _.isEqual(data[key], nextProps.data[key]);
+          // console.log(`local resource '${key}': OLD =`, data[key], 'NEW =', nextProps.data[key], `-- same=${same}`);
+          if (!same) return true;
+        }
+      }
+      return false;
     }
 
     render() {

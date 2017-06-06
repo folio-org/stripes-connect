@@ -5,6 +5,7 @@ export default class LocalResource {
     this.module = module;
     this.logger = logger; // not presently needed, but may be down the line
     this.query = query;
+    this.reducer111 = this.reducer;
   }
 
   init = (store) => {

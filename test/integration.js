@@ -197,9 +197,12 @@ describe('connect()', () => {
 
     const Connected = connect(Functional, 'test');
     const inst = mount(<Root store={store} component={Connected}/>);
+      inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 
     setTimeout(() => {
       inst.find(Functional).props().data.functionalResource.length.should.equal(5);
+      inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(true);
+      inst.find(Functional).props().resources.functionalResource.records.length.should.equal(5);
       fetchMock.restore();
       done();
     }, 10);

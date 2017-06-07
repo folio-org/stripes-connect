@@ -16,6 +16,7 @@
     "key-spacing": "off",
     "one-var": "off",
     "one-var-declaration-per-line": [ 1, "initializations" ],
-    "max-len": "off"
+    "max-len": "off",
+    "no-restricted-syntax": ["error", "LabeledStatement", "WithStatement"]
   }
 }

@@ -1,4 +1,8 @@
 # Change history for stripes-connect
+## [2.2.0](https://github.com/folio-org/stripes-connect/tree/v2.2.0) (2017-06-08)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.1.0...v2.2.0)
+
+* Initial work exposing resources with richer metadata in `props.resources`. API for this not yet fully formed, discussion in STRIPES-111.
 
 ## [2.1.0](https://github.com/folio-org/stripes-connect/tree/v2.1.0) (2017-05-22)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.0.0...v2.1.0)

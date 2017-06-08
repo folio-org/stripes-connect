@@ -112,6 +112,7 @@ const wrap = (Wrapped, module, logger) => {
           const onPageSuccess = (paging) => {
             const records = paging.reduce((acc, val) => acc.concat(val.records), []);
             store.dispatch(resource.pagedFetchSuccess(records));
+            store.dispatch(resource.fetchSuccess111(paging[paging.length - 1].meta, records));
           };
           const onPageChange = (paging) => {
             const allDone = paging.reduce((acc, val) => acc && val.isComplete, true);
@@ -125,6 +126,7 @@ const wrap = (Wrapped, module, logger) => {
           };
           store.subscribe(pagingListener);
         }
+        this.context.addReducer(resource.stateKey() + '111', resource.reducer111);
         this.context.addReducer(resource.stateKey(), resource.reducer);
 
         // TODO this may move, but while it's here, it's going to be called
@@ -186,6 +188,10 @@ const wrap = (Wrapped, module, logger) => {
       data: Object.freeze(resources.reduce((result, resource) => ({
         ...result,
         [resource.name]: Object.freeze(_.get(state, [resource.stateKey()], null)),
+      }), {})),
+      resources: Object.freeze(resources.reduce((result, resource) => ({
+        ...result,
+        [resource.name]: Object.freeze(_.get(state, [resource.stateKey() + '111'], null)),
       }), {})),
     };
     // TODO Generalise this into a pass-through option on connectFor

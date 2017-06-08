@@ -5,6 +5,15 @@ import uuid from 'uuid';
 import queryString from 'query-string';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
+const initialResourceState = {
+  hasLoaded: false,
+  isPending: false,
+  failed: false,
+  records: [],
+  successfulMutations: [],
+  failedMutations: [],
+  pendingMutations: [],
+};
 
 function optionsFromState(options, state) {
   if (options.type === 'okapi') {
@@ -253,6 +262,55 @@ export default class RESTResource {
     }
   }
 
+  reducer111 = (state = initialResourceState, action) => {
+    const prefix = this.stateKey().toUpperCase();
+    switch (action.type) {
+      case `${prefix}_FETCH_START`: {
+        return Object.assign({}, state, { isPending: true });
+      }
+      case `${prefix}_FETCH_SUCCESS111`: {
+        let records;
+        if (Array.isArray(action.payload)) records = [...action.payload];
+        else records = [_.clone(action.payload)];
+        return Object.assign({}, state, {
+          hasLoaded: true,
+          loadedAt: new Date(),
+          isPending: false,
+          failed: false,
+          records,
+          ...action.meta,
+        });
+      }
+      case `${prefix}_CREATE_SUCCESS`: {
+        return Object.assign({}, state, {
+          successfulMutations: [{
+            type: 'POST',
+            record: action.record,
+          }, ...state.successfulMutations],
+        });
+      }
+      case `${prefix}_UPDATE_SUCCESS`: {
+        return Object.assign({}, state, {
+          successfulMutations: [{
+            type: 'PUT',
+            record: action.record,
+          }, ...state.successfulMutations],
+        });
+      }
+      case `${prefix}_DELETE_SUCCESS`: {
+        return Object.assign({}, state, {
+          successfulMutations: [{
+            type: 'DELETE',
+            record: action.record,
+          }, ...state.successfulMutations],
+        });
+      }
+      default: {
+        return state;
+      }
+    }
+  }
+
   pagingReducer = (state = [], action) => {
     switch (action.type) {
       case `${this.stateKey().toUpperCase()}_PAGING_START`: {
@@ -261,7 +319,8 @@ export default class RESTResource {
       case `${this.stateKey().toUpperCase()}_PAGE_START`: {
         const newPage = {
           records: null,
-          url: action.meta.url,
+          url: action.url,
+          meta: null,
           isComplete: false,
         };
         return [...state, newPage];
@@ -272,7 +331,7 @@ export default class RESTResource {
           allDone = allDone && val.isComplete;
           if (action.meta.url === val.url) {
             return acc.concat(Object.assign({}, val,
-              { isComplete: true, records: action.payload }));
+              { isComplete: true, records: action.payload, meta: action.meta }));
           }
           return acc.concat(val);
         }, []);
@@ -432,10 +491,17 @@ export default class RESTResource {
               const reqd = options.recordsRequired;
               const perPage = options.perRequest;
               const total = json.total_records;
+              const meta = {
+                url: response.url,
+                headers: response.headers,
+                httpStatus: response.status,
+                other: records ? _.omit(json, records) : {},
+              };
               if (reqd && total && total > perPage && reqd > perPage) {
-                dispatch(this.fetchMore(options, total, data, url));
+                dispatch(this.fetchMore(options, total, data, meta));
               } else {
                 dispatch(crudActions.fetchSuccess(data));
+                dispatch(this.fetchSuccess111(meta, data));
               }
             });
           }
@@ -445,12 +511,12 @@ export default class RESTResource {
     };
   }
 
-  fetchMore = (options, total, firstData, firstURL) => {
+  fetchMore = (options, total, firstData, firstMeta) => {
     const { headers, records, recordsRequired: reqd,
             perRequest: limit, offsetParam } = options;
     return (dispatch) => {
       dispatch(this.pagingStart());
-      dispatch(this.fetchPageStart(firstURL));
+      dispatch(this.fetchPageStart(firstMeta.url));
       for (let offset = limit; offset < reqd; offset += limit) {
         const newOptions = {};
         newOptions.params = {};
@@ -463,8 +529,14 @@ export default class RESTResource {
               // TODO error
             } else {
               response.json().then((json) => {
+                const meta = {
+                  url: response.url,
+                  headers: response.headers,
+                  httpStatus: response.status,
+                  other: records ? _.omit(json, records) : {},
+                };
                 const data = (records ? json[records] : json);
-                dispatch(this.fetchPageSuccess(url, data));
+                dispatch(this.fetchPageSuccess(meta, data));
               });
             }
           }).catch((err) => {
@@ -472,7 +544,7 @@ export default class RESTResource {
             console.log('PAGE FETCH ERROR', err);
           });
       }
-      dispatch(this.fetchPageSuccess(firstURL, firstData));
+      dispatch(this.fetchPageSuccess(firstMeta, firstData));
     };
   }
 
@@ -480,12 +552,18 @@ export default class RESTResource {
 
   fetchPageStart = url => ({
     type: `${this.stateKey().toUpperCase()}_PAGE_START`,
-    meta: { url },
+    url,
   })
 
-  fetchPageSuccess = (url, data) => ({
+  fetchPageSuccess = (meta, data) => ({
     type: `${this.stateKey().toUpperCase()}_PAGE_SUCCESS`,
     payload: data,
-    meta: { url },
+    meta,
+  })
+
+  fetchSuccess111 = (meta, data) => ({
+    type: `${this.stateKey().toUpperCase()}_FETCH_SUCCESS111`,
+    payload: data,
+    meta,
   })
 }

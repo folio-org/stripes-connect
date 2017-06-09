@@ -1,4 +1,9 @@
 # Change history for stripes-connect
+## [2.2.1](https://github.com/folio-org/stripes-connect/tree/v2.2.1) (2017-06-09)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.2.0...v2.2.1)
+
+* Fix failure of paging to handle case where requested records exceed those available and allow paging to find available records under an alternate name used by some services.
+
 ## [2.2.0](https://github.com/folio-org/stripes-connect/tree/v2.2.0) (2017-06-08)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.1.0...v2.2.0)
 

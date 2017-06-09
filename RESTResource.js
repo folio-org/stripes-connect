@@ -490,7 +490,9 @@ export default class RESTResource {
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               const reqd = options.recordsRequired;
               const perPage = options.perRequest;
-              const total = json.total_records;
+              // TODO: Where to find total should be configurable
+              const total = json.total_records === undefined ?
+                json.totalRecords : json.total_records;
               const meta = {
                 url: response.url,
                 headers: response.headers,

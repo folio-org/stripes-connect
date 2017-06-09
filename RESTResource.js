@@ -512,8 +512,9 @@ export default class RESTResource {
   }
 
   fetchMore = (options, total, firstData, firstMeta) => {
-    const { headers, records, recordsRequired: reqd,
+    const { headers, records, recordsRequired,
             perRequest: limit, offsetParam } = options;
+    const reqd = Math.min(recordsRequired, total);
     return (dispatch) => {
       dispatch(this.pagingStart());
       dispatch(this.fetchPageStart(firstMeta.url));
@@ -553,7 +554,7 @@ export default class RESTResource {
   fetchPageStart = url => ({
     type: `${this.stateKey().toUpperCase()}_PAGE_START`,
     url,
-  })
+  });
 
   fetchPageSuccess = (meta, data) => ({
     type: `${this.stateKey().toUpperCase()}_PAGE_SUCCESS`,

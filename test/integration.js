@@ -80,7 +80,7 @@ Paged.manifest = { pagedResource: {
   path: 'turnip',
   params: { q: 'dinner' },
   records: 'records',
-  recordsRequired: 15,
+  recordsRequired: 20,
   perRequest: 5,
 } };
 
@@ -157,16 +157,15 @@ describe('connect()', () => {
 
   it('should make multiple requests for a paged resource', (done) => {
     fetchMock
-      .get('http://localhost/turnip?limit=5&q=dinner',
-        {records:[{"id":"58e5356fe84698a0a279a903","name":"Alberta"},{"id":"58e5356f364668c082d3d87a","name":"David"},{"id":"58e5356ff56928961932c1db","name":"Roxie"},{"id":"58e5356ff66b0af6f1332145","name":"Tammy"},{"id":"58e5356fd18c30d6c63503c6","name":"Sanford"}],total_records:13},
+      .getOnce('http://localhost/turnip?limit=5&q=dinner',
+        {records:[{"id":"58e5356fe84698a0a279a903","name":"Alberta"},{"id":"58e5356f364668c082d3d87a","name":"David"},{"id":"58e5356ff56928961932c1db","name":"Roxie"},{"id":"58e5356ff66b0af6f1332145","name":"Tammy"},{"id":"58e5356fd18c30d6c63503c6","name":"Sanford"}],total_records:14},
         { headers: { 'Content-Type': 'application/json', } } )
-      .get('http://localhost/turnip?limit=5&offset=5&q=dinner',
-        {records:[{"id":"58e55786065039ceb9acb0e2","name":"Lucas"},{"id":"58e55786e2106a216fdb5629","name":"Kirkland"},{"id":"58e55786819013f1e810d28e","name":"Clarke"},{"id":"58e55786e51f01bc81b11f32","name":"Acevedo"},{"id":"58e55786791c37697eec2bc2","name":"Earnestine"}],total_records:13},
+      .getOnce('http://localhost/turnip?limit=5&offset=5&q=dinner',
+        {records:[{"id":"58e55786065039ceb9acb0e2","name":"Lucas"},{"id":"58e55786e2106a216fdb5629","name":"Kirkland"},{"id":"58e55786819013f1e810d28e","name":"Clarke"},{"id":"58e55786e51f01bc81b11f32","name":"Acevedo"},{"id":"58e55786791c37697eec2bc2","name":"Earnestine"}],total_records:14},
 
         { headers: { 'Content-Type': 'application/json', } } )
-      .get('http://localhost/turnip?limit=5&offset=10&q=dinner',
-        {records:[{"id":"58e557e48b8b56d0bea22460","name":"Dillon"},{"id":"58e557e46120e13590013272","name":"Cain"},{"id":"58e557e41c2e37143a990445","name":"Gordon"}],total_records:13},
-
+      .getOnce('http://localhost/turnip?limit=5&offset=10&q=dinner',
+        {records:[{"id":"58e557e48b8b56d0bea22460","name":"Dillon"},{"id":"58e557e46120e13590013272","name":"Cain"},{"id":"58e557e41c2e37143a990445","name":"Gordon"},{"id":"28e257e41c2e37143a990445","name":"Giddeon"}],total_records:14},
         { headers: { 'Content-Type': 'application/json', } } )
       .catch(503);
 
@@ -178,7 +177,7 @@ describe('connect()', () => {
     const inst = mount(<Root store={store} component={Connected}/>);
 
     setTimeout(() => {
-      inst.find(Paged).props().data.pagedResource.length.should.equal(13);
+      inst.find(Paged).props().data.pagedResource.length.should.equal(14);
       fetchMock.restore();
       done();
     }, 10);

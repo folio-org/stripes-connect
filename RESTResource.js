@@ -352,7 +352,6 @@ export default class RESTResource {
   }
 
   createAction = (record, props) => {
-    const that = this;
     const crudActions = this.crudActions;
     return (dispatch, getState) => {
       const options = this.verbOptions('POST', getState(), props);
@@ -378,7 +377,7 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name,
+              error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name,
                     { status: response.status, message: text });
             });
           } else {
@@ -389,13 +388,12 @@ export default class RESTResource {
             });
           }
         }).catch((reason) => {
-          error(dispatch, 'POST', crudActions.createError, clientRecord, that.module, that.name, reason);
+          error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name, reason);
         });
     };
   }
 
   updateAction = (record, props) => {
-    const that = this;
     const crudActions = this.crudActions;
     const clientRecord = { ...record };
     return (dispatch, getState) => {
@@ -413,7 +411,7 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name,
+              error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name,
                     { status: response.status, message: text });
             });
           } else {
@@ -426,13 +424,12 @@ export default class RESTResource {
             dispatch(crudActions.updateSuccess(clientRecord));
           }
         }).catch((reason) => {
-          error(dispatch, 'PUT', crudActions.updateError, record, that.module, that.name, reason.message);
+          error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name, reason.message);
         });
     };
   }
 
   deleteAction = (record, props) => {
-    const that = this;
     const crudActions = this.crudActions;
     return (dispatch, getState) => {
       const options = this.verbOptions('DELETE', getState(), props);
@@ -450,20 +447,19 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, that.module, that.name,
+              error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name,
                     { status: response.status, message: text });
             });
           } else {
             dispatch(crudActions.deleteSuccess(clientRecord));
           }
         }).catch((reason) => {
-          error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, that.module, that.name, reason.message);
+          error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name, reason.message);
         });
     };
   }
 
   fetchAction = (props) => {
-    const that = this;
     const crudActions = this.crudActions;
     const key = this.stateKey();
     return (dispatch, getState) => {
@@ -472,16 +468,16 @@ export default class RESTResource {
       if (url === null) return null;
       const { headers, records } = options;
       // noop if the URL and recordsRequired didn't change
-      if (url === that.lastUrl && options.recordsRequired === that.lastReqd) return null;
-      that.lastUrl = url;
-      that.lastReqd = options.recordsRequired;
+      if (url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
+      this.lastUrl = url;
+      this.lastReqd = options.recordsRequired;
 
       dispatch(crudActions.fetchStart());
       return fetch(url, { headers })
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name,
+              error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name,
                     { status: response.status, message: text });
             });
           } else {
@@ -508,7 +504,7 @@ export default class RESTResource {
             });
           }
         }).catch((reason) => {
-          error(dispatch, 'GET', crudActions.fetchError, null, that.module, that.name, reason.message);
+          error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, reason.message);
         });
     };
   }

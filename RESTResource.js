@@ -482,6 +482,13 @@ export default class RESTResource {
             });
           } else {
             response.json().then((json) => {
+              // We are only interested in the response to our most recent request
+              // TODO: request identifiers will help us avoid the extra string manipulation
+              // and will be useful for retries
+              if (decodeURI(response.url) !== decodeURI(this.lastUrl)) {
+                this.logger.log('connect', `Response ${response.url} does not match most recent request ${this.lastUrl}`);
+                return;
+              }
               const data = (records ? json[records] : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               const reqd = options.recordsRequired;

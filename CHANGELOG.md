@@ -1,4 +1,9 @@
 # Change history for stripes-connect
+
+## 2.3.0 IN PROGRESS
+
+* createAction copes with 201 Created responses that have no body. Fixes STRPCONN-2.
+
 ## [2.2.1](https://github.com/folio-org/stripes-connect/tree/v2.2.1) (2017-06-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.2.0...v2.2.1)
 

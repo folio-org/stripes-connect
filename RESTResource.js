@@ -381,11 +381,17 @@ export default class RESTResource {
                     { status: response.status, message: text });
             });
           } else {
-            response.json().then((json) => {
-              const responseRecord = { ...json };
-              if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
-              dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));
-            });
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.startsWith("application/json")) {
+              response.json().then((json) => {
+                const responseRecord = { ...json };
+                if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
+                dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));
+              });
+            } else {
+              // Response is not JSON; maybe no body at all. Assume the client-record is good enough
+              dispatch(crudActions.createSuccess(clientRecord, clientGeneratedId));
+            }
           }
         }).catch((reason) => {
           error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name, reason);

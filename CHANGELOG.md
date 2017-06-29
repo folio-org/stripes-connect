@@ -2,7 +2,8 @@
 
 ## 2.3.0 IN PROGRESS
 
-* createAction copes with 201 Created responses that have no body. Fixes STRPCONN-2.
+* `createAction` copes with 201 Created responses that have no body. Fixes STRPCONN-2.
+* Report error when the designated 'records' element is missing. Fixes STRPCONN-3
 
 ## [2.2.1](https://github.com/folio-org/stripes-connect/tree/v2.2.1) (2017-06-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.2.0...v2.2.1)

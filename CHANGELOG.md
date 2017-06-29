@@ -1,6 +1,7 @@
 # Change history for stripes-connect
 
-## 2.3.0 IN PROGRESS
+## [2.3.0](https://github.com/folio-org/stripes-connect/tree/v2.3.0) (2017-06-29)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.2.1...v2.3.0)
 
 * `createAction` copes with 201 Created responses that have no body. Fixes STRPCONN-2.
 * Report error when the designated 'records' element is missing. Fixes STRPCONN-3

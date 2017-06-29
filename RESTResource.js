@@ -245,6 +245,10 @@ export default class RESTResource {
           return null;
         }
       }
+
+      // records
+      if (options.records)
+        options.records = substitute(options.records, props, state, this.module, this.logger);
     }
 
     return options;

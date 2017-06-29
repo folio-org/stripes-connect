@@ -497,6 +497,10 @@ export default class RESTResource {
               }
               const data = (records ? json[records] : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
+              if (!data) {
+                error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, `no records in '${records}' element`);
+                return;
+              }
               const reqd = options.recordsRequired;
               const perPage = options.perRequest;
               // TODO: Where to find total should be configurable

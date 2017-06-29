@@ -137,6 +137,7 @@ function urlFromOptions(options, pk) {
 // ? - query parameters in current url
 // : - path components as defined by react-router
 // $ - resources
+// ! - properties
 //
 //
 export function substitute(original, props, state, module, logger) {
@@ -150,7 +151,7 @@ export function substitute(original, props, state, module, logger) {
     dynamicPartsSatisfied = (result !== null);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
-    result = original.replace(/([:?$!]){(.*?)}/g, (match, ns, name) => {
+    result = original.replace(/([?:$!]){(.*?)}/g, (match, ns, name) => {
       switch (ns) { // eslint-disable-line default-case
         case '?': {
           const queryParam = processFallback(name, [], parsedQuery);

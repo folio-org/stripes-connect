@@ -262,14 +262,18 @@ strings using four different but related syntaxes:
   `http://ui.folio.org:3000/items?q=water`, the path will be resolved as
   `item-storage?query=water`.
 
-* `${name}` -- interpolates the value of the named local resource (see
+* `%{name}` -- interpolates the value of the named local resource (see
   [above](#local-resources) on local resources). In general, the
   approach here is to store state in a local resource rather than in
   React-component state. Given a local resource `sortOrder`, this can
   be done using something along the lines of
   `this.props.mutator.sortOrder.replace('title')`, most likely from an
   event hander. The state can then be used in a path such as
-  `item-storage?query=?{q} sortby ${sortOrder}`.
+  `item-storage?query=?{q} sortby %{sortOrder}`.
+
+* `${name}` -- recognised as a synonym of `%{name}` to ease transition
+  from this older syntax, but this is deprecated and **should not be
+  used in new code**.
 
 * `!{name}` -- interpolates the value of the named property from the
   present React component. For example, if the path is
@@ -300,7 +304,7 @@ fallback value, used when the state is missing:
 * `?{name:-val}` yields the value of the named UI URL query parameter
   if any, or the constant `val` if it is absent.
 
-* `${name:-val}` yields the value of the named local resource
+* `%{name:-val}` yields the value of the named local resource
   if any, or the constant `val` if it is undefined.
 
 * `!{name:-val}` yields the value of the named component property
@@ -311,8 +315,8 @@ sort-order, etc.
 
 In addition, further BASH-like syntax allows a value to be provided
 only if the names path-component, query parameter or local resource
-_does_ exist: `${name:+val}` yields either the constant `val` or an
-empty string, according as `${name}` is or is not defined.
+_does_ exist: `%{name:+val}` yields either the constant `val` or an
+empty string, according as `%{name}` is or is not defined.
 
 #### Example path
 
@@ -357,7 +361,7 @@ invoked whenever a path is needed. It is passed three parameters:
   `:{name}`).
 
 * An object containing the component's resources' data (as accessed by
-  `$name}`).
+  `%{name}`).
 
 The function must return a string to use as the path, or `null`
 if it is unable to do this because a required piece of state is
@@ -370,7 +374,7 @@ So the function would usually be defined along these lines:
           users: {
             type: 'okapi',
             path: (queryParams, pathComponents, resourceData) => {
-              if (queryParams.x) return `users/${queryParams.x}`;
+              if (queryParams.x) return `users/%{queryParams.x}`;
               return undefined;
             }
           }

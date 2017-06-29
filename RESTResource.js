@@ -151,7 +151,7 @@ export function substitute(original, props, state, module, logger) {
     dynamicPartsSatisfied = (result !== null);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
-    result = original.replace(/([?:$!]){(.*?)}/g, (match, ns, name) => {
+    result = original.replace(/([?:$%!]){(.*?)}/g, (match, ns, name) => {
       switch (ns) { // eslint-disable-line default-case
         case '?': {
           const queryParam = processFallback(name, [], parsedQuery);
@@ -163,7 +163,7 @@ export function substitute(original, props, state, module, logger) {
           if (pathComp === null) dynamicPartsSatisfied = false;
           return pathComp;
         }
-        case '$': {
+        case '%': case '$': {
           const localState = processFallback(name.split('.'), ['data'], mockProps(state, module));
           if (localState === null) dynamicPartsSatisfied = false;
           return localState;

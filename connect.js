@@ -87,6 +87,7 @@ const wrap = (Wrapped, module, logger) => {
         // query: null
         // state: null
       }),
+      data: React.PropTypes.object, // eslint-disable-line react/forbid-prop-types
     };
 
     constructor(props, context) {
@@ -126,7 +127,7 @@ const wrap = (Wrapped, module, logger) => {
           };
           store.subscribe(pagingListener);
         }
-        this.context.addReducer(resource.stateKey() + '111', resource.reducer111);
+        this.context.addReducer(`${resource.stateKey()}111`, resource.reducer111);
         this.context.addReducer(resource.stateKey(), resource.reducer);
 
         // TODO this may move, but while it's here, it's going to be called
@@ -191,7 +192,7 @@ const wrap = (Wrapped, module, logger) => {
       }), {})),
       resources: Object.freeze(resources.reduce((result, resource) => ({
         ...result,
-        [resource.name]: Object.freeze(_.get(state, [resource.stateKey() + '111'], null)),
+        [resource.name]: Object.freeze(_.get(state, [`${resource.stateKey()}111`], null)),
       }), {})),
     };
     // TODO Generalise this into a pass-through option on connectFor

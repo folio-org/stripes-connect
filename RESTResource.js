@@ -248,8 +248,9 @@ export default class RESTResource {
       }
 
       // records
-      if (options.records)
+      if (options.records) {
         options.records = substitute(options.records, props, state, this.module, this.logger);
+      }
     }
 
     return options;
@@ -386,8 +387,8 @@ export default class RESTResource {
                     { status: response.status, message: text });
             });
           } else {
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.startsWith("application/json")) {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.startsWith('application/json')) {
               response.json().then((json) => {
                 const responseRecord = { ...json };
                 if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];

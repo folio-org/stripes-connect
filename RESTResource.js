@@ -4,6 +4,8 @@ import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
 
+import sideEffects from './sideEffects';
+
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 const initialResourceState = {
   hasLoaded: false,
@@ -199,6 +201,10 @@ export default class RESTResource {
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
     // JavaScript methods are not bound to their instance by default
     this.reducer = this.reducer.bind(this);
+
+    if (query.sync) {
+      sideEffects.register(this);
+    }
   }
 
   getMutator(dispatch, props) {
@@ -261,6 +267,10 @@ export default class RESTResource {
       case `${this.stateKey().toUpperCase()}_FETCH_SUCCESS`: {
         if (Array.isArray(action.records)) return [...action.records];
         return [_.clone(action.records)];
+      }
+      case `${this.stateKey().toUpperCase()}_SYNC`: {
+        // TODO: handle sync
+        return state;
       }
       default: {
         return this.crudReducers(state, action);

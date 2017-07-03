@@ -203,7 +203,7 @@ export default class RESTResource {
     this.reducer = this.reducer.bind(this);
 
     if (query.sync) {
-      sideEffects.register(this);
+      sideEffects.register(this, query.sync);
     }
   }
 

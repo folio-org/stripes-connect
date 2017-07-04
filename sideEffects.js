@@ -1,31 +1,24 @@
 import orchestrate from 'redux-orchestrate';
 import _ from 'lodash';
 
-const ACTION_NAMES = [
-  'FETCH_SUCCESS111',
-  'FETCH_SUCCESS',
+const actionsName = [
   'CREATE_SUCCESS',
-  'DELETE_SUCCESS',
   'UPDATE_SUCCESS',
 ];
 
-function getActionNames(crudName) {
-  const prefix = crudName.toUpperCase();
-  return ACTION_NAMES.map(name => `${prefix}_${name}`);
+function generateRules(resource) {
+  const actionPrefix = resource.crudName.toUpperCase();
+  const syncName = resource.optionsTemplate.sync;
+  const syncPrefix = `${_.snakeCase(resource.module)}_${_.snakeCase(syncName)}`.toUpperCase();
+
+  return actionsName.map(name => ({
+    case: `${actionPrefix}_${name}`,
+    dispatch: `${syncPrefix}_SYNC_${name}`,
+  }));
 }
 
-function getSyncAction(module, syncName) {
-  return `${_.snakeCase(module)}_${_.snakeCase(syncName)}_sync`.toUpperCase();
-}
-
-function register(resource, syncName) {
-  const actionNames = getActionNames(resource.crudName);
-  const syncAction = getSyncAction(resource.module, syncName);
-  const rules = [{
-    case: actionNames,
-    dispatch: syncAction,
-  }];
-
+function register(resource) {
+  const rules = generateRules(resource);
   orchestrate.addRules(rules);
 }
 

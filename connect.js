@@ -183,35 +183,41 @@ const wrap = (Wrapped, module, logger) => {
   };
 
   Wrapper.mapState = (state) => {
-    const newProps = {
-      data: Object.freeze(resources.reduce((result, resource) => ({
-        ...result,
-        [resource.name]: Object.freeze(_.get(state, [resource.stateKey()], null)),
-      }), {})),
-      resources: Object.freeze(resources.reduce((result, resource) => ({
-        ...result,
-        [resource.name]: Object.freeze(_.get(state, [`${resource.stateKey()}111`], null)),
-      }), {})),
-    };
+    const data = {};
+    for (const r of resources) {
+      data[r.name] = Object.freeze(_.get(state, [r.stateKey()], null));
+    }
+
+    const resourceData = {};
+    for (const r of resources) {
+      resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}111`], null));
+    }
+
+    const newProps = { data, resources: resourceData };
     // TODO Generalise this into a pass-through option on connectFor
     if (typeof state.okapi === 'object') newProps.okapi = state.okapi;
+
     return newProps;
   };
 
-  Wrapper.mapDispatch = (dispatch, ownProps) => ({
-    mutator: resources.reduce((result, resource) => ({
-      ...result,
-      [resource.name]: resource.getMutator(dispatch, ownProps),
-    }), {}),
-    refreshRemote: (params) => {
+  Wrapper.mapDispatch = (dispatch, ownProps) => {
+    const res = {};
+
+    res.mutator = {};
+    for (const r of resources) {
+      res.mutator[r.name] = r.getMutator(dispatch, ownProps);
+    }
+
+    res.refreshRemote = (params) => {
       resources.forEach((resource) => {
         if (resource.refresh) {
           Wrapper.logger.log('connect', `refreshing resource '${resource.name}' for <${Wrapped.name}>`);
           resource.refresh(dispatch, params);
         }
       });
-    },
-  });
+    };
+    return res;
+  };
 
   return Wrapper;
 };

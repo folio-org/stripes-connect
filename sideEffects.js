@@ -1,9 +1,11 @@
 import orchestrate from 'redux-orchestrate';
 import _ from 'lodash';
 
+const middleware = orchestrate();
 const actionsName = [
   'CREATE_SUCCESS',
   'UPDATE_SUCCESS',
+  'DELETE_SUCCESS',
 ];
 
 function generateRules(resource) {
@@ -13,13 +15,16 @@ function generateRules(resource) {
 
   return actionsName.map(name => ({
     case: `${actionPrefix}_${name}`,
-    dispatch: `${syncPrefix}_SYNC_${name}`,
+    dispatch: `${syncPrefix}_${name}`,
   }));
 }
 
 function register(resource) {
   const rules = generateRules(resource);
-  orchestrate.addRules(rules);
+  middleware.addRules(rules);
 }
 
-export default { register };
+export default {
+  register,
+  middleware,
+};

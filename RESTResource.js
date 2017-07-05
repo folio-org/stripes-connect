@@ -268,12 +268,6 @@ export default class RESTResource {
         if (Array.isArray(action.records)) return [...action.records];
         return [_.clone(action.records)];
       }
-      case `${this.stateKey().toUpperCase()}_SYNC_UPDATE_SUCCESS`: {
-        return state.map(item => ((item.id === action.record.id) ? action.record : item));
-      }
-      case `${this.stateKey().toUpperCase()}_SYNC_CREATE_SUCCESS`: {
-        return [...state, action.record];
-      }
       default: {
         return this.crudReducers(state, action);
       }

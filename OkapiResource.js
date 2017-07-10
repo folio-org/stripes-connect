@@ -36,7 +36,7 @@ const defaults = {
 };
 
 export default class OkapiResource extends RESTResource {
-  constructor(name, query = {}, module = null, logger) {
-    super(name, query, module, logger, defaults);
+  constructor(name, query = {}, module = null, logger, dataKey) {
+    super(name, query, module, logger, dataKey, defaults);
   }
 }

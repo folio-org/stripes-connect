@@ -3,6 +3,7 @@ import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
+import CrudActionsAugmenter from './CrudActionsAugmenter';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 const initialResourceState = {
@@ -83,15 +84,40 @@ function processFallback(s, getPath, props) {
   return res;
 }
 
+// Calculate what the props _would be_ if we went through
+// mapStateToProps. If dataKey is included, then we look only at state
+// pertaining to that data-key.
+//
 // If we restructure the state into a per-module hierarchy we
 // won't need to go through this dance STRIPES-238
-function mockProps(state, module) {
+function mockProps(state, module, dataKey) {
   const mock = { data: {} };
+  // console.log(` mockprops(${dataKey})`);
   Object.keys(state).forEach((key) => {
-    const re = new RegExp(`^${module}.(.*)`);
-    const res = re.exec(key);
-    if (Array.isArray(res) && res.length > 1) {
-      mock.data[res[1]] = state[key];
+    // console.log(`  considering ${key}`);
+    const a = key.split('#');
+    let rawKey;
+    if (a.length === 1) {
+      // No dataKey
+      // console.log('   no dataKey included');
+      if (!dataKey) rawKey = key;
+    } else {
+      // console.log(`   dataKey ${a[0]} included`);
+      if (a.length > 2) console.log(`state key '${key}' has multiple '#'`);
+      // 1st component is dataKey
+      if (dataKey && dataKey === a[0]) rawKey = a[1];
+    }
+
+    if (rawKey) {
+      // console.log(`    considering rawKey ${rawKey}`);
+      const re = new RegExp(`^${module}.(.*)`);
+      const res = re.exec(rawKey);
+      if (Array.isArray(res) && res.length > 1) {
+        mock.data[res[1]] = state[key];
+        // console.log(`     added mock[${res[1]}] = ${state[key]}`);
+      }
+    } else {
+      // console.log('    skipping');
     }
   });
   return mock;
@@ -147,7 +173,7 @@ export function substitute(original, props, state, module, logger) {
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, logger);
+    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey).data, logger);
     dynamicPartsSatisfied = (result !== null);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
@@ -164,7 +190,7 @@ export function substitute(original, props, state, module, logger) {
           return pathComp;
         }
         case '%': case '$': {
-          const localState = processFallback(name.split('.'), ['data'], mockProps(state, module));
+          const localState = processFallback(name.split('.'), ['data'], mockProps(state, module, props.dataKey));
           if (localState === null) dynamicPartsSatisfied = false;
           return localState;
         }
@@ -187,13 +213,14 @@ export function substitute(original, props, state, module, logger) {
 
 export default class RESTResource {
 
-  constructor(name, query = {}, module = null, logger, defaults = defaultDefaults) {
+  constructor(name, query = {}, module = null, logger, dataKey, defaults = defaultDefaults) {
     this.name = name;
     this.module = module;
     this.logger = logger;
+    this.dataKey = dataKey;
     this.crudName = module ? `${_.snakeCase(module)}_${_.snakeCase(name)}` : _.snakeCase(name);
     this.optionsTemplate = _.merge({}, defaults, query);
-    this.crudActions = crud.actionCreatorsFor(this.crudName);
+    this.crudActions = new CrudActionsAugmenter(crud.actionCreatorsFor(this.crudName), { dataKey });
     this.pagedFetchSuccess = this.crudActions.fetchSuccess;
     this.crudReducers = crud.List.reducersFor(this.crudName,
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
@@ -234,7 +261,7 @@ export default class RESTResource {
           substitute(param, props, state, this.module, this.logger));
       } else if (typeof options.params === 'function') {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
-        options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module).data, this.logger);
+        options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey).data, this.logger);
       }
 
       // recordsRequired
@@ -257,6 +284,9 @@ export default class RESTResource {
   }
 
   reducer(state = [], action) {
+    const dataKey = action.meta ? action.meta.dataKey : undefined;
+    if (dataKey !== this.dataKey) return state;
+
     switch (action.type) {
       case `${this.stateKey().toUpperCase()}_FETCH_SUCCESS`: {
         if (Array.isArray(action.records)) return [...action.records];
@@ -349,12 +379,12 @@ export default class RESTResource {
   }
 
   stateKey() {
-    return this.crudName;
+    return `${this.dataKey ? `${this.dataKey}#` : ''}${this.crudName}`;
   }
 
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return null;
-    return dispatch(this.fetchAction(props));
+    if (props.dataKey === this.dataKey) return dispatch(this.fetchAction(props));
   }
 
   createAction = (record, props) => {

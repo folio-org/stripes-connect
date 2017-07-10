@@ -24,17 +24,7 @@ const wrap = (Wrapped, module, logger) => {
   }
 
   const resources = [];
-  _.forOwn(Wrapped.manifest, (query, name) => {
-    if (!name.startsWith('@')) {
-      // Regular manifest entries describe resources
-      const resource = new types[query.type || defaultType](name, query, module, logger);
-      resources.push(resource);
-    } else if (name === '@errorHandler') {
-      setErrorHandler(query);
-    } else {
-      console.log(`WARNING: ${module} ignoring unsupported special manifest entry '${name}'`);
-    }
-  });
+  const resourceRegister = {}; // map of resource names to resource objects
 
   function errorReducer(state = [], action) {
     // Handle error actions. I'm not sure how I feel about dispatching
@@ -86,6 +76,7 @@ const wrap = (Wrapped, module, logger) => {
         // state: null
       }),
       data: React.PropTypes.object, // eslint-disable-line react/forbid-prop-types
+      dataKey: React.PropTypes.string,
     };
 
     constructor(props, context) {
@@ -93,6 +84,27 @@ const wrap = (Wrapped, module, logger) => {
       this.context = context;
       this.logger = logger;
       Wrapper.logger = logger;
+
+      // this.resources = []; // references to a subset of class-level resources
+      _.forOwn(Wrapped.manifest, (query, name) => {
+        if (!name.startsWith('@')) {
+          // Regular manifest entries describe resources
+          const dk = props.dataKey;
+          const dkName = `${name}${dk === undefined ? '' : `-${dk}`}`;
+          if (!resourceRegister[dkName]) {
+            const resource = new types[query.type || defaultType](name, query, module, logger, props.dataKey);
+            resources.push(resource);
+            resourceRegister[dkName] = resource;
+            // this.resources.push(resource);
+          }
+        } else if (name === '@errorHandler') {
+          // XXX It doesn't really make sense to do this for each instance in the class
+          setErrorHandler(query);
+        } else {
+          console.log(`WARNING: ${module} ignoring unsupported special manifest entry '${name}'`);
+        }
+      });
+      logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
     }
 
     componentWillMount() {
@@ -182,10 +194,13 @@ const wrap = (Wrapped, module, logger) => {
     store: React.PropTypes.object,
   };
 
-  Wrapper.mapState = (state) => {
+  Wrapper.mapState = (state, ownProps) => {
     const data = {};
+    logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
     for (const r of resources) {
-      data[r.name] = Object.freeze(_.get(state, [r.stateKey()], null));
+      if (r.dataKey === ownProps.dataKey) {
+        data[r.name] = Object.freeze(_.get(state, [r.stateKey()], null));
+      }
     }
 
     const resourceData = {};
@@ -200,12 +215,27 @@ const wrap = (Wrapped, module, logger) => {
     return newProps;
   };
 
-  Wrapper.mapDispatch = (dispatch, ownProps) => {
+  // This seems to get called only _before_ the constructor, so does
+  // not see the resources that have been added at construction. So
+  // all we do is stash the dispatch function, and leave the
+  // mergeProps function (which gets called after each mapState) to
+  // use it to do the real dispatch-mapping.
+  //
+  Wrapper.mapDispatch = (dispatch) => {
+    logger.log('connect-lifecycle', `mapDispatch for <${Wrapped.name}>, resources =`, resources);
+    return { dispatch };
+  };
+
+  Wrapper.mergeProps = (stateProps, dispatchProps, ownProps) => {
+    const dispatch = dispatchProps.dispatch;
+    logger.log('connect-lifecycle', `mergeProps for <${Wrapped.name}>, resources =`, resources);
     const res = {};
 
     res.mutator = {};
     for (const r of resources) {
-      res.mutator[r.name] = r.getMutator(dispatch, ownProps);
+      if (r.dataKey === ownProps.dataKey) {
+        res.mutator[r.name] = r.getMutator(dispatch, ownProps);
+      }
     }
 
     res.refreshRemote = (params) => {
@@ -216,7 +246,8 @@ const wrap = (Wrapped, module, logger) => {
         }
       });
     };
-    return res;
+
+    return Object.assign({}, ownProps, stateProps, res);
   };
 
   return Wrapper;
@@ -235,7 +266,7 @@ export const connect = (Component, module, loggerArg) => {
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
   const Wrapper = wrap(Component, module, logger);
-  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch)(Wrapper);
+  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(Wrapper);
   return Connected;
 };
 

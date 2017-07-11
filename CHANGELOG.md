@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## [2.4.0](https://github.com/folio-org/stripes-connect/tree/v2.4.0) (2017-07-10)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.3.0...v2.4.0)
+
+* Support `dataKey` to have different instances of a component maintain their own data. This is a "major" change in that affects a lot of the internals and provides significant new functionality; but since it is backwards-compatible -- components without a `dataKey` behave the same as before -- it can be released as a non-breaking minor release. Fixes STRPCONN-1.
+
 ## [2.3.0](https://github.com/folio-org/stripes-connect/tree/v2.3.0) (2017-06-29)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.2.1...v2.3.0)
 
@@ -7,7 +12,6 @@
 * Report error when the designated `records` element is missing. Fixes STRPCONN-3.
 * Perform substitutions on `records` as well as `path`. Fixes STRPCONN-4.
 * In substitutions, recognise `%{name}` as well as `${name}` for querying resources. Fixes STRPCONN-5.
-* Support `dataKey` to have different instances of a component maintain their own data. Fixes STRPCONN-1.
 
 ## [2.2.1](https://github.com/folio-org/stripes-connect/tree/v2.2.1) (2017-06-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.2.0...v2.2.1)

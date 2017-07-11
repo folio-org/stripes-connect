@@ -10,7 +10,7 @@ function CrudActionsAugmenter(crudActions, extraMetadata) {
 CrudActionsAugmenter.prototype.augmentWithMetadata = (crudActions, name, extraMetadata, arg1, arg2, arg3) => {
   if (!crudActions[name]) {
     if (name === 'toJSON') return typeof crudActions;
-    console.log(`CrudActionsAugmenter: no such function:`, name);
+    console.log('CrudActionsAugmenter: no such function:', name);
     return undefined;
   }
   const x = crudActions[name](arg1, arg2, arg3);

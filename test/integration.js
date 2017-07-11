@@ -2,7 +2,8 @@ import 'jsdom-global/register';
 import chai from 'chai';
 import { mount, shallow, render } from 'enzyme';
 
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import { StaticRouter } from 'react-router';

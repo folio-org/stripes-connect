@@ -98,15 +98,18 @@ Functional.manifest = { functionalResource: {
   }
 } };
 
+const defaultLogger = () => {};
+defaultLogger.log = (cat, ...args) => {};
+
 describe('connect()', () => {
 
   it('should pass through a component with no manifest', () => {
-    Simple.should.equal(connect(Simple));
+    Simple.should.equal(connect(Simple, 'NoModule', defaultLogger));
   });
 
   it('should successfully wrap a component with a local resource', () => {
     const store = createStore((state) => state, {});
-    const Connected = connect(Local, 'test');
+    const Connected = connect(Local, 'test', defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
     inst.find(Local).props().data.localResource.should.equal('hi');
     inst.find(Local).props().mutator.localResource.replace({boo:'ya'});
@@ -135,7 +138,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Remote, 'test');
+    const Connected = connect(Remote, 'test', defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
 
     inst.find(Remote).props().mutator.remoteResource.PUT({id:1, someval:'new'});
@@ -174,7 +177,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Paged, 'test');
+    const Connected = connect(Paged, 'test', defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
 
     setTimeout(() => {
@@ -195,7 +198,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Functional, 'test');
+    const Connected = connect(Functional, 'test', defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
       inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 

@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## [2.4.0](https://github.com/folio-org/stripes-connect/tree/v2.4.0) (2017-07-10)
+## [2.4.0](https://github.com/folio-org/stripes-connect/tree/v2.4.0) (2017-07-11)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.3.0...v2.4.0)
 
 * Support `dataKey` to have different instances of a component maintain their own data. This is a "major" change in that affects a lot of the internals and provides significant new functionality; but since it is backwards-compatible -- components without a `dataKey` behave the same as before -- it can be released as a non-breaking minor release. Fixes STRPCONN-1.

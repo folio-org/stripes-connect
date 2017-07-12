@@ -2,6 +2,7 @@ import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
 import ErrorHandler from './ErrorHandler';
+import sideEffects from './sideEffects';
 
 const defaultType = 'local';
 const types = {
@@ -28,10 +29,14 @@ export default class ResourceManager {
         const dkName = `${name}${dk === undefined ? '' : `-${dk}`}`;
 
         if (!this.resourceRegister[dkName]) {
+          const type = query.type || defaultType;
           const resource = new types[query.type || defaultType](name, query, this.module, this.logger, props.dataKey);
           this.resources.push(resource);
           this.resourceRegister[dkName] = resource;
           // this.resources.push(resource);
+          if (query.type === 'okapi') {
+            sideEffects.addRules(resource);
+          }
         }
       } else if (name === '@errorHandler') {
         // XXX It doesn't really make sense to do this for each instance in the class

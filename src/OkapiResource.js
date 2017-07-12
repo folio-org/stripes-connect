@@ -1,5 +1,4 @@
 import RESTResource from './RESTResource';
-import sideEffects from './sideEffects';
 
 const defaults = {
   pk: 'id',

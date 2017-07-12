@@ -38,18 +38,13 @@ function getRefreshRule(resource) {
   };
 }
 
-function generateRules(resource) {
+function addRules(resource) {
   const rules = getMutationRules(resource);
   rules.push(getRefreshRule(resource));
-  return rules;
-}
-
-function register(resource) {
-  const rules = generateRules(resource);
   middleware.addRules(rules);
 }
 
 export default {
-  register,
+  addRules,
   middleware,
 };

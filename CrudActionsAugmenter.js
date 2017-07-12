@@ -8,7 +8,11 @@ function CrudActionsAugmenter(crudActions, extraMetadata) {
 }
 
 CrudActionsAugmenter.prototype.augmentWithMetadata = (crudActions, name, extraMetadata, arg1, arg2, arg3) => {
-  if (!crudActions[name]) console.log(`CrudActionsAugmenter: no such function '${name}' in`, crudActions);
+  if (!crudActions[name]) {
+    if (name === 'toJSON') return typeof crudActions;
+    console.log('CrudActionsAugmenter: no such function:', name);
+    return undefined;
+  }
   const x = crudActions[name](arg1, arg2, arg3);
   return Object.assign({}, x, { meta: Object.assign({}, x.meta, extraMetadata) });
 };

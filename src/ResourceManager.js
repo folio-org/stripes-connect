@@ -1,6 +1,7 @@
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
+import ErrorHandler from './ErrorHandler';
 
 const defaultType = 'local';
 const types = {
@@ -15,6 +16,7 @@ export default class ResourceManager {
     this.resourceRegister = {}; // map of resource names to resource objects
     this.module = module;
     this.logger = logger;
+    this.errorHandler = new ErrorHandler();
   }
 
   create(manifest, props) {
@@ -33,7 +35,7 @@ export default class ResourceManager {
         }
       } else if (name === '@errorHandler') {
         // XXX It doesn't really make sense to do this for each instance in the class
-        // setErrorHandler(query);
+        this.errorHandler.add(query);
       } else {
         console.log(`WARNING: ${this.module} ignoring unsupported special manifest entry '${name}'`);
       }
@@ -82,7 +84,40 @@ export default class ResourceManager {
       }
     });
 
-    //context.addReducer(`@@error-${this.module}`, errorReducer);
+    context.addReducer(`@@error-${this.module}`, this.getErrorReducer());
+    this.errorHandler.addNaive();
+  }
+
+  getErrorReducer() {
+    const errorHandler = this.errorHandler.get();
+    const module = this.module;
+
+    return (state = [], action) => {
+      // Handle error actions. I'm not sure how I feel about dispatching
+      // from a reducer, but it's the only point of universal contact
+      // with all errors.
+      const a = action.type.split('_');
+      const typetype = a.pop();
+      if (typetype === 'ERROR') {
+        if (action.data.module === module) {
+          const op = a.pop();
+
+          console.log(`using error-handler for ${module}`);
+          let status, error;
+          if (typeof action.error === 'object') {
+            status = action.error.status;
+            error = action.error.message;
+          } else {
+            status = null;
+            error = action.error;
+          }
+          errorHandler(Object.assign({}, action.data, { op, status, error }));
+        }
+      }
+
+      // No change to state
+      return state;
+    }
   }
 
   getResources() {

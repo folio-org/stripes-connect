@@ -71,6 +71,10 @@ const wrap = (Wrapped, module, logger) => {
       return false;
     }
 
+    componentWillUnmount() {
+      resourceManager.markInvisible();
+    }
+
     render() {
       return (
         <Wrapped {...this.props} />

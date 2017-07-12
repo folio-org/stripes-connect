@@ -8,15 +8,40 @@ const actionsName = [
   'DELETE_SUCCESS',
 ];
 
-function generateRules(resource) {
+function getMutationRules(resource) {
   const actionPrefix = resource.crudName.toUpperCase();
-  const syncName = resource.optionsTemplate.sync;
-  const syncPrefix = `${_.snakeCase(resource.module)}_${_.snakeCase(syncName)}`.toUpperCase();
+  const options = resource.optionsTemplate;
 
   return actionsName.map(name => ({
     case: `${actionPrefix}_${name}`,
-    dispatch: `${syncPrefix}_${name}`,
+    dispatch: (action, state) => {
+      const path = options.path.replace(/[\?|:|%].*$/g, '');
+      const name = resource.name;
+      const meta = Object.assign({}, action.meta, { path, name });
+      return { ...action, meta, type: 'REFRESH' };
+    },
   }));
+}
+
+function getRefreshRule(resource) {
+  return {
+    case: 'REFRESH',
+    dispatch: (action, state) => {
+      const { name, path } = action.meta;
+      if (
+        resource.isVisible() &&
+        resource.name != name &&
+        path.match(resource.optionsTemplate.path)) {
+        // TODO: refresh resource
+      }
+    },
+  };
+}
+
+function generateRules(resource) {
+  const rules = getMutationRules(resource);
+  rules.push(getRefreshRule(resource));
+  return rules;
 }
 
 function register(resource) {

@@ -1,17 +1,10 @@
 import React from 'react';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
-import OkapiResource from './OkapiResource';
-import RESTResource from './RESTResource';
-import LocalResource from './LocalResource';
-/* eslint-env browser */
+import ResourceManager from './ResourceManager';
 
+/* eslint-env browser */
 const defaultType = 'local';
-const types = {
-  local: LocalResource,
-  okapi: OkapiResource,
-  rest: RESTResource,
-};
 
 // Should be doable with a scalar in a closure, but doesn't work right for some reason.
 const module2errorHandler = {};
@@ -23,8 +16,7 @@ const wrap = (Wrapped, module, logger) => {
     }
   }
 
-  const resources = [];
-  const resourceRegister = {}; // map of resource names to resource objects
+  const resourceManager = new ResourceManager(module, logger);
 
   function errorReducer(state = [], action) {
     // Handle error actions. I'm not sure how I feel about dispatching
@@ -84,76 +76,19 @@ const wrap = (Wrapped, module, logger) => {
       this.context = context;
       this.logger = logger;
       Wrapper.logger = logger;
-
-      // this.resources = []; // references to a subset of class-level resources
-      _.forOwn(Wrapped.manifest, (query, name) => {
-        if (!name.startsWith('@')) {
-          // Regular manifest entries describe resources
-          const dk = props.dataKey;
-          const dkName = `${name}${dk === undefined ? '' : `-${dk}`}`;
-          if (!resourceRegister[dkName]) {
-            const resource = new types[query.type || defaultType](name, query, module, logger, props.dataKey);
-            resources.push(resource);
-            resourceRegister[dkName] = resource;
-            // this.resources.push(resource);
-          }
-        } else if (name === '@errorHandler') {
-          // XXX It doesn't really make sense to do this for each instance in the class
-          setErrorHandler(query);
-        } else {
-          console.log(`WARNING: ${module} ignoring unsupported special manifest entry '${name}'`);
-        }
-      });
-      logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
+      resourceManager.create(Wrapped.manifest, props);
+      logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resourceManager.getResources());
     }
 
     componentWillMount() {
-      // this.logger.log('connect', `in componentWillMount for ${Wrapped.name}`);
-      if (!(this.context.addReducer)) {
-        throw new Error('No addReducer function available in component context');
-      }
-      resources.forEach((resource) => {
-        // Hopefully paging can all be absorbed into the resource in some future
-        // rearchitecting (we might also reiterate these function definitions a
-        // few million less times)
-        if (resource.pagingReducer) {
-          const pagingKey = `${resource.stateKey()}_paging`;
-          this.context.addReducer(pagingKey, resource.pagingReducer);
-          const store = this.context.store;
-          const onPageSuccess = (paging) => {
-            const records = paging.reduce((acc, val) => acc.concat(val.records), []);
-            store.dispatch(resource.pagedFetchSuccess(records));
-            store.dispatch(resource.fetchSuccess111(paging[paging.length - 1].meta, records));
-          };
-          const onPageChange = (paging) => {
-            const allDone = paging.reduce((acc, val) => acc && val.isComplete, true);
-            if (allDone && paging.length > 0) onPageSuccess(paging);
-          };
-          let currentPaging;
-          const pagingListener = () => {
-            const previousPaging = currentPaging;
-            currentPaging = store.getState()[pagingKey];
-            if (currentPaging && currentPaging !== previousPaging) onPageChange(currentPaging);
-          };
-          store.subscribe(pagingListener);
-        }
-        this.context.addReducer(`${resource.stateKey()}111`, resource.reducer111);
-        this.context.addReducer(resource.stateKey(), resource.reducer);
-
-        // TODO this may move, but while it's here, it's going to be called
-        // more than necessary
-        if (typeof resource.init === 'function') {
-          resource.init(this.context.store);
-        }
-      });
-
-      this.context.addReducer(`@@error-${module}`, errorReducer);
+      resourceManager.init(this.context);
       setErrorHandler(naiveErrorHandler, false);
     }
 
     componentDidMount() {
       // this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
       this.props.refreshRemote({ ...this.props });
+      resourceManager.markVisible();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -186,7 +121,6 @@ const wrap = (Wrapped, module, logger) => {
         <Wrapped {...this.props} />
       );
     }
-
   }
 
   Wrapper.contextTypes = {
@@ -196,6 +130,8 @@ const wrap = (Wrapped, module, logger) => {
 
   Wrapper.mapState = (state, ownProps) => {
     const data = {};
+    const resources = resourceManager.getResources();
+
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
     for (const r of resources) {
       if (r.dataKey === ownProps.dataKey) {
@@ -222,12 +158,15 @@ const wrap = (Wrapped, module, logger) => {
   // use it to do the real dispatch-mapping.
   //
   Wrapper.mapDispatch = (dispatch) => {
+    const resources = resourceManager.getResources();
     logger.log('connect-lifecycle', `mapDispatch for <${Wrapped.name}>, resources =`, resources);
     return { dispatch };
   };
 
   Wrapper.mergeProps = (stateProps, dispatchProps, ownProps) => {
     const dispatch = dispatchProps.dispatch;
+    const resources = resourceManager.getResources();
+
     logger.log('connect-lifecycle', `mergeProps for <${Wrapped.name}>, resources =`, resources);
     const res = {};
 

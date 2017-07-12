@@ -5,8 +5,6 @@ import uuid from 'uuid';
 import queryString from 'query-string';
 import CrudActionsAugmenter from './CrudActionsAugmenter';
 
-import sideEffects from './sideEffects';
-
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 const initialResourceState = {
   hasLoaded: false,
@@ -226,12 +224,10 @@ export default class RESTResource {
     this.pagedFetchSuccess = this.crudActions.fetchSuccess;
     this.crudReducers = crud.List.reducersFor(this.crudName,
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
+
+    this.visibleCount = 0;
     // JavaScript methods are not bound to their instance by default
     this.reducer = this.reducer.bind(this);
-
-    if (query.sync) {
-      sideEffects.register(this);
-    }
   }
 
   getMutator(dispatch, props) {
@@ -391,6 +387,20 @@ export default class RESTResource {
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
+  }
+
+  markVisible() {
+    this.visibleCount += 1;
+  }
+
+  markInvisible() {
+    if (this.visibleCount > 0) {
+      this.visibleCount -= 1;
+    }
+  }
+
+  isVisible() {
+    return this.visibleCount > 0;
   }
 
   createAction = (record, props) => {

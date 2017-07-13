@@ -24,7 +24,7 @@ function addMutationEpics(resource) {
       .ofType(`${actionPrefix}_${name}`)
       .debounceTime(100)
       .map(action => {
-        const path = options.path.replace(/[\?|:|%].*$/g, '');
+        const path = options.path.replace(/[\/].*$/g, '');
         const name = resource.name;
         const meta = Object.assign({}, action.meta, { path, name });
         return { ...action, meta, type: 'REFRESH' };
@@ -38,10 +38,11 @@ function addRefreshEpic(resource) {
     .ofType('REFRESH')
     .map(action => {
       const { name, path } = action.meta;
+      const resPath = resource.optionsTemplate.path || '';
       if (
         resource.isVisible() &&
         resource.name != name &&
-        path.match(resource.optionsTemplate.path)) {
+        resPath.startsWith(path)) {
         resource.sync();
       }
       return { ...action, type: 'REFRESH_SUCCESS' };

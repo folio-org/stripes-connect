@@ -10,7 +10,10 @@ const actionNames = [
   'DELETE_SUCCESS',
 ];
 
-const epic$ = new BehaviorSubject(combineEpics());
+const epic$ = new BehaviorSubject(combineEpics(
+  // register new epics here
+));
+
 const rootEpic = (action$, store) =>
   epic$.mergeMap(epic => epic(action$, store));
 const middleware = createEpicMiddleware(rootEpic);

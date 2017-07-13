@@ -507,18 +507,6 @@ values contain the corresponding data. These records are used in the
 obvious way by the POST, PUT and PATCH operations. For DELETE, the
 record need only contain the `id` field, so that it suffices to call
 `mutator.tenants.DELETE({ id: 43 })`.
-
-Mutator methods return
-[promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise). These
-can be used to run some code when the remote operation successfully
-completes -- or when it fails. For example:
-
-	this.props.mutator.users.POST(data).then(() => {
-	  console.log('POST OK');
-	}).catch((reason) => {
-	  alert('POST failed: ' + reason);
-	});
-
 <br/>
 <br/>
 <hr/>

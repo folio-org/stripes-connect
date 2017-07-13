@@ -3,7 +3,7 @@ import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
-import CrudActionsAugmenter from './CrudActionsAugmenter';
+import CrudActionsAugmenter from '../CrudActionsAugmenter';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 const initialResourceState = {

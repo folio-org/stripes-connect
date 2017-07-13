@@ -1,8 +1,8 @@
-import OkapiResource from './OkapiResource';
-import RESTResource from './RESTResource';
-import LocalResource from './LocalResource';
+import { LocalResource, OkapiResource, RESTResource } from './resources';
 import ErrorHandler from './ErrorHandler';
 import sideEffects from './sideEffects';
+
+console.log(LocalResource, OkapiResource, RESTResource)
 
 const defaultType = 'local';
 const types = {
@@ -35,7 +35,7 @@ export default class ResourceManager {
           this.resourceRegister[dkName] = resource;
           // this.resources.push(resource);
           if (query.type === 'okapi') {
-            sideEffects.addRules(resource);
+            sideEffects.init(resource);
           }
         }
       } else if (name === '@errorHandler') {
@@ -95,6 +95,7 @@ export default class ResourceManager {
 
   getErrorReducer() {
     const errorHandler = this.errorHandler.get();
+    console.log('error handler', errorHandler);
     const module = this.module;
 
     return (state = [], action) => {

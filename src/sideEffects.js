@@ -1,32 +1,40 @@
-import orchestrate from 'redux-orchestrate';
-import _ from 'lodash';
+import { combineEpics, createEpicMiddleware } from 'redux-observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/map';
 
-const middleware = orchestrate();
-const actionsName = [
+const actionNames = [
   'CREATE_SUCCESS',
   'UPDATE_SUCCESS',
   'DELETE_SUCCESS',
 ];
 
-function getMutationRules(resource) {
+const epic$ = new BehaviorSubject(combineEpics());
+const rootEpic = (action$, store) =>
+  epic$.mergeMap(epic => epic(action$, store));
+
+function addMutationEpics(resource) {
   const actionPrefix = resource.crudName.toUpperCase();
   const options = resource.optionsTemplate;
 
-  return actionsName.map(name => ({
-    case: `${actionPrefix}_${name}`,
-    dispatch: (action, state) => {
-      const path = options.path.replace(/[\?|:|%].*$/g, '');
-      const name = resource.name;
-      const meta = Object.assign({}, action.meta, { path, name });
-      return { ...action, meta, type: 'REFRESH' };
-    },
-  }));
+  actionNames.forEach(name => {
+    epic$.next(action$ =>
+      action$
+      .ofType(`${actionPrefix}_${name}`)
+      .map(action => {
+        const path = options.path.replace(/[\?|:|%].*$/g, '');
+        const name = resource.name;
+        const meta = Object.assign({}, action.meta, { path, name });
+        return { ...action, meta, type: 'REFRESH' };
+    }));
+  });
 }
 
-function getRefreshRule(resource) {
-  return {
-    case: 'REFRESH',
-    dispatch: (action, state) => {
+function addRefreshEpic(resource) {
+  epic$.next(action$ =>
+    action$
+    .ofType('REFRESH')
+    .map(action => {
       const { name, path } = action.meta;
       if (
         resource.isVisible() &&
@@ -34,17 +42,19 @@ function getRefreshRule(resource) {
         path.match(resource.optionsTemplate.path)) {
         resource.sync();
       }
-    },
-  };
+      return { ...action, type: 'REFRESH_DONE' };
+    })
+  );
 }
 
-function addRules(resource) {
-  const rules = getMutationRules(resource);
-  rules.push(getRefreshRule(resource));
-  middleware.addRules(rules);
+function init(resource) {
+  addMutationEpics(resource);
+  addRefreshEpic(resource);
 }
+
+const middleware = createEpicMiddleware(rootEpic);
 
 export default {
-  addRules,
   middleware,
+  init
 };

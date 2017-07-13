@@ -2,6 +2,7 @@ import { combineEpics, createEpicMiddleware } from 'redux-observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/debounceTime';
 
 const actionNames = [
   'CREATE_SUCCESS',
@@ -21,6 +22,7 @@ function addMutationEpics(resource) {
     epic$.next(action$ =>
       action$
       .ofType(`${actionPrefix}_${name}`)
+      .debounceTime(100)
       .map(action => {
         const path = options.path.replace(/[\?|:|%].*$/g, '');
         const name = resource.name;

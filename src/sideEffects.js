@@ -12,11 +12,11 @@ const actionNames = [
 const epic$ = new BehaviorSubject(combineEpics());
 const rootEpic = (action$, store) =>
   epic$.mergeMap(epic => epic(action$, store));
+const middleware = createEpicMiddleware(rootEpic);
 
 function addMutationEpics(resource) {
   const actionPrefix = resource.crudName.toUpperCase();
   const options = resource.optionsTemplate;
-
   actionNames.forEach(name => {
     epic$.next(action$ =>
       action$
@@ -42,7 +42,7 @@ function addRefreshEpic(resource) {
         path.match(resource.optionsTemplate.path)) {
         resource.sync();
       }
-      return { ...action, type: 'REFRESH_DONE' };
+      return { ...action, type: 'REFRESH_SUCCESS' };
     })
   );
 }
@@ -51,8 +51,6 @@ function init(resource) {
   addMutationEpics(resource);
   addRefreshEpic(resource);
 }
-
-const middleware = createEpicMiddleware(rootEpic);
 
 export default {
   middleware,

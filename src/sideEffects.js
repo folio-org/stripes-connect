@@ -32,7 +32,7 @@ function getRefreshRule(resource) {
         resource.isVisible() &&
         resource.name != name &&
         path.match(resource.optionsTemplate.path)) {
-        // TODO: refresh resource
+        resource.sync();
       }
     },
   };

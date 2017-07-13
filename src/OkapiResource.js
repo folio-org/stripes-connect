@@ -39,7 +39,6 @@ export default class OkapiResource extends RESTResource {
   constructor(name, query = {}, module = null, logger, dataKey) {
     super(name, query, module, logger, dataKey, defaults);
     this.visibleCount = 0;
-    sideEffects.register(this);
   }
 
   markVisible() {

@@ -2,8 +2,6 @@ import { LocalResource, OkapiResource, RESTResource } from './resources';
 import ErrorHandler from './ErrorHandler';
 import sideEffects from './sideEffects';
 
-console.log(LocalResource, OkapiResource, RESTResource)
-
 const defaultType = 'local';
 const types = {
   local: LocalResource,
@@ -95,7 +93,6 @@ export default class ResourceManager {
 
   getErrorReducer() {
     const errorHandler = this.errorHandler.get();
-    console.log('error handler', errorHandler);
     const module = this.module;
 
     return (state = [], action) => {

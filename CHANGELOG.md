@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 2.5.0 IN PROGRESS
+
+* Introduce side effects. Fixes STRIPES-394.
+
 ## [2.4.0](https://github.com/folio-org/stripes-connect/tree/v2.4.0) (2017-07-11)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.3.0...v2.4.0)
 

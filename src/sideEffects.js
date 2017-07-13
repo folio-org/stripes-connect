@@ -1,4 +1,4 @@
-import { combineEpics, createEpicMiddleware } from 'redux-observable';
+import { createEpicMiddleware } from 'redux-observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/map';
@@ -9,7 +9,7 @@ const actionNames = [
   'DELETE_SUCCESS',
 ];
 
-const epic$ = new BehaviorSubject(combineEpics());
+const epic$ = new BehaviorSubject();
 const rootEpic = (action$, store) =>
   epic$.mergeMap(epic => epic(action$, store));
 

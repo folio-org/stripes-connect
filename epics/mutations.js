@@ -4,7 +4,7 @@ const actionNames = [
   'DELETE_SUCCESS',
 ];
 
-// returns list of epics which execute (and dispatch REFRESH)
+// returns list of epics which execute
 // after mutation happens on a given resource
 export function mutationEpics(resource) {
   const actionPrefix = resource.crudName.toUpperCase();

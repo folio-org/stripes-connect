@@ -1,9 +1,13 @@
 import React from 'react';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
+import { addEpics } from '@folio/stripes-redux';
+
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
+import { mutationEpics, refreshEpic } from './epics';
+
 /* eslint-env browser */
 
 const defaultType = 'local';
@@ -95,7 +99,9 @@ const wrap = (Wrapped, module, logger) => {
             const resource = new types[query.type || defaultType](name, query, module, logger, props.dataKey);
             resources.push(resource);
             resourceRegister[dkName] = resource;
-            // this.resources.push(resource);
+            if (query.type === 'okapi') {
+              addEpics([...mutationEpics(resource), refreshEpic(resource)]);
+            }
           }
         } else if (name === '@errorHandler') {
           // XXX It doesn't really make sense to do this for each instance in the class
@@ -154,6 +160,11 @@ const wrap = (Wrapped, module, logger) => {
     componentDidMount() {
       // this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
       this.props.refreshRemote({ ...this.props });
+      resources.forEach((resource) => {
+        if (resource instanceof OkapiResource) {
+          resource.markVisible();
+        }
+      });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -161,6 +172,14 @@ const wrap = (Wrapped, module, logger) => {
       if (this.componentShouldRefreshRemote(nextProps)) {
         this.props.refreshRemote({ ...nextProps });
       }
+    }
+
+    componentWillUnmount() {
+      resources.forEach((resource) => {
+        if (resource instanceof OkapiResource) {
+          resource.markInvisible();
+        }
+      });
     }
 
     componentShouldRefreshRemote(nextProps) {

@@ -385,6 +385,13 @@ export default class RESTResource {
   refresh(dispatch, props) {
     if (this.optionsTemplate.fetch === false) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
+    this.dispatch = dispatch;
+    this.cachedProps = { ...props, sync: true };
+  }
+
+  sync() {
+    if (!this.dispatch || !this.cachedProps) return;
+    this.dispatch(this.fetchAction(this.cachedProps));
   }
 
   createAction = (record, props) => {
@@ -510,7 +517,7 @@ export default class RESTResource {
       if (url === null) return null;
       const { headers, records } = options;
       // noop if the URL and recordsRequired didn't change
-      if (url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
+      if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
       this.lastUrl = url;
       this.lastReqd = options.recordsRequired;
 

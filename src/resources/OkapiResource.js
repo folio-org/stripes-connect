@@ -38,5 +38,20 @@ const defaults = {
 export default class OkapiResource extends RESTResource {
   constructor(name, query = {}, module = null, logger, dataKey) {
     super(name, query, module, logger, dataKey, defaults);
+    this.visibleCount = 0;
+  }
+
+  markVisible() {
+    this.visibleCount += 1;
+  }
+
+  markInvisible() {
+    if (this.visibleCount > 0) {
+      this.visibleCount -= 1;
+    }
+  }
+
+  isVisible() {
+    return this.visibleCount > 0;
   }
 }

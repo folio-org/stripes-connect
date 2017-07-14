@@ -1,5 +1,3 @@
-import 'rxjs/add/operator/map';
-
 // returns epic which executes after a refresh action
 // and syncs/refreshes given resource
 export function refreshEpic(resource) {

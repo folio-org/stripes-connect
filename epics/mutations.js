@@ -13,7 +13,6 @@ export function mutationEpics(resource) {
   return actionNames.map(name =>
     (action$) => action$
       .ofType(`${actionPrefix}_${name}`)
-      .debounceTime(100)
       .map(action => {
         const path = options.path.replace(/[\/].*$/g, '');
         const name = resource.name;

@@ -9,7 +9,6 @@ export function refreshEpic(resource) {
       const { name, path } = action.meta;
       const resPath = resource.optionsTemplate.path || '';
 
-      console.log(name, path, resPath, resPath.startsWith(path), resource.isVisible());
       if (
         resource.isVisible() &&
         resource.name != name &&

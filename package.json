@@ -42,7 +42,7 @@
     "redux-thunk": "^2.1.0"
   },
   "dependencies": {
-    "@folio/stripes-redux": "^1.0.0",
+    "@folio/stripes-redux": "^1.0.1",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.2",
     "query-string": "^4.3.2",

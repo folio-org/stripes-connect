@@ -44,26 +44,10 @@ export default class LocalResource {
 
   stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${this.module}-${this.name}`;
 
-  oldActionApplies = (action) => {
-    if (action.meta && action.meta.module && action.meta.resource) {
-      const key = `${action.meta.dataKey ? `${action.meta.dataKey}#` : ''}${action.meta.module}-${action.meta.resource}`;
-      return key === this.stateKey();
-    }
-    return false;
-  }
-
-  newActionApplies = action => (action.meta !== undefined &&
-                                action.meta.module === this.module &&
-                                action.meta.resource === this.name &&
-                                action.meta.dataKey === this.dataKey);
-
-  // I want to switch for the old actionApplies to the new, but for now will verify they really are equivalent
-  actionApplies = (action) => {
-    const oldRes = this.oldActionApplies(action);
-    const newRes = this.newActionApplies(action);
-    if (newRes !== oldRes) alert(`oldRes=${oldRes}, newRes=${newRes}`);
-    return oldRes;
-  }
+  actionApplies = action => (action.meta !== undefined &&
+                             action.meta.module === this.module &&
+                             action.meta.resource === this.name &&
+                             action.meta.dataKey === this.dataKey);
 
   reducer = (state = {}, action) => {
     if (this.actionApplies(action)) {

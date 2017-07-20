@@ -288,7 +288,7 @@ export default class RESTResource {
     if (dataKey !== this.dataKey) return state;
 
     switch (action.type) {
-      case `${this.stateKey().toUpperCase()}_FETCH_SUCCESS`: {
+      case `${this.crudName.toUpperCase()}_FETCH_SUCCESS`: {
         if (Array.isArray(action.records)) return [...action.records];
         return [_.clone(action.records)];
       }
@@ -299,7 +299,7 @@ export default class RESTResource {
   }
 
   reducer111 = (state = initialResourceState, action) => {
-    const prefix = this.stateKey().toUpperCase();
+    const prefix = this.crudName.toUpperCase();
     switch (action.type) {
       case `${prefix}_FETCH_START`: {
         return Object.assign({}, state, { isPending: true });
@@ -349,10 +349,10 @@ export default class RESTResource {
 
   pagingReducer = (state = [], action) => {
     switch (action.type) {
-      case `${this.stateKey().toUpperCase()}_PAGING_START`: {
+      case `${this.crudName.toUpperCase()}_PAGING_START`: {
         return [];
       }
-      case `${this.stateKey().toUpperCase()}_PAGE_START`: {
+      case `${this.crudName.toUpperCase()}_PAGE_START`: {
         const newPage = {
           records: null,
           url: action.url,
@@ -361,7 +361,7 @@ export default class RESTResource {
         };
         return [...state, newPage];
       }
-      case `${this.stateKey().toUpperCase()}_PAGE_SUCCESS`: {
+      case `${this.crudName.toUpperCase()}_PAGE_SUCCESS`: {
         let allDone = false;
         const newState = state.reduce((acc, val) => {
           allDone = allDone && val.isComplete;
@@ -608,24 +608,24 @@ export default class RESTResource {
   }
 
   pagingStart = () => ({
-    type: `${this.stateKey().toUpperCase()}_PAGING_START`,
+    type: `${this.crudName.toUpperCase()}_PAGING_START`,
     meta: { dataKey: this.dataKey },
   })
 
   fetchPageStart = url => ({
-    type: `${this.stateKey().toUpperCase()}_PAGE_START`,
+    type: `${this.crudName.toUpperCase()}_PAGE_START`,
     url,
     meta: { dataKey: this.dataKey },
   });
 
   fetchPageSuccess = (meta, data) => ({
-    type: `${this.stateKey().toUpperCase()}_PAGE_SUCCESS`,
+    type: `${this.crudName.toUpperCase()}_PAGE_SUCCESS`,
     payload: data,
     meta: Object.assign({}, meta, { dataKey: this.dataKey }),
   })
 
   fetchSuccess111 = (meta, data) => ({
-    type: `${this.stateKey().toUpperCase()}_FETCH_SUCCESS111`,
+    type: `${this.crudName.toUpperCase()}_FETCH_SUCCESS111`,
     payload: data,
     meta: Object.assign({}, meta, { dataKey: this.dataKey }),
   })

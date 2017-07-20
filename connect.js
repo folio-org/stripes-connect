@@ -224,7 +224,9 @@ const wrap = (Wrapped, module, logger) => {
 
     const resourceData = {};
     for (const r of resources) {
-      resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}111`], null));
+      if (r.dataKey === ownProps.dataKey) {
+        resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}111`], null));
+      }
     }
 
     const newProps = { data, resources: resourceData };

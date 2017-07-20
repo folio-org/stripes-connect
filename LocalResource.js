@@ -1,7 +1,6 @@
 /* eslint-env browser */
 
 export default class LocalResource {
-
   constructor(name, query = {}, module = null, logger, dataKey) {
     this.name = name;
     this.query = query;
@@ -44,13 +43,11 @@ export default class LocalResource {
 
   stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${this.module}-${this.name}`;
 
-  actionApplies = action => (action.meta !== undefined &&
-                             action.meta.module === this.module &&
-                             action.meta.resource === this.name &&
-                             action.meta.dataKey === this.dataKey);
-
   reducer = (state = {}, action) => {
-    if (this.actionApplies(action)) {
+    if (action.meta !== undefined &&
+        action.meta.module === this.module &&
+        action.meta.resource === this.name &&
+        action.meta.dataKey === this.dataKey) {
       switch (action.type) {
         case 'STRIPESLOCALSTATE_UPDATE': {
           return Object.assign({}, state, action.payload);
@@ -66,5 +63,4 @@ export default class LocalResource {
       return state;
     }
   }
-
 }

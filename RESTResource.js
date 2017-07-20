@@ -33,22 +33,6 @@ function optionsFromState(options, state) {
   return {};
 }
 
-
-// This is an ugly fat API, but we need to be able to do all this in a single call
-//
-// 'reason' may be a simple string or a { status, message } object. It
-// makes no difference to redux-crud, which simply passes it through
-// blindly. Our errorReducer picks it apart as needed.
-//
-function error(dispatch, op, creator, record, module, resource, reason) {
-  const data = { module, resource, op };
-  // Annoyingly, some redux-crud action creators have different signatures
-  const action = record ?
-      creator(reason, record, data) :
-      creator(reason, data);
-  dispatch(action);
-}
-
 // The following fallback syntax is one small part of what Bash
 // implements -- see the "Parameter Expansion" section of its
 // manual. It's the part we need right now, but we should consider
@@ -420,8 +404,8 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name,
-                    { status: response.status, message: text });
+              // error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name,
+              //       { status: response.status, message: text });
             });
           } else {
             const contentType = response.headers.get('content-type');
@@ -437,7 +421,7 @@ export default class RESTResource {
             }
           }
         }).catch((reason) => {
-          error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name, reason);
+          // error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name, reason);
         });
     };
   }
@@ -460,8 +444,8 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name,
-                    { status: response.status, message: text });
+              // error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name,
+              //       { status: response.status, message: text });
             });
           } else {
             /* Patrons api will not return JSON
@@ -473,7 +457,7 @@ export default class RESTResource {
             dispatch(crudActions.updateSuccess(clientRecord));
           }
         }).catch((reason) => {
-          error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name, reason.message);
+          // error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name, reason.message);
         });
     };
   }
@@ -496,14 +480,14 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name,
-                    { status: response.status, message: text });
+              // error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name,
+              //       { status: response.status, message: text });
             });
           } else {
             dispatch(crudActions.deleteSuccess(clientRecord));
           }
         }).catch((reason) => {
-          error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name, reason.message);
+          // error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name, reason.message);
         });
     };
   }
@@ -526,8 +510,8 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             response.text().then((text) => {
-              error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name,
-                    { status: response.status, message: text });
+              // error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name,
+              //       { status: response.status, message: text });
             });
           } else {
             response.json().then((json) => {
@@ -541,7 +525,7 @@ export default class RESTResource {
               const data = (records ? json[records] : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               if (!data) {
-                error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, `no records in '${records}' element`);
+                // error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, `no records in '${records}' element`);
                 return;
               }
               const reqd = options.recordsRequired;
@@ -564,7 +548,7 @@ export default class RESTResource {
             });
           }
         }).catch((reason) => {
-          error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, reason.message);
+          // error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, reason.message);
         });
     };
   }

@@ -607,22 +607,26 @@ export default class RESTResource {
     };
   }
 
-  pagingStart = () => ({ type: `${this.stateKey().toUpperCase()}_PAGING_START` })
+  pagingStart = () => ({
+    type: `${this.stateKey().toUpperCase()}_PAGING_START`,
+    meta: { dataKey: this.dataKey },
+  })
 
   fetchPageStart = url => ({
     type: `${this.stateKey().toUpperCase()}_PAGE_START`,
     url,
+    meta: { dataKey: this.dataKey },
   });
 
   fetchPageSuccess = (meta, data) => ({
     type: `${this.stateKey().toUpperCase()}_PAGE_SUCCESS`,
     payload: data,
-    meta,
+    meta: Object.assign({}, meta, { dataKey: this.dataKey }),
   })
 
   fetchSuccess111 = (meta, data) => ({
     type: `${this.stateKey().toUpperCase()}_FETCH_SUCCESS111`,
     payload: data,
-    meta,
+    meta: Object.assign({}, meta, { dataKey: this.dataKey }),
   })
 }

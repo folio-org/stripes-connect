@@ -1,5 +1,3 @@
-/* eslint-env browser */
-
 export default class LocalResource {
   constructor(name, query = {}, module = null, logger, dataKey) {
     this.name = name;

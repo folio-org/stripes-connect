@@ -13,7 +13,6 @@ import fetchMock from 'fetch-mock';
 import connect from '../connect';
 
 chai.should();
-
 const routerContext = {};
 
 // Provide a redux store and addReducer() function in context
@@ -96,6 +95,16 @@ Functional.manifest = { functionalResource: {
   GET: {
     params: () => ({ q: 'dinner' }),
   }
+} };
+
+class ErrorProne extends Component {
+  render() {
+    return <div id="somediv"></div>
+  }
+};
+ErrorProne.manifest = { errorProne: {
+  type: 'okapi',
+  path: () => 'turnep',
 } };
 
 const defaultLogger = () => {};
@@ -200,12 +209,38 @@ describe('connect()', () => {
 
     const Connected = connect(Functional, 'test', defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
-      inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
+    inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 
     setTimeout(() => {
       inst.find(Functional).props().data.functionalResource.length.should.equal(5);
       inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(true);
       inst.find(Functional).props().resources.functionalResource.records.length.should.equal(5);
+      fetchMock.restore();
+      done();
+    }, 10);
+  });
+
+  it('should fail appropiately', (done) => {
+    fetchMock
+      .get('http://localhost/turnep',
+        { status: 404 })
+      .post('http://localhost/turnep',
+        { status: 403, body: 'You are forbidden because reasons.' })
+      .catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(ErrorProne, 'test', defaultLogger);
+    const inst = mount(<Root store={store} component={Connected}/>);
+    inst.find(ErrorProne).props().mutator.errorProne.POST({id:1, someval:'new'});
+
+    setTimeout(() => {
+      const res = inst.find(ErrorProne).props().resources.errorProne;
+      res.isPending.should.equal(false);
+      res.failed.httpStatus.should.equal(404);
+      res.failedMutations[0].message.should.equal('You are forbidden because reasons.');
       fetchMock.restore();
       done();
     }, 10);

@@ -283,6 +283,11 @@ export default class RESTResource {
   }
 
   reducer111 = (state = initialResourceState, action) => {
+    if (action.type.startsWith('@@stripes-connect')) {
+      if (action.meta.module !== this.module || action.meta.resource !== this.name) {
+        return state;
+      }
+    }
     const prefix = this.crudName.toUpperCase();
     switch (action.type) {
       case `${prefix}_FETCH_START`: {
@@ -323,6 +328,20 @@ export default class RESTResource {
             type: 'DELETE',
             record: action.record,
           }, ...state.successfulMutations],
+        });
+      }
+      case '@@stripes-connect/MUTATION_ERROR': {
+        return Object.assign({}, state, {
+          failedMutations: [{
+            ...action.meta,
+            ...action.payload,
+          }, ...state.failedMutations],
+        });
+      }
+      case '@@stripes-connect/FETCH_ERROR': {
+        return Object.assign({}, state, {
+          isPending: false,
+          failed: Object.assign({}, action.meta, action.payload),
         });
       }
       default: {
@@ -403,10 +422,7 @@ export default class RESTResource {
       })
         .then((response) => {
           if (response.status >= 400) {
-            response.text().then((text) => {
-              // error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name,
-              //       { status: response.status, message: text });
-            });
+            dispatch(this.mutationHTTPError(response, 'POST'));
           } else {
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.startsWith('application/json')) {
@@ -421,7 +437,7 @@ export default class RESTResource {
             }
           }
         }).catch((reason) => {
-          // error(dispatch, 'POST', crudActions.createError, clientRecord, this.module, this.name, reason);
+          dispatch(this.mutationError({ message: reason.message }, 'POST'));
         });
     };
   }
@@ -443,10 +459,7 @@ export default class RESTResource {
       })
         .then((response) => {
           if (response.status >= 400) {
-            response.text().then((text) => {
-              // error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name,
-              //       { status: response.status, message: text });
-            });
+            dispatch(this.mutationHTTPError(response, 'PUT'));
           } else {
             /* Patrons api will not return JSON
             response.json().then ( (json) => {
@@ -457,7 +470,7 @@ export default class RESTResource {
             dispatch(crudActions.updateSuccess(clientRecord));
           }
         }).catch((reason) => {
-          // error(dispatch, 'PUT', crudActions.updateError, record, this.module, this.name, reason.message);
+          dispatch(this.mutationError({ message: reason.message }, 'PUT'));
         });
     };
   }
@@ -479,15 +492,12 @@ export default class RESTResource {
       })
         .then((response) => {
           if (response.status >= 400) {
-            response.text().then((text) => {
-              // error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name,
-              //       { status: response.status, message: text });
-            });
+            dispatch(this.mutationHTTPError(response, 'DELETE'));
           } else {
             dispatch(crudActions.deleteSuccess(clientRecord));
           }
         }).catch((reason) => {
-          // error(dispatch, 'DELETE', crudActions.deleteError, clientRecord, this.module, this.name, reason.message);
+          dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
         });
     };
   }
@@ -509,10 +519,7 @@ export default class RESTResource {
       return fetch(url, { headers })
         .then((response) => {
           if (response.status >= 400) {
-            response.text().then((text) => {
-              // error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name,
-              //       { status: response.status, message: text });
-            });
+            dispatch(this.fetchHTTPError(response));
           } else {
             response.json().then((json) => {
               // We are only interested in the response to our most recent request
@@ -525,7 +532,7 @@ export default class RESTResource {
               const data = (records ? json[records] : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               if (!data) {
-                // error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, `no records in '${records}' element`);
+                dispatch(this.fetchError({ message: `no records in '${records}' element` }));
                 return;
               }
               const reqd = options.recordsRequired;
@@ -548,7 +555,7 @@ export default class RESTResource {
             });
           }
         }).catch((reason) => {
-          // error(dispatch, 'GET', crudActions.fetchError, null, this.module, this.name, reason.message);
+          dispatch(this.fetchError({ message: reason.message }));
         });
     };
   }
@@ -569,7 +576,7 @@ export default class RESTResource {
         fetch(url, { headers })
           .then((response) => {
             if (response.status >= 400) {
-              // TODO error
+              dispatch(this.fetchHTTPError(response));
             } else {
               response.json().then((json) => {
                 const meta = {
@@ -583,8 +590,9 @@ export default class RESTResource {
               });
             }
           }).catch((err) => {
-            // TODO error
-            console.log('PAGE FETCH ERROR', err);
+            dispatch(this.fetchError({
+              message: `Unexpected fetch error ${err}`,
+            }));
           });
       }
       dispatch(this.fetchPageSuccess(firstMeta, firstData));
@@ -613,4 +621,38 @@ export default class RESTResource {
     payload: data,
     meta: Object.assign({}, meta, { dataKey: this.dataKey }),
   })
+
+  fetchError = err => ({
+    type: '@@stripes-connect/FETCH_ERROR',
+    payload: err,
+    meta: {
+      resource: this.name,
+      module: this.module,
+      dataKey: this.dataKey,
+    },
+  })
+
+  fetchHTTPError = res => dispatch => res.text().then((text) => {
+    dispatch(this.fetchError({
+      message: text || res.statusText,
+      httpStatus: res.status,
+    }));
+  });
+
+  mutationError = (err, mutator) => ({
+    type: '@@stripes-connect/MUTATION_ERROR',
+    payload: { type: mutator, ...err },
+    meta: {
+      resource: this.name,
+      module: this.module,
+      dataKey: this.dataKey,
+    },
+  })
+
+  mutationHTTPError = (res, mutator) => dispatch => res.text().then((text) => {
+    dispatch(this.mutationError({
+      message: text || res.statusText,
+      httpStatus: res.status,
+    }, mutator));
+  });
 }

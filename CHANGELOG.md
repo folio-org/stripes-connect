@@ -4,6 +4,7 @@
 
 * Introduce side effects. Fixes STCON-16.
 * Simpler action-type strings in `RESTResource.js`. As a result, components using `this.props.resources` work correctly with dataKey. Fixes STCON-9.
+* Expose errors in resource metadata. STCON-20.
 
 ## [2.4.0](https://github.com/folio-org/stripes-connect/tree/v2.4.0) (2017-07-11)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.3.0...v2.4.0)

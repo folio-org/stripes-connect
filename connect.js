@@ -17,53 +17,9 @@ const types = {
   rest: RESTResource,
 };
 
-// Should be doable with a scalar in a closure, but doesn't work right for some reason.
-const module2errorHandler = {};
-
 const wrap = (Wrapped, module, logger) => {
-  function setErrorHandler(handler, force) {
-    if (force || !module2errorHandler[module]) {
-      module2errorHandler[module] = handler;
-    }
-  }
-
   const resources = [];
   const resourceRegister = {}; // map of resource names to resource objects
-
-  function errorReducer(state = [], action) {
-    // Handle error actions. I'm not sure how I feel about dispatching
-    // from a reducer, but it's the only point of universal contact
-    // with all errors.
-    const a = action.type.split('_');
-    const typetype = a.pop();
-    if (typetype === 'ERROR') {
-      if (action.data.module === module) {
-        const op = a.pop();
-        const errorHandler = module2errorHandler[module];
-        console.log(`using error-handler for ${module}`);
-        let status, error;
-        if (typeof action.error === 'object') {
-          status = action.error.status;
-          error = action.error.message;
-        } else {
-          status = null;
-          error = action.error;
-        }
-        errorHandler(Object.assign({}, action.data, { op, status, error }));
-      }
-    }
-
-    // No change to state
-    return state;
-  }
-
-  function naiveErrorHandler(e) {
-    // eslint-disable-next-line prefer-template
-    alert(`ERROR: in module ${e.module}, operation ${e.op} on resource `
-          + `'${e.resource}' failed`
-          + (e.status ? ` with HTTP status ${e.status}` : '')
-          + (e.error ? `, saying: ${e.error}` : ''));
-  }
 
   class Wrapper extends React.Component {
     static propTypes = {
@@ -91,23 +47,16 @@ const wrap = (Wrapped, module, logger) => {
 
       // this.resources = []; // references to a subset of class-level resources
       _.forOwn(Wrapped.manifest, (query, name) => {
-        if (!name.startsWith('@')) {
-          // Regular manifest entries describe resources
-          const dk = props.dataKey;
-          const dkName = `${name}${dk === undefined ? '' : `-${dk}`}`;
-          if (!resourceRegister[dkName]) {
-            const resource = new types[query.type || defaultType](name, query, module, logger, props.dataKey);
-            resources.push(resource);
-            resourceRegister[dkName] = resource;
-            if (query.type === 'okapi') {
-              addEpics([...mutationEpics(resource), refreshEpic(resource)]);
-            }
+        // Regular manifest entries describe resources
+        const dk = props.dataKey;
+        const dkName = `${name}${dk === undefined ? '' : `-${dk}`}`;
+        if (!resourceRegister[dkName]) {
+          const resource = new types[query.type || defaultType](name, query, module, logger, props.dataKey);
+          resources.push(resource);
+          resourceRegister[dkName] = resource;
+          if (query.type === 'okapi') {
+            addEpics([...mutationEpics(resource), refreshEpic(resource)]);
           }
-        } else if (name === '@errorHandler') {
-          // XXX It doesn't really make sense to do this for each instance in the class
-          setErrorHandler(query);
-        } else {
-          console.log(`WARNING: ${module} ignoring unsupported special manifest entry '${name}'`);
         }
       });
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
@@ -152,9 +101,6 @@ const wrap = (Wrapped, module, logger) => {
           resource.init(this.context.store);
         }
       });
-
-      this.context.addReducer(`@@error-${module}`, errorReducer);
-      setErrorHandler(naiveErrorHandler, false);
     }
 
     componentDidMount() {

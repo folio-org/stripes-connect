@@ -45,7 +45,7 @@
     "@folio/stripes-redux": "^1.0.1",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.2",
-    "query-string": "^4.3.2",
+    "query-string": "^5.0.0",
     "react": "^15.5.1",
     "react-dom": "^15.4.0",
     "react-redux": "^5.0.2",

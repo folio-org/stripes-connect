@@ -14,7 +14,7 @@ export function mutationEpics(resource) {
     (action$) => action$
       .ofType(`${actionPrefix}_${name}`)
       .map(action => {
-        const path = options.path.replace(/[\/].*$/g, '');
+        const path = options.path && options.path.replace(/[\/].*$/g, '');
         const name = resource.name;
         const meta = Object.assign({}, action.meta, { path, name });
         return { ...action, meta, type: 'REFRESH' };

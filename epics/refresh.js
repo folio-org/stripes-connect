@@ -6,9 +6,7 @@ export function refreshEpic(resource) {
     .filter(action => {
       const { name, path } = action.meta;
       const resPath = resource.optionsTemplate.path || '';
-      return resource.isVisible() &&
-        resource.name != name &&
-        resPath.startsWith(path);
+      return resource.isVisible() && resPath.startsWith(path);
     })
     .debounceTime(100)
     .map(action => {

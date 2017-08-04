@@ -1,6 +1,7 @@
 # Change history for stripes-connect
 
-## 2.5.0 IN PROGRESS
+## [2.5.0](https://github.com/folio-org/stripes-connect/tree/v2.5.0) (2017-08-04)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.4.0...v2.5.0)
 
 * Introduce side effects. Fixes STCON-16.
 * Simpler action-type strings in `RESTResource.js`. As a result, components using `this.props.resources` work correctly with dataKey. Fixes STCON-9.

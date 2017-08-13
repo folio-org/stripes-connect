@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 2.6.0 (IN PROGRESS)
+
+* Update stripes-redux dependency. SRDX-1 and SRDX-2.
+
 ## [2.5.0](https://github.com/folio-org/stripes-connect/tree/v2.5.0) (2017-08-04)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.4.0...v2.5.0)
 

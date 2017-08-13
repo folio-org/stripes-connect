@@ -1,8 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
-import { addEpics } from '@folio/stripes-redux';
-
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
@@ -17,7 +15,7 @@ const types = {
   rest: RESTResource,
 };
 
-const wrap = (Wrapped, module, logger) => {
+const wrap = (Wrapped, module, epics, logger) => {
   const resources = [];
   const resourceRegister = {}; // map of resource names to resource objects
 
@@ -55,7 +53,7 @@ const wrap = (Wrapped, module, logger) => {
           resources.push(resource);
           resourceRegister[dkName] = resource;
           if (query.type === 'okapi') {
-            addEpics([...mutationEpics(resource), refreshEpic(resource)]);
+            epics.add(...mutationEpics(resource), refreshEpic(resource));
           }
         }
       });
@@ -225,18 +223,18 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
-export const connect = (Component, module, loggerArg) => {
+export const connect = (Component, module, epics, loggerArg) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
     return Component;
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
-  const Wrapper = wrap(Component, module, logger);
+  const Wrapper = wrap(Component, module, epics, logger);
   const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(Wrapper);
   return Connected;
 };
 
-export const connectFor = (module, logger) => Component => connect(Component, module, logger);
+export const connectFor = (module, epics, logger) => Component => connect(Component, module, epics, logger);
 
 export default connect;

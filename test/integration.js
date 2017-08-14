@@ -110,15 +110,19 @@ ErrorProne.manifest = { errorProne: {
 const defaultLogger = () => {};
 defaultLogger.log = (cat, ...args) => {};
 
+const mockedEpics = {
+  add: () => {}
+};
+
 describe('connect()', () => {
 
   it('should pass through a component with no manifest', () => {
-    Simple.should.equal(connect(Simple, 'NoModule', defaultLogger));
+    Simple.should.equal(connect(Simple, 'NoModule', mockedEpics, defaultLogger));
   });
 
   it('should successfully wrap a component with a local resource', () => {
     const store = createStore((state) => state, {});
-    const Connected = connect(Local, 'test', defaultLogger);
+    const Connected = connect(Local, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
     inst.find(Local).props().data.localResource.should.equal('hi');
     inst.find(Local).props().mutator.localResource.replace({boo:'ya'});
@@ -126,7 +130,7 @@ describe('connect()', () => {
     inst.find(Local).props().mutator.localResource.update({boo:'urns'});
     inst.find(Local).props().data.localResource.boo.should.equal('urns');
   });
-  
+
   it('should successfully wrap a component with an okapi resource', (done) => {
     fetchMock
       .get('http://localhost/turnip',
@@ -147,7 +151,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Remote, 'test', defaultLogger);
+    const Connected = connect(Remote, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
 
     inst.find(Remote).props().mutator.remoteResource.PUT({id:1, someval:'new'});
@@ -186,7 +190,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Paged, 'test', defaultLogger);
+    const Connected = connect(Paged, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
 
     setTimeout(() => {
@@ -207,7 +211,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Functional, 'test', defaultLogger);
+    const Connected = connect(Functional, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
     inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 
@@ -232,7 +236,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(ErrorProne, 'test', defaultLogger);
+    const Connected = connect(ErrorProne, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
     inst.find(ErrorProne).props().mutator.errorProne.POST({id:1, someval:'new'});
 

@@ -5,6 +5,7 @@ import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
+import PropTypes from 'prop-types';
 
 /* eslint-env browser */
 
@@ -21,20 +22,20 @@ const wrap = (Wrapped, module, epics, logger) => {
 
   class Wrapper extends React.Component {
     static propTypes = {
-      refreshRemote: React.PropTypes.func.isRequired,
+      refreshRemote: PropTypes.func.isRequired,
       // We use it, but via ...props, so:
       // eslint-disable-next-line react/no-unused-prop-types
-      location: React.PropTypes.shape({
-        hostname: React.PropTypes.string, // First two are not defined in some parts of lifecyle
-        port:     React.PropTypes.string,
-        pathname: React.PropTypes.string.isRequired,
-        search:   React.PropTypes.string.isRequired,
-        hash:     React.PropTypes.string.isRequired,
+      location: PropTypes.shape({
+        hostname: PropTypes.string, // First two are not defined in some parts of lifecyle
+        port:     PropTypes.string,
+        pathname: PropTypes.string.isRequired,
+        search:   PropTypes.string.isRequired,
+        hash:     PropTypes.string.isRequired,
         // query: null
         // state: null
       }),
-      data: React.PropTypes.object, // eslint-disable-line react/forbid-prop-types
-      dataKey: React.PropTypes.string,
+      data: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+      dataKey: PropTypes.string,
     };
 
     constructor(props, context) {
@@ -153,8 +154,8 @@ const wrap = (Wrapped, module, epics, logger) => {
   }
 
   Wrapper.contextTypes = {
-    addReducer: React.PropTypes.func,
-    store: React.PropTypes.object,
+    addReducer: PropTypes.func,
+    store: PropTypes.object,
   };
 
   Wrapper.mapState = (state, ownProps) => {

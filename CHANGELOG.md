@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## In progress
+
+* Return promises from mutators. STCON-27.
+
 ## [2.5.1](https://github.com/folio-org/stripes-connect/tree/v2.5.1) (2017-08-15)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.5.0...v2.5.1)
 

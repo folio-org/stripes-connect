@@ -415,30 +415,47 @@ export default class RESTResource {
         remoteRecord[pk] = clientGeneratedId;
       }
       // Send remote record
-      return fetch(url, {
+      const beforeCatch = fetch(url, {
         method: 'POST',
         headers,
         body: JSON.stringify(remoteRecord),
-      })
-        .then((response) => {
-          if (response.status >= 400) {
-            dispatch(this.mutationHTTPError(response, 'POST'));
-          } else {
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.startsWith('application/json')) {
-              response.json().then((json) => {
-                const responseRecord = { ...json };
-                if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
-                dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));
-              });
-            } else {
-              // Response is not JSON; maybe no body at all. Assume the client-record is good enough
-              dispatch(crudActions.createSuccess(clientRecord, clientGeneratedId));
-            }
+      }).then((response) => {
+        if (response.status >= 400) {
+          const clonedResponse = response.clone();
+          dispatch(this.mutationHTTPError(response, 'POST'));
+          // fetch responses are single-use so we use the one above and throw a different
+          // one for catch() to play with
+          throw clonedResponse;
+        } else {
+          const contentType = response.headers.get('Content-Type');
+          if (contentType && contentType.startsWith('application/json')) {
+            return response.json().then((json) => {
+              const responseRecord = { ...json };
+              if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
+              dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));
+              return responseRecord;
+            });
           }
-        }).catch((reason) => {
-          dispatch(this.mutationError({ message: reason.message }, 'POST'));
-        });
+          // Response is not JSON; maybe no body at all. Assume the client-record is good enough
+          dispatch(crudActions.createSuccess(clientRecord, clientGeneratedId));
+          return clientRecord;
+        }
+      });
+
+      beforeCatch.catch((reason) => {
+        if (typeof reason === 'object') {
+          // we've already handled HTTP errors above and want to leave fetch()'s
+          // single-use promise for getting them message body available for external
+          // catch()
+          if (!reason.status && !reason.headers) {
+            dispatch(this.mutationError({ message: reason.message }, 'POST'));
+          }
+        } else {
+          dispatch(this.mutationError({ message: reason }, 'POST'));
+        }
+      });
+
+      return beforeCatch;
     };
   }
 
@@ -452,14 +469,16 @@ export default class RESTResource {
       if (url === null) return null;
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.updateStart(clientRecord));
-      return fetch(url, {
+      const beforeCatch = fetch(url, {
         method: 'PUT',
         headers,
         body: JSON.stringify(record),
       })
         .then((response) => {
           if (response.status >= 400) {
+            const clonedResponse = response.clone();
             dispatch(this.mutationHTTPError(response, 'PUT'));
+            throw clonedResponse;
           } else {
             /* Patrons api will not return JSON
             response.json().then ( (json) => {
@@ -468,10 +487,17 @@ export default class RESTResource {
             });
             */
             dispatch(crudActions.updateSuccess(clientRecord));
+            return clientRecord;
           }
-        }).catch((reason) => {
-          dispatch(this.mutationError({ message: reason.message }, 'PUT'));
         });
+
+      beforeCatch.catch((reason) => {
+        if (typeof reason === 'object' && !reason.status && !reason.headers) {
+          dispatch(this.mutationError({ message: reason.message }, 'PUT'));
+        }
+      });
+
+      return beforeCatch;
     };
   }
 
@@ -486,19 +512,27 @@ export default class RESTResource {
       const clientRecord = { ...record };
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(crudActions.deleteStart(clientRecord));
-      return fetch(url, {
+      const beforeCatch = fetch(url, {
         method: 'DELETE',
         headers,
       })
         .then((response) => {
           if (response.status >= 400) {
+            const clonedResponse = response.clone();
             dispatch(this.mutationHTTPError(response, 'DELETE'));
+            throw clonedResponse;
           } else {
             dispatch(crudActions.deleteSuccess(clientRecord));
           }
-        }).catch((reason) => {
-          dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
         });
+
+      beforeCatch.catch((reason) => {
+        if (typeof reason === 'object' && !reason.status && !reason.headers) {
+          dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
+        }
+      });
+
+      return beforeCatch;
     };
   }
 

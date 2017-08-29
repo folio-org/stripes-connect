@@ -283,6 +283,9 @@ export default class RESTResource {
   }
 
   reducer111 = (state = initialResourceState, action) => {
+    const dataKey = action.meta ? action.meta.dataKey : undefined;
+    if (dataKey !== this.dataKey) return state;
+
     if (action.type.startsWith('@@stripes-connect')) {
       if (action.meta.module !== this.module || action.meta.resource !== this.name) {
         return state;

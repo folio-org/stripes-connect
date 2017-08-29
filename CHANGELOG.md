@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 2.7.0 (IN PROGRESS)
+
+* `reducer111` acts only when action and resource dataKeys match. Finally fixes STCON-9.
+
 ## [2.6.0](https://github.com/folio-org/stripes-connect/tree/v2.6.0) (2017-08-28)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.5.1...v2.6.0)
 

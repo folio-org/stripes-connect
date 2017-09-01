@@ -1,11 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
-import PropTypes from 'prop-types';
 
 /* eslint-env browser */
 

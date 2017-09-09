@@ -3,18 +3,11 @@ import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
+
 import CrudActionsAugmenter from './CrudActionsAugmenter';
+import reducer from './reducer.js';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
-const initialResourceState = {
-  hasLoaded: false,
-  isPending: false,
-  failed: false,
-  records: [],
-  successfulMutations: [],
-  failedMutations: [],
-  pendingMutations: [],
-};
 
 function optionsFromState(options, state) {
   if (options.type === 'okapi') {
@@ -210,6 +203,7 @@ export default class RESTResource {
       { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
     // JavaScript methods are not bound to their instance by default
     this.reducer = this.reducer.bind(this);
+    this.reducer111 = reducer.bind(this);
   }
 
   getMutator(dispatch, props) {
@@ -278,77 +272,6 @@ export default class RESTResource {
       }
       default: {
         return this.crudReducers(state, action);
-      }
-    }
-  }
-
-  reducer111 = (state = initialResourceState, action) => {
-    const dataKey = action.meta ? action.meta.dataKey : undefined;
-    if (dataKey !== this.dataKey) return state;
-
-    if (action.type.startsWith('@@stripes-connect')) {
-      if (action.meta.module !== this.module || action.meta.resource !== this.name) {
-        return state;
-      }
-    }
-    const prefix = this.crudName.toUpperCase();
-    switch (action.type) {
-      case `${prefix}_FETCH_START`: {
-        return Object.assign({}, state, { isPending: true });
-      }
-      case `${prefix}_FETCH_SUCCESS111`: {
-        let records;
-        if (Array.isArray(action.payload)) records = [...action.payload];
-        else records = [_.clone(action.payload)];
-        return Object.assign({}, state, {
-          hasLoaded: true,
-          loadedAt: new Date(),
-          isPending: false,
-          failed: false,
-          records,
-          ...action.meta,
-        });
-      }
-      case `${prefix}_CREATE_SUCCESS`: {
-        return Object.assign({}, state, {
-          successfulMutations: [{
-            type: 'POST',
-            record: action.record,
-          }, ...state.successfulMutations],
-        });
-      }
-      case `${prefix}_UPDATE_SUCCESS`: {
-        return Object.assign({}, state, {
-          successfulMutations: [{
-            type: 'PUT',
-            record: action.record,
-          }, ...state.successfulMutations],
-        });
-      }
-      case `${prefix}_DELETE_SUCCESS`: {
-        return Object.assign({}, state, {
-          successfulMutations: [{
-            type: 'DELETE',
-            record: action.record,
-          }, ...state.successfulMutations],
-        });
-      }
-      case '@@stripes-connect/MUTATION_ERROR': {
-        return Object.assign({}, state, {
-          failedMutations: [{
-            ...action.meta,
-            ...action.payload,
-          }, ...state.failedMutations],
-        });
-      }
-      case '@@stripes-connect/FETCH_ERROR': {
-        return Object.assign({}, state, {
-          isPending: false,
-          failed: Object.assign({}, action.meta, action.payload),
-        });
-      }
-      default: {
-        return state;
       }
     }
   }

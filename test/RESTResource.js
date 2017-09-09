@@ -1,6 +1,6 @@
 import { should, expect } from 'chai';
 
-import { substitute, RESTResource } from '../RESTResource';
+import { substitute, RESTResource } from '../RESTResource/RESTResource';
 
 should();
 

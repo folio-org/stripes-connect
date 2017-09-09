@@ -119,12 +119,6 @@ function urlFromOptions(options, pk) {
     }
   }
 
-  if (o.perRequest && o.limitParam) {
-    const newParams = {};
-    newParams[o.limitParam] = o.perRequest;
-    o.params = _.merge({}, o.params, newParams);
-  }
-
   const path = (!pk || o.path.endsWith(pk)) ?
       // // i.e. only join truthy elements
       // const url = [root, path].filter(_.identity).join('/');
@@ -256,6 +250,10 @@ export default class RESTResource {
       if (options.records) {
         options.records = substitute(options.records, props, state, this.module, this.logger);
       }
+    }
+
+    if (options.perRequest && options.limitParam && verb === 'GET') {
+      options.params = _.merge({}, options.params, { [options.limitParam]: options.perRequest });
     }
 
     return options;

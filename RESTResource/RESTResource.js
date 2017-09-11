@@ -5,7 +5,7 @@ import uuid from 'uuid';
 import queryString from 'query-string';
 
 import CrudActionsAugmenter from './CrudActionsAugmenter';
-import reducer from './reducer.js';
+import reducer from './reducer';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 

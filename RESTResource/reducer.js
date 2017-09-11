@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 const initialResourceState = {
   hasLoaded: false,
   isPending: false,

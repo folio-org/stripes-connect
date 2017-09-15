@@ -124,11 +124,11 @@ describe('connect()', () => {
     const store = createStore((state) => state, {});
     const Connected = connect(Local, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
-    inst.find(Local).props().data.localResource.should.equal('hi');
+    inst.find(Local).props().resources.localResource.should.equal('hi');
     inst.find(Local).props().mutator.localResource.replace({boo:'ya'});
-    inst.find(Local).props().data.localResource.boo.should.equal('ya');
+    inst.find(Local).props().resources.localResource.boo.should.equal('ya');
     inst.find(Local).props().mutator.localResource.update({boo:'urns'});
-    inst.find(Local).props().data.localResource.boo.should.equal('urns');
+    inst.find(Local).props().resources.localResource.boo.should.equal('urns');
   });
 
   it('should successfully wrap a component with an okapi resource', (done) => {
@@ -168,7 +168,7 @@ describe('connect()', () => {
     fetchMock.lastCall()[1].body.length.should.equal(63);
 
     setTimeout(() => {
-      inst.find(Remote).props().data.remoteResource[0].someprop.should.equal('someval');
+      inst.find(Remote).props().resources.remoteResource.records[0].someprop.should.equal('someval');
       fetchMock.restore();
       done();
     }, 10);
@@ -196,10 +196,10 @@ describe('connect()', () => {
     const inst = mount(<Root store={store} component={Connected}/>);
 
     setTimeout(() => {
-      inst.find(Paged).props().data.pagedResource.length.should.equal(14);
+      inst.find(Paged).props().resources.pagedResource.records.length.should.equal(14);
       fetchMock.restore();
       done();
-    }, 10);
+    }, 40);
   });
 
   it('should run manifest functions', (done) => {
@@ -218,7 +218,6 @@ describe('connect()', () => {
     inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 
     setTimeout(() => {
-      inst.find(Functional).props().data.functionalResource.length.should.equal(5);
       inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(true);
       inst.find(Functional).props().resources.functionalResource.records.length.should.equal(5);
       fetchMock.restore();

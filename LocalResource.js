@@ -5,7 +5,6 @@ export default class LocalResource {
     this.module = module;
     this.logger = logger; // not presently needed, but may be down the line
     this.dataKey = dataKey;
-    this.reducer111 = this.reducer;
   }
 
   init = (store) => {
@@ -20,7 +19,7 @@ export default class LocalResource {
   })
 
   updateAction = newData => ({
-    type: 'STRIPESLOCALSTATE_UPDATE',
+    type: '@@stripes-connect/LOCAL_UPDATE',
     payload: newData,
     meta: {
       module: this.module,
@@ -30,7 +29,7 @@ export default class LocalResource {
   })
 
   replaceAction = newData => ({
-    type: 'STRIPESLOCALSTATE_REPLACE',
+    type: '@@stripes-connect/LOCAL_REPLACE',
     payload: newData,
     meta: {
       module: this.module,
@@ -47,10 +46,10 @@ export default class LocalResource {
         action.meta.resource === this.name &&
         action.meta.dataKey === this.dataKey) {
       switch (action.type) {
-        case 'STRIPESLOCALSTATE_UPDATE': {
+        case '@@stripes-connect/LOCAL_UPDATE': {
           return Object.assign({}, state, action.payload);
         }
-        case 'STRIPESLOCALSTATE_REPLACE': {
+        case '@@stripes-connect/LOCAL_REPLACE': {
           return action.payload;
         }
         default: {

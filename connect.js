@@ -76,10 +76,11 @@ const wrap = (Wrapped, module, epics, logger) => {
           const store = this.context.store;
           const onPageSuccess = (paging) => {
             const records = paging.reduce((acc, val) => acc.concat(val.records), []);
-            store.dispatch(resource.pagedFetchSuccess(records));
-            store.dispatch(resource.fetchSuccess111(paging[paging.length - 1].meta, records));
+            // store.dispatch(resource.pagedFetchSuccess(records));
+            store.dispatch(resource.actions.fetchSuccess(paging[paging.length - 1].meta, records));
           };
           const onPageChange = (paging) => {
+            // console.log("MOO", paging);
             const allDone = paging.reduce((acc, val) => acc && val.isComplete, true);
             if (allDone && paging.length > 0) onPageSuccess(paging);
           };
@@ -91,7 +92,6 @@ const wrap = (Wrapped, module, epics, logger) => {
           };
           store.subscribe(pagingListener);
         }
-        this.context.addReducer(`${resource.stateKey()}111`, resource.reducer111);
         this.context.addReducer(resource.stateKey(), resource.reducer);
 
         // TODO this may move, but while it's here, it's going to be called
@@ -161,16 +161,10 @@ const wrap = (Wrapped, module, epics, logger) => {
   Wrapper.mapState = (state, ownProps) => {
     const data = {};
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
-    for (const r of resources) {
-      if (r.dataKey === ownProps.dataKey) {
-        data[r.name] = Object.freeze(_.get(state, [r.stateKey()], null));
-      }
-    }
-
     const resourceData = {};
     for (const r of resources) {
       if (r.dataKey === ownProps.dataKey) {
-        resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}111`], null));
+        resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
       }
     }
 

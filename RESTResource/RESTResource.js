@@ -67,7 +67,7 @@ function processFallback(s, getPath, props) {
 // If we restructure the state into a per-module hierarchy we
 // won't need to go through this dance STRIPES-238
 function mockProps(state, module, dataKey) {
-  const mock = { data: {} };
+  const mock = { resources: {}, data: {} };
   // console.log(` mockprops(${dataKey})`);
   Object.keys(state).forEach((key) => {
     // console.log(`  considering ${key}`);
@@ -89,7 +89,9 @@ function mockProps(state, module, dataKey) {
       const re = new RegExp(`^${module}.(.*)`);
       const res = re.exec(rawKey);
       if (Array.isArray(res) && res.length > 1) {
+        // TODO: .data is temporary just to aid transition
         mock.data[res[1]] = state[key];
+        mock.resources[res[1]] = state[key];
         // console.log(`     added mock[${res[1]}] = ${state[key]}`);
       }
     } else {
@@ -143,7 +145,7 @@ export function substitute(original, props, state, module, logger) {
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey).data, logger);
+    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey).resources, logger);
     dynamicPartsSatisfied = (result !== null);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
@@ -160,7 +162,7 @@ export function substitute(original, props, state, module, logger) {
           return pathComp;
         }
         case '%': case '$': {
-          const localState = processFallback(name.split('.'), ['data'], mockProps(state, module, props.dataKey));
+          const localState = processFallback(name.split('.'), ['resources'], mockProps(state, module, props.dataKey));
           if (localState === null) dynamicPartsSatisfied = false;
           return localState;
         }

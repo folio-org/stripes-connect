@@ -87,7 +87,7 @@ function mockProps(state, module, dataKey) {
 
     if (rawKey) {
       // console.log(`    considering rawKey ${rawKey}`);
-      const re = new RegExp(`^${module}.(.*)`);
+      const re = new RegExp(`^${_.snakeCase(module)}.(.*)`);
       const res = re.exec(rawKey);
       if (Array.isArray(res) && res.length > 1) {
         mock.data[res[1]] = state[key];

@@ -27,10 +27,10 @@ const wrap = (Wrapped, module, epics, logger) => {
       // eslint-disable-next-line react/no-unused-prop-types
       location: PropTypes.shape({
         hostname: PropTypes.string, // First two are not defined in some parts of lifecyle
-        port:     PropTypes.string,
+        port: PropTypes.string,
         pathname: PropTypes.string.isRequired,
-        search:   PropTypes.string.isRequired,
-        hash:     PropTypes.string.isRequired,
+        search: PropTypes.string.isRequired,
+        hash: PropTypes.string.isRequired,
         // query: null
         // state: null
       }),
@@ -150,7 +150,6 @@ const wrap = (Wrapped, module, epics, logger) => {
         <Wrapped {...this.props} />
       );
     }
-
   }
 
   Wrapper.contextTypes = {

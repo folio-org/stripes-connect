@@ -121,8 +121,8 @@ function urlFromOptions(options, pk) {
   }
 
   const path = (!pk || o.path.endsWith(pk)) ?
-      // // i.e. only join truthy elements
-      // const url = [root, path].filter(_.identity).join('/');
+    // // i.e. only join truthy elements
+    // const url = [root, path].filter(_.identity).join('/');
     [o.root, o.path].join('/') : [o.root, o.path, pk].join('/');
 
   if (typeof o.params === 'object') {
@@ -184,7 +184,6 @@ export function substitute(original, props, state, module, logger) {
 }
 
 export default class RESTResource {
-
   constructor(name, query = {}, module = null, logger, dataKey, defaults = defaultDefaults) {
     this.name = name;
     this.module = module;
@@ -497,7 +496,7 @@ export default class RESTResource {
 
   fetchMore = (options, total, firstData, firstMeta) => {
     const { headers, records, recordsRequired,
-            perRequest: limit, offsetParam } = options;
+      perRequest: limit, offsetParam } = options;
     const reqd = Math.min(recordsRequired, total);
     return (dispatch) => {
       dispatch(this.actions.pagingStart());

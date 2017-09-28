@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export default class LocalResource {
   constructor(name, query = {}, module = null, logger, dataKey) {
     this.name = name;
@@ -39,7 +41,7 @@ export default class LocalResource {
     },
   })
 
-  stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${this.module}-${this.name}`;
+  stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${_.snakeCase(this.module)}_${this.name}`;
 
   reducer = (state = {}, action) => {
     if (action.meta !== undefined &&

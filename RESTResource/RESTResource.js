@@ -87,7 +87,7 @@ function mockProps(state, module, dataKey) {
 
     if (rawKey) {
       // console.log(`    considering rawKey ${rawKey}`);
-      const re = new RegExp(`^${module}.(.*)`);
+      const re = new RegExp(`^${_.snakeCase(module)}.(.*)`);
       const res = re.exec(rawKey);
       if (Array.isArray(res) && res.length > 1) {
         mock.data[res[1]] = state[key];
@@ -464,6 +464,7 @@ export default class RESTResource {
     const key = this.stateKey();
     return (dispatch, getState) => {
       const options = this.verbOptions('GET', getState(), props);
+      if (options === null) return null; // needs dynamic parts that aren't available
       const url = urlFromOptions(options);
       if (url === null) return null;
       const { headers, records } = options;

@@ -154,22 +154,22 @@ describe('connect()', () => {
     const Connected = connect(Remote, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
 
-    inst.find(Remote).props().mutator.remoteResource.PUT({id:1, someval:'new'})
-      .then(res => res.someval.should.equal('new'));
-    fetchMock.lastCall()[1].body.should.equal('{"id":1,"someval":"new"}');
+    inst.find(Remote).props().mutator.remoteResource.PUT({id:1, someprop:'new'})
+      .then(res => res.someprop.should.equal('new'));
+    fetchMock.lastCall()[1].body.should.equal('{"id":1,"someprop":"new"}');
     fetchMock.lastCall()[1].headers['X-Okapi-Tenant'].should.equal('tenantid');
 
     inst.find(Remote).props().mutator.remoteResource.DELETE({id:1});
     fetchMock.lastCall()[0].should.equal('http://localhost/turnip/1');
 
-    inst.find(Remote).props().mutator.remoteResource.POST({someval:'newer'})
-      .then(res => res.someval.should.equal('newer'));
+    inst.find(Remote).props().mutator.remoteResource.POST({someprop:'newer'})
+      .then(res => res.someprop.should.equal('newer'));
     // Confirm UUID is generated
-    fetchMock.lastCall()[1].body.length.should.equal(63);
+    fetchMock.lastCall()[1].body.length.should.equal(64);
 
     setTimeout(() => {
       inst.find(Remote).props().resources.remoteResource.records[0].someprop.should.equal('someval');
-      inst.find(Remote).props().resources.remoteResource.successfulMutations[0].record.someval.should.equal('newer');
+      inst.find(Remote).props().resources.remoteResource.successfulMutations[0].record.someprop.should.equal('newer');
       fetchMock.restore();
       done();
     }, 10);
@@ -240,7 +240,7 @@ describe('connect()', () => {
 
     const Connected = connect(ErrorProne, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected}/>);
-    inst.find(ErrorProne).props().mutator.errorProne.POST({id:1, someval:'new'})
+    inst.find(ErrorProne).props().mutator.errorProne.POST({id:1, someprop:'new'})
       .catch(err => err.text().then(msg => msg.should.equal('You are forbidden because reasons.')));
    setTimeout(() => {
       const res = inst.find(ErrorProne).props().resources.errorProne;

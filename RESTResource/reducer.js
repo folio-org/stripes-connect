@@ -34,10 +34,11 @@ export default function (state = initialResourceState, action) {
       });
     }
     case '@@stripes-connect/CREATE_SUCCESS': {
+      console.log(action);
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'POST',
-          record: action.record,
+          record: action.payload
         }, ...state.successfulMutations],
       });
     }
@@ -45,7 +46,7 @@ export default function (state = initialResourceState, action) {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'PUT',
-          record: action.record,
+          record: action.payload
         }, ...state.successfulMutations],
       });
     }
@@ -53,7 +54,7 @@ export default function (state = initialResourceState, action) {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'DELETE',
-          record: action.record,
+          record: action.payload
         }, ...state.successfulMutations],
       });
     }

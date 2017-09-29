@@ -11,20 +11,16 @@ const initialResourceState = {
 };
 
 export default function (state = initialResourceState, action) {
-  const dataKey = action.meta ? action.meta.dataKey : undefined;
-  if (dataKey !== this.dataKey) return state;
+  if (!action.type.startsWith('@@stripes-connect')
+    || action.meta.module !== this.module
+    || action.meta.resource !== this.name
+    || action.meta.dataKey !== this.dataKey) return state;
 
-  if (action.type.startsWith('@@stripes-connect')) {
-    if (action.meta.module !== this.module || action.meta.resource !== this.name) {
-      return state;
-    }
-  }
-  const prefix = this.crudName.toUpperCase();
   switch (action.type) {
-    case `${prefix}_FETCH_START`: {
+    case '@@stripes-connect/FETCH_START': {
       return Object.assign({}, state, { isPending: true });
     }
-    case `${prefix}_FETCH_SUCCESS111`: {
+    case '@@stripes-connect/FETCH_SUCCESS': {
       let records;
       if (Array.isArray(action.payload)) records = [...action.payload];
       else records = [_.clone(action.payload)];
@@ -37,27 +33,27 @@ export default function (state = initialResourceState, action) {
         ...action.meta,
       });
     }
-    case `${prefix}_CREATE_SUCCESS`: {
+    case '@@stripes-connect/CREATE_SUCCESS': {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'POST',
-          record: action.record,
+          record: action.payload,
         }, ...state.successfulMutations],
       });
     }
-    case `${prefix}_UPDATE_SUCCESS`: {
+    case '@@stripes-connect/UPDATE_SUCCESS': {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'PUT',
-          record: action.record,
+          record: action.payload,
         }, ...state.successfulMutations],
       });
     }
-    case `${prefix}_DELETE_SUCCESS`: {
+    case '@@stripes-connect/DELETE_SUCCESS': {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'DELETE',
-          record: action.record,
+          record: action.payload,
         }, ...state.successfulMutations],
       });
     }

@@ -1,10 +1,9 @@
 import 'isomorphic-fetch'; /* global fetch */
-import crud from 'redux-crud';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
 
-import CrudActionsAugmenter from './CrudActionsAugmenter';
+import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
@@ -68,7 +67,7 @@ function processFallback(s, getPath, props) {
 // If we restructure the state into a per-module hierarchy we
 // won't need to go through this dance STRIPES-238
 function mockProps(state, module, dataKey) {
-  const mock = { data: {} };
+  const mock = { resources: {}, data: {} };
   // console.log(` mockprops(${dataKey})`);
   Object.keys(state).forEach((key) => {
     // console.log(`  considering ${key}`);
@@ -90,7 +89,9 @@ function mockProps(state, module, dataKey) {
       const re = new RegExp(`^${_.snakeCase(module)}.(.*)`);
       const res = re.exec(rawKey);
       if (Array.isArray(res) && res.length > 1) {
+        // TODO: .data is temporary just to aid transition
         mock.data[res[1]] = state[key];
+        mock.resources[res[1]] = state[key];
         // console.log(`     added mock[${res[1]}] = ${state[key]}`);
       }
     } else {
@@ -144,7 +145,7 @@ export function substitute(original, props, state, module, logger) {
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey).data, logger);
+    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey).resources, logger);
     dynamicPartsSatisfied = (result !== null);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
@@ -161,7 +162,7 @@ export function substitute(original, props, state, module, logger) {
           return pathComp;
         }
         case '%': case '$': {
-          const localState = processFallback(name.split('.'), ['data'], mockProps(state, module, props.dataKey));
+          const localState = processFallback(name.split('.'), ['resources'], mockProps(state, module, props.dataKey));
           if (localState === null) dynamicPartsSatisfied = false;
           return localState;
         }
@@ -190,13 +191,9 @@ export default class RESTResource {
     this.dataKey = dataKey;
     this.crudName = module ? `${_.snakeCase(module)}_${_.snakeCase(name)}` : _.snakeCase(name);
     this.optionsTemplate = _.merge({}, defaults, query);
-    this.crudActions = new CrudActionsAugmenter(crud.actionCreatorsFor(this.crudName), { dataKey });
-    this.pagedFetchSuccess = this.crudActions.fetchSuccess;
-    this.crudReducers = crud.List.reducersFor(this.crudName,
-      { key: this.optionsTemplate.pk, store: crud.STORE_MUTABLE });
-    // JavaScript methods are not bound to their instance by default
-    this.reducer = this.reducer.bind(this);
-    this.reducer111 = reducer.bind(this);
+    this.actions = actionCreatorsFor(this);
+    this.pagedFetchSuccess = this.actions.fetchSuccess;
+    this.reducer = reducer.bind(this);
   }
 
   getMutator(dispatch, props) {
@@ -258,27 +255,16 @@ export default class RESTResource {
     return options;
   }
 
-  reducer(state = [], action) {
-    const dataKey = action.meta ? action.meta.dataKey : undefined;
-    if (dataKey !== this.dataKey) return state;
-
-    switch (action.type) {
-      case `${this.crudName.toUpperCase()}_FETCH_SUCCESS`: {
-        if (Array.isArray(action.records)) return [...action.records];
-        return [_.clone(action.records)];
-      }
-      default: {
-        return this.crudReducers(state, action);
-      }
-    }
-  }
-
   pagingReducer = (state = [], action) => {
+    if (!action.type.startsWith('@@stripes-connect')
+      || action.meta.module !== this.module
+      || action.meta.resource !== this.name
+      || action.meta.dataKey !== this.dataKey) return state;
     switch (action.type) {
-      case `${this.crudName.toUpperCase()}_PAGING_START`: {
+      case '@@stripes-connect/PAGING_START': {
         return [];
       }
-      case `${this.crudName.toUpperCase()}_PAGE_START`: {
+      case '@@stripes-connect/PAGE_START': {
         const newPage = {
           records: null,
           url: action.url,
@@ -287,7 +273,7 @@ export default class RESTResource {
         };
         return [...state, newPage];
       }
-      case `${this.crudName.toUpperCase()}_PAGE_SUCCESS`: {
+      case '@@stripes-connect/PAGE_SUCCESS': {
         let allDone = false;
         const newState = state.reduce((acc, val) => {
           allDone = allDone && val.isComplete;
@@ -320,70 +306,66 @@ export default class RESTResource {
     this.dispatch(this.fetchAction(this.cachedProps));
   }
 
-  createAction = (record, props) => {
-    const crudActions = this.crudActions;
-    return (dispatch, getState) => {
-      const options = this.verbOptions('POST', getState(), props);
-      const { pk, clientGeneratePk, headers } = options;
-      const url = urlFromOptions(options);
-      if (url === null) return null; // needs dynamic parts that aren't available
-      // Optimistic record creation ('clientRecord')
-      const clientGeneratedId = record.id ? record.id : uuid();
-      const clientRecord = { ...record, id: clientGeneratedId };
-      clientRecord[pk] = clientGeneratedId;
-      dispatch(crudActions.createStart(clientRecord));
-      // Prepare record for remote
-      const remoteRecord = { ...record };
-      if (clientGeneratePk) {
-        remoteRecord[pk] = clientGeneratedId;
+  createAction = (record, props) => (dispatch, getState) => {
+    const options = this.verbOptions('POST', getState(), props);
+    const { pk, clientGeneratePk, headers } = options;
+    const url = urlFromOptions(options);
+    if (url === null) return null; // needs dynamic parts that aren't available
+    // Optimistic record creation ('clientRecord')
+    const clientGeneratedId = record.id ? record.id : uuid();
+    const clientRecord = { ...record, id: clientGeneratedId };
+    clientRecord[pk] = clientGeneratedId;
+    dispatch(this.actions.createStart(clientRecord));
+    // Prepare record for remote
+    const remoteRecord = { ...record };
+    if (clientGeneratePk) {
+      remoteRecord[pk] = clientGeneratedId;
+    }
+    // Send remote record
+    const beforeCatch = fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(remoteRecord),
+    }).then((response) => {
+      if (response.status >= 400) {
+        const clonedResponse = response.clone();
+        dispatch(this.mutationHTTPError(response, 'POST'));
+        // fetch responses are single-use so we use the one above and throw a different
+        // one for catch() to play with
+        throw clonedResponse;
+      } else {
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.startsWith('application/json')) {
+          return response.json().then((json) => {
+            const responseRecord = { ...json };
+            if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
+            dispatch(this.actions.createSuccess(responseRecord, clientGeneratedId));
+            return responseRecord;
+          });
+        }
+        // Response is not JSON; maybe no body at all. Assume the client-record is good enough
+        dispatch(this.actions.createSuccess(clientRecord, clientGeneratedId));
+        return clientRecord;
       }
-      // Send remote record
-      const beforeCatch = fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(remoteRecord),
-      }).then((response) => {
-        if (response.status >= 400) {
-          const clonedResponse = response.clone();
-          dispatch(this.mutationHTTPError(response, 'POST'));
-          // fetch responses are single-use so we use the one above and throw a different
-          // one for catch() to play with
-          throw clonedResponse;
-        } else {
-          const contentType = response.headers.get('Content-Type');
-          if (contentType && contentType.startsWith('application/json')) {
-            return response.json().then((json) => {
-              const responseRecord = { ...json };
-              if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
-              dispatch(crudActions.createSuccess(responseRecord, clientGeneratedId));
-              return responseRecord;
-            });
-          }
-          // Response is not JSON; maybe no body at all. Assume the client-record is good enough
-          dispatch(crudActions.createSuccess(clientRecord, clientGeneratedId));
-          return clientRecord;
-        }
-      });
+    });
 
-      beforeCatch.catch((reason) => {
-        if (typeof reason === 'object') {
-          // we've already handled HTTP errors above and want to leave fetch()'s
-          // single-use promise for getting them message body available for external
-          // catch()
-          if (!reason.status && !reason.headers) {
-            dispatch(this.mutationError({ message: reason.message }, 'POST'));
-          }
-        } else {
-          dispatch(this.mutationError({ message: reason }, 'POST'));
+    beforeCatch.catch((reason) => {
+      if (typeof reason === 'object') {
+        // we've already handled HTTP errors above and want to leave fetch()'s
+        // single-use promise for getting them message body available for external
+        // catch()
+        if (!reason.status && !reason.headers) {
+          dispatch(this.mutationError({ message: reason.message }, 'POST'));
         }
-      });
+      } else {
+        dispatch(this.mutationError({ message: reason }, 'POST'));
+      }
+    });
 
-      return beforeCatch;
-    };
+    return beforeCatch;
   }
 
   updateAction = (record, props) => {
-    const crudActions = this.crudActions;
     const clientRecord = { ...record };
     return (dispatch, getState) => {
       const options = this.verbOptions('PUT', getState(), props);
@@ -391,7 +373,7 @@ export default class RESTResource {
       const url = urlFromOptions(options, record[pk]);
       if (url === null) return null;
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
-      dispatch(crudActions.updateStart(clientRecord));
+      dispatch(this.actions.updateStart(clientRecord));
       const beforeCatch = fetch(url, {
         method: 'PUT',
         headers,
@@ -409,14 +391,14 @@ export default class RESTResource {
               dispatch(crudActions.updateSuccess(json));
             });
             */
-            dispatch(crudActions.updateSuccess(clientRecord));
+            dispatch(this.actions.updateSuccess(clientRecord));
             return clientRecord;
           }
         });
 
       beforeCatch.catch((reason) => {
         if (typeof reason === 'object' && !reason.status && !reason.headers) {
-          dispatch(this.mutationError({ message: reason.message }, 'PUT'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'PUT'));
         }
       });
 
@@ -424,43 +406,39 @@ export default class RESTResource {
     };
   }
 
-  deleteAction = (record, props) => {
-    const crudActions = this.crudActions;
-    return (dispatch, getState) => {
-      const options = this.verbOptions('DELETE', getState(), props);
-      if (options === null) return null; // needs dynamic parts that aren't available
-      const { pk, headers } = options;
-      const url = urlFromOptions(options, record[pk]);
-      if (url === null) return null;
-      const clientRecord = { ...record };
-      if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
-      dispatch(crudActions.deleteStart(clientRecord));
-      const beforeCatch = fetch(url, {
-        method: 'DELETE',
-        headers,
-      })
-        .then((response) => {
-          if (response.status >= 400) {
-            const clonedResponse = response.clone();
-            dispatch(this.mutationHTTPError(response, 'DELETE'));
-            throw clonedResponse;
-          } else {
-            dispatch(crudActions.deleteSuccess(clientRecord));
-          }
-        });
-
-      beforeCatch.catch((reason) => {
-        if (typeof reason === 'object' && !reason.status && !reason.headers) {
-          dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
+  deleteAction = (record, props) => (dispatch, getState) => {
+    const options = this.verbOptions('DELETE', getState(), props);
+    if (options === null) return null; // needs dynamic parts that aren't available
+    const { pk, headers } = options;
+    const url = urlFromOptions(options, record[pk]);
+    if (url === null) return null;
+    const clientRecord = { ...record };
+    if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
+    dispatch(this.actions.deleteStart(clientRecord));
+    const beforeCatch = fetch(url, {
+      method: 'DELETE',
+      headers,
+    })
+      .then((response) => {
+        if (response.status >= 400) {
+          const clonedResponse = response.clone();
+          dispatch(this.mutationHTTPError(response, 'DELETE'));
+          throw clonedResponse;
+        } else {
+          dispatch(this.actions.deleteSuccess(clientRecord));
         }
       });
 
-      return beforeCatch;
-    };
+    beforeCatch.catch((reason) => {
+      if (typeof reason === 'object' && !reason.status && !reason.headers) {
+        dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
+      }
+    });
+
+    return beforeCatch;
   }
 
   fetchAction = (props) => {
-    const crudActions = this.crudActions;
     const key = this.stateKey();
     return (dispatch, getState) => {
       const options = this.verbOptions('GET', getState(), props);
@@ -473,7 +451,7 @@ export default class RESTResource {
       this.lastUrl = url;
       this.lastReqd = options.recordsRequired;
 
-      dispatch(crudActions.fetchStart());
+      dispatch(this.actions.fetchStart());
       return fetch(url, { headers })
         .then((response) => {
           if (response.status >= 400) {
@@ -507,13 +485,12 @@ export default class RESTResource {
               if (reqd && total && total > perPage && reqd > perPage) {
                 dispatch(this.fetchMore(options, total, data, meta));
               } else {
-                dispatch(crudActions.fetchSuccess(data));
-                dispatch(this.fetchSuccess111(meta, data));
+                dispatch(this.actions.fetchSuccess(meta, data));
               }
             });
           }
         }).catch((reason) => {
-          dispatch(this.fetchError({ message: reason.message }));
+          dispatch(this.actions.fetchError({ message: reason.message }));
         });
     };
   }
@@ -523,14 +500,14 @@ export default class RESTResource {
       perRequest: limit, offsetParam } = options;
     const reqd = Math.min(recordsRequired, total);
     return (dispatch) => {
-      dispatch(this.pagingStart());
-      dispatch(this.fetchPageStart(firstMeta.url));
+      dispatch(this.actions.pagingStart());
+      dispatch(this.actions.pageStart(firstMeta.url));
       for (let offset = limit; offset < reqd; offset += limit) {
         const newOptions = {};
         newOptions.params = {};
         newOptions.params[offsetParam] = offset;
         const url = urlFromOptions(_.merge({}, options, newOptions));
-        dispatch(this.fetchPageStart(url));
+        dispatch(this.actions.pageStart(url));
         fetch(url, { headers })
           .then((response) => {
             if (response.status >= 400) {
@@ -544,71 +521,28 @@ export default class RESTResource {
                   other: records ? _.omit(json, records) : {},
                 };
                 const data = (records ? json[records] : json);
-                dispatch(this.fetchPageSuccess(meta, data));
+                dispatch(this.actions.pageSuccess(meta, data));
               });
             }
           }).catch((err) => {
-            dispatch(this.fetchError({
+            dispatch(this.actions.fetchError({
               message: `Unexpected fetch error ${err}`,
             }));
           });
       }
-      dispatch(this.fetchPageSuccess(firstMeta, firstData));
+      dispatch(this.actions.pageSuccess(firstMeta, firstData));
     };
   }
 
-  pagingStart = () => ({
-    type: `${this.crudName.toUpperCase()}_PAGING_START`,
-    meta: { dataKey: this.dataKey },
-  })
-
-  fetchPageStart = url => ({
-    type: `${this.crudName.toUpperCase()}_PAGE_START`,
-    url,
-    meta: { dataKey: this.dataKey },
-  });
-
-  fetchPageSuccess = (meta, data) => ({
-    type: `${this.crudName.toUpperCase()}_PAGE_SUCCESS`,
-    payload: data,
-    meta: Object.assign({}, meta, { dataKey: this.dataKey }),
-  })
-
-  fetchSuccess111 = (meta, data) => ({
-    type: `${this.crudName.toUpperCase()}_FETCH_SUCCESS111`,
-    payload: data,
-    meta: Object.assign({}, meta, { dataKey: this.dataKey }),
-  })
-
-  fetchError = err => ({
-    type: '@@stripes-connect/FETCH_ERROR',
-    payload: err,
-    meta: {
-      resource: this.name,
-      module: this.module,
-      dataKey: this.dataKey,
-    },
-  })
-
   fetchHTTPError = res => dispatch => res.text().then((text) => {
-    dispatch(this.fetchError({
+    dispatch(this.actions.fetchError({
       message: text || res.statusText,
       httpStatus: res.status,
     }));
   });
 
-  mutationError = (err, mutator) => ({
-    type: '@@stripes-connect/MUTATION_ERROR',
-    payload: { type: mutator, ...err },
-    meta: {
-      resource: this.name,
-      module: this.module,
-      dataKey: this.dataKey,
-    },
-  })
-
   mutationHTTPError = (res, mutator) => dispatch => res.text().then((text) => {
-    dispatch(this.mutationError({
+    dispatch(this.actions.mutationError({
       message: text || res.statusText,
       httpStatus: res.status,
     }, mutator));

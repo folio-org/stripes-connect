@@ -15,7 +15,7 @@
   "scripts": {
     "test": "mocha --require babel-test-hook",
     "test-watch": "mocha --require babel-test-hook -w --watch-extensions json",
-    "lint": "eslint *.js RESTResource/*.js || true"
+    "lint": "eslint *.js RESTResource/*.js"
   },
   "devDependencies": {
     "babel-core": "^6.17.0",

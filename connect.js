@@ -35,6 +35,7 @@ const wrap = (Wrapped, module, epics, logger) => {
         // state: null
       }),
       data: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+      resources: PropTypes.object, // eslint-disable-line react/forbid-prop-types
       dataKey: PropTypes.string,
     };
 
@@ -137,7 +138,7 @@ const wrap = (Wrapped, module, epics, logger) => {
         const m = Wrapped.manifest[key];
         const type = m.type || defaultType;
         if (type === 'local') {
-          const same = _.isEqual(data[key], nextProps.data[key]);
+          const same = _.isEqual(data[key], nextProps.resources[key]);
           // console.log(`local resource '${key}': OLD =`, data[key], 'NEW =', nextProps.data[key], `-- same=${same}`);
           if (!same) return true;
         }

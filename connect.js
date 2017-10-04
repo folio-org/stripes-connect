@@ -132,7 +132,7 @@ const wrap = (Wrapped, module, epics, logger) => {
       // a refresh? See STRIPES-393. For now, we do this is the UI URL
       // or any local resource has changed.
       if (nextProps.location !== this.props.location) return true;
-      const data = this.props.data;
+      const data = this.props.resources;
       for (const key of Object.keys(data)) {
         const m = Wrapped.manifest[key];
         const type = m.type || defaultType;

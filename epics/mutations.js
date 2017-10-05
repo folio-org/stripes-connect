@@ -7,7 +7,6 @@ const actionNames = [
 // returns list of epics which execute
 // after mutation happens on a given resource
 export function mutationEpics(resource) {
-  const actionPrefix = resource.crudName.toUpperCase();
   const options = resource.optionsTemplate;
 
   return actionNames.map(name =>

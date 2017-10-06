@@ -33,6 +33,22 @@ export default function (state = initialResourceState, action) {
         ...action.meta,
       });
     }
+    case '@@stripes-connect/ACC_FETCH_SUCCESS': {
+      let records;
+      if (Array.isArray(action.payload)) records = [...state.records, ...action.payload];
+      else records = [...state.records, _.clone(action.payload)];
+      return Object.assign({}, state, {
+        hasLoaded: true,
+        loadedAt: new Date(),
+        isPending: false,
+        failed: false,
+        records,
+        ...action.meta,
+      });
+    }
+    case '@@stripes-connect/RESET': {
+      return initialResourceState;
+    }
     case '@@stripes-connect/CREATE_SUCCESS': {
       return Object.assign({}, state, {
         successfulMutations: [{

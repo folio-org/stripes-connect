@@ -107,6 +107,17 @@ ErrorProne.manifest = { errorProne: {
   path: () => 'turnep',
 } };
 
+class Acc extends Component {
+  render() {
+    return <div id="somediv"></div>
+  }
+};
+Acc.manifest = { accResource: {
+  type: 'okapi',
+  accumulate: true,
+  path: 'turnip',
+} };
+
 const defaultLogger = () => {};
 defaultLogger.log = (cat, ...args) => {};
 
@@ -247,6 +258,42 @@ describe('connect()', () => {
       res.isPending.should.equal(false);
       res.failed.httpStatus.should.equal(404);
       res.failedMutations[0].message.should.equal('You are forbidden because reasons.');
+      fetchMock.restore();
+      done();
+    }, 10);
+  });
+
+  it('should accumulate records', (done) => {
+    fetchMock
+      .get('http://localhost/turnip',
+         [{ id: 1, someprop: 'someval' }],
+         { headers: { 'Content-Type': 'application/json', } } )
+      .get('http://localhost/parsnip',
+         [{ id: 2, someprop: 'otherval' }],
+         { headers: { 'Content-Type': 'application/json', } } )
+      .get('http://localhost/potato',
+        { status: 403, body: 'No potato.' })
+      .catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Acc, 'test', mockedEpics, defaultLogger);
+    const inst = mount(<Root store={store} component={Connected}/>);
+
+    inst.find(Acc).props().mutator.accResource.GET({})
+    inst.find(Acc).props().mutator.accResource.GET({path: 'parsnip'})
+      .then(rec => rec[0].someprop.should.equal('otherval'));
+    inst.find(Acc).props().mutator.accResource.GET({path: 'potato'})
+      .catch(err => err.httpStatus.should.equal(403));
+
+    setTimeout(() => {
+      const res = inst.find(Acc).props().resources.accResource;
+      res.records[0].someprop.should.equal('someval');
+      res.records[1].someprop.should.equal('otherval');
+      inst.find(Acc).props().mutator.accResource.reset();
+      inst.find(Acc).props().resources.accResource.records.length.should.equal(0);
       fetchMock.restore();
       done();
     }, 10);

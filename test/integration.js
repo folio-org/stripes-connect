@@ -345,12 +345,12 @@ describe('connect()', () => {
     inst.setProps({ showChild: true });
 
     // These should be still present
-    //inst.find(Child2).props().resources.should.have.property('childResource2');
-    //inst.find(Child2).props().mutator.should.have.property('childResource2');
+    inst.find(Child2).props().resources.should.have.property('childResource2');
+    inst.find(Child2).props().mutator.should.have.property('childResource2');
 
     // instead we are getting these
-    inst.find(Child2).props().resources.should.eql({});
-    inst.find(Child2).props().mutator.should.eql({});
+    //inst.find(Child2).props().resources.should.eql({});
+    //inst.find(Child2).props().mutator.should.eql({});
   });
 
 });

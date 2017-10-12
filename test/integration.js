@@ -6,14 +6,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
-import { StaticRouter } from 'react-router';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 
 import connect from '../connect';
 
 chai.should();
-const routerContext = {};
 
 // Provide a redux store and addReducer() function in context
 let reducers = { okapi: (state = {}) => state };
@@ -35,9 +33,7 @@ class Root extends Component {
     const { component:ToTest } = this.props;
     return (
       <Provider store={this.props.store}>
-        <StaticRouter context={routerContext} location="/">
-          <ToTest {...this.props} />
-        </StaticRouter>
+        <ToTest {...this.props} />
       </Provider>
     );
   }

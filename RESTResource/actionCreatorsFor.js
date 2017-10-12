@@ -37,6 +37,8 @@ export default function actionCreatorsFor(resource) {
 
     fetchSuccess: passMetaPayload('FETCH_SUCCESS'),
 
+    accFetchSuccess: passMetaPayload('ACC_FETCH_SUCCESS'),
+
     fetchError: passPayload('FETCH_ERROR'),
 
     pagingStart: () => ({
@@ -51,5 +53,10 @@ export default function actionCreatorsFor(resource) {
     }),
 
     pageSuccess: passMetaPayload('PAGE_SUCCESS'),
+
+    reset: () => ({
+      type: '@@stripes-connect/RESET',
+      meta: commonMeta,
+    }),
   };
 }

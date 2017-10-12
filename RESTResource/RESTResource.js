@@ -197,11 +197,19 @@ export default class RESTResource {
   }
 
   getMutator(dispatch, props) {
-    return {
+    const actions = {
       DELETE: record => dispatch(this.deleteAction(record, props)),
       PUT: record => dispatch(this.updateAction(record, props)),
       POST: record => dispatch(this.createAction(record, props)),
     };
+
+    if (this.optionsTemplate.accumulate) {
+      return Object.assign(actions, {
+        GET: options => dispatch(this.accFetch(options, props)),
+        reset: () => dispatch(this.actions.reset()),
+      });
+    }
+    return actions;
   }
 
   // We should move optionsFromState to OkapiResource and override this there
@@ -295,6 +303,7 @@ export default class RESTResource {
   }
 
   refresh(dispatch, props) {
+    if (this.optionsTemplate.accumulate === true) return;
     if (this.optionsTemplate.fetch === false) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
     this.dispatch = dispatch;
@@ -531,6 +540,53 @@ export default class RESTResource {
           });
       }
       dispatch(this.actions.pageSuccess(firstMeta, firstData));
+    };
+  }
+
+  accFetch = (paramOpts, props) => {
+    const key = this.stateKey();
+    return (dispatch, getState) => {
+      const options = Object.assign(this.verbOptions('GET', getState(), props), paramOpts);
+      if (options === null) return null; // needs dynamic parts that aren't available
+      const url = urlFromOptions(options);
+      if (url === null) return null;
+      const { headers, records } = options;
+      dispatch(this.actions.fetchStart());
+
+      const beforeCatch = fetch(url, { headers })
+        .then(response => response.text()
+          .then((text) => {
+            if (response.status >= 400) {
+              const err = {
+                message: text || response.statusText,
+                httpStatus: response.status,
+              };
+              dispatch(this.actions.fetchError(err));
+              throw err;
+            }
+            const json = JSON.parse(text);
+            const data = (records ? json[records] : json);
+            this.logger.log('connect-fetch', `accFetch ${key} (${url}) succeeded with`, data);
+            if (!data) {
+              const err = { message: `no records in '${records}' element` };
+              dispatch(this.fetchError(err));
+              throw err;
+            }
+            const meta = {
+              url: response.url,
+              headers: response.headers,
+              httpStatus: response.status,
+              other: records ? _.omit(json, records) : {},
+            };
+            dispatch(this.actions.accFetchSuccess(meta, data));
+            return data;
+          }));
+
+      beforeCatch.catch((reason) => {
+        dispatch(this.actions.fetchError({ message: reason.message }));
+      });
+
+      return beforeCatch;
     };
   }
 

@@ -6,14 +6,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
-import { StaticRouter } from 'react-router';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 
 import connect from '../connect';
 
 chai.should();
-const routerContext = {};
 
 // Provide a redux store and addReducer() function in context
 let reducers = { okapi: (state = {}) => state };
@@ -35,9 +33,7 @@ class Root extends Component {
     const { component:ToTest } = this.props;
     return (
       <Provider store={this.props.store}>
-        <StaticRouter context={routerContext} location="/">
-          <ToTest />
-        </StaticRouter>
+        <ToTest {...this.props} />
       </Provider>
     );
   }
@@ -117,6 +113,39 @@ Acc.manifest = { accResource: {
   accumulate: true,
   path: 'turnip',
 } };
+
+class Child2 extends Component {
+  static manifest = { childResource2 : { initialValue: 'child2' } };
+
+  render() {
+    return <div id="somediv"></div>
+  }
+};
+
+class Child1 extends Component {
+  static manifest = { childResource1 : { initialValue: 'child1' } };
+
+  constructor() {
+    super();
+    this.childConnect = connect(Child2, 'child2', mockedEpics, defaultLogger);
+  }
+  render() {
+    return <this.childConnect />
+  }
+};
+
+class Parent extends Component {
+  static manifest =  { parentResource : { initialValue: 'parent' } };
+
+  constructor() {
+    super();
+    this.childConnect = connect(Child1, 'child1', mockedEpics, defaultLogger);
+  }
+
+  render() {
+    return this.props.showChild ? (<this.childConnect />) : (<div></div>);
+  }
+};
 
 const defaultLogger = () => {};
 defaultLogger.log = (cat, ...args) => {};
@@ -298,4 +327,26 @@ describe('connect()', () => {
       done();
     }, 10);
   });
+
+  it('should reconnect previously connected component', () => {
+    const store = createStore((state) => state, {});
+    const Connected = connect(Parent, 'test', mockedEpics, defaultLogger);
+    const inst = mount(<Root showChild={true} store={store} component={Connected}/>);
+
+    inst.find(Child2).props().resources.should.have.property('childResource2');
+    inst.find(Child2).props().mutator.should.have.property('childResource2');
+    inst.find(Child2).props().resources.childResource2.should.equal('child2');
+
+    inst.setProps({ showChild: false });
+    inst.setProps({ showChild: true });
+
+    // These should be still present
+    inst.find(Child2).props().resources.should.have.property('childResource2');
+    inst.find(Child2).props().mutator.should.have.property('childResource2');
+
+    // instead we are getting these
+    //inst.find(Child2).props().resources.should.eql({});
+    //inst.find(Child2).props().mutator.should.eql({});
+  });
+
 });

@@ -67,7 +67,7 @@ function processFallback(s, getPath, props) {
 // If we restructure the state into a per-module hierarchy we
 // won't need to go through this dance STRIPES-238
 function mockProps(state, module, dataKey) {
-  const mock = { resources: {}, data: {} };
+  const mock = { resources: {} };
   // console.log(` mockprops(${dataKey})`);
   Object.keys(state).forEach((key) => {
     // console.log(`  considering ${key}`);
@@ -89,8 +89,6 @@ function mockProps(state, module, dataKey) {
       const re = new RegExp(`^${_.snakeCase(module)}.(.*)`);
       const res = re.exec(rawKey);
       if (Array.isArray(res) && res.length > 1) {
-        // TODO: .data is temporary just to aid transition
-        mock.data[res[1]] = state[key];
         mock.resources[res[1]] = state[key];
         // console.log(`     added mock[${res[1]}] = ${state[key]}`);
       }

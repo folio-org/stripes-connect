@@ -8,7 +8,6 @@ import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
 
 /* eslint-env browser */
-
 const defaultType = 'local';
 const types = {
   local: LocalResource,
@@ -162,7 +161,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     const newProps = { dataKey, resources: resourceData };
     // TODO Generalise this into a pass-through option on connectFor
     if (typeof state.okapi === 'object') newProps.okapi = state.okapi;
-
     return newProps;
   };
 

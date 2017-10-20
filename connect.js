@@ -8,7 +8,6 @@ import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
 
 /* eslint-env browser */
-
 const defaultType = 'local';
 const types = {
   local: LocalResource,
@@ -34,7 +33,6 @@ const wrap = (Wrapped, module, epics, logger) => {
         // query: null
         // state: null
       }),
-      data: PropTypes.object, // eslint-disable-line react/forbid-prop-types
       resources: PropTypes.object, // eslint-disable-line react/forbid-prop-types
       dataKey: PropTypes.string,
     };
@@ -159,7 +157,6 @@ const wrap = (Wrapped, module, epics, logger) => {
   };
 
   Wrapper.mapState = (state, ownProps) => {
-    const data = {};
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
     const resourceData = {};
     for (const r of resources) {
@@ -168,10 +165,9 @@ const wrap = (Wrapped, module, epics, logger) => {
       }
     }
 
-    const newProps = { data, resources: resourceData };
+    const newProps = { resources: resourceData };
     // TODO Generalise this into a pass-through option on connectFor
     if (typeof state.okapi === 'object') newProps.okapi = state.okapi;
-
     return newProps;
   };
 

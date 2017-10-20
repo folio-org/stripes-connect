@@ -15,9 +15,17 @@ const types = {
   rest: RESTResource,
 };
 
-const wrap = (Wrapped, module, epics, logger) => {
+const wrap = (Wrapped, module, epics, logger, options = {}) => {
   const resources = [];
-  const resourceRegister = {}; // map of resource names to resource objects
+  const dataKey = options.dataKey;
+
+  _.map(Wrapped.manifest, (query, name) => {
+    const resource = new types[query.type || defaultType](name, query, module, logger, dataKey);
+    resources.push(resource);
+    if (query.type === 'okapi') {
+      epics.add(...mutationEpics(resource), refreshEpic(resource));
+    }
+  });
 
   class Wrapper extends React.Component {
     static propTypes = {
@@ -42,21 +50,6 @@ const wrap = (Wrapped, module, epics, logger) => {
       this.context = context;
       this.logger = logger;
       Wrapper.logger = logger;
-
-      // this.resources = []; // references to a subset of class-level resources
-      _.forOwn(Wrapped.manifest, (query, name) => {
-        // Regular manifest entries describe resources
-        const dk = props.dataKey;
-        const dkName = `${name}${dk === undefined ? '' : `-${dk}`}`;
-        if (!resourceRegister[dkName]) {
-          const resource = new types[query.type || defaultType](name, query, module, logger, props.dataKey);
-          resources.push(resource);
-          resourceRegister[dkName] = resource;
-          if (query.type === 'okapi') {
-            epics.add(...mutationEpics(resource), refreshEpic(resource));
-          }
-        }
-      });
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
     }
 
@@ -79,7 +72,6 @@ const wrap = (Wrapped, module, epics, logger) => {
             store.dispatch(resource.actions.fetchSuccess(paging[paging.length - 1].meta, records));
           };
           const onPageChange = (paging) => {
-            // console.log("MOO", paging);
             const allDone = paging.reduce((acc, val) => acc && val.isComplete, true);
             if (allDone && paging.length > 0) onPageSuccess(paging);
           };
@@ -156,40 +148,27 @@ const wrap = (Wrapped, module, epics, logger) => {
     store: PropTypes.object,
   };
 
-  Wrapper.mapState = (state, ownProps) => {
+  Wrapper.mapState = (state) => {
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
+
     const resourceData = {};
     for (const r of resources) {
-      if (r.dataKey === ownProps.dataKey) {
+      if (r.dataKey === dataKey) {
         resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
       }
     }
 
-    const newProps = { resources: resourceData };
+    const newProps = { dataKey, resources: resourceData };
     // TODO Generalise this into a pass-through option on connectFor
     if (typeof state.okapi === 'object') newProps.okapi = state.okapi;
     return newProps;
   };
 
-  // This seems to get called only _before_ the constructor, so does
-  // not see the resources that have been added at construction. So
-  // all we do is stash the dispatch function, and leave the
-  // mergeProps function (which gets called after each mapState) to
-  // use it to do the real dispatch-mapping.
-  //
-  Wrapper.mapDispatch = (dispatch) => {
-    logger.log('connect-lifecycle', `mapDispatch for <${Wrapped.name}>, resources =`, resources);
-    return { dispatch };
-  };
-
-  Wrapper.mergeProps = (stateProps, dispatchProps, ownProps) => {
-    const dispatch = dispatchProps.dispatch;
-    logger.log('connect-lifecycle', `mergeProps for <${Wrapped.name}>, resources =`, resources);
+  Wrapper.mapDispatch = (dispatch, ownProps) => {
     const res = {};
-
     res.mutator = {};
     for (const r of resources) {
-      if (r.dataKey === ownProps.dataKey) {
+      if (r.dataKey === dataKey) {
         res.mutator[r.name] = r.getMutator(dispatch, ownProps);
       }
     }
@@ -203,7 +182,7 @@ const wrap = (Wrapped, module, epics, logger) => {
       });
     };
 
-    return Object.assign({}, ownProps, stateProps, res);
+    return res;
   };
 
   return Wrapper;
@@ -214,18 +193,18 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
-export const connect = (Component, module, epics, loggerArg) => {
+export const connect = (Component, module, epics, loggerArg, options) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
     return Component;
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
-  const Wrapper = wrap(Component, module, epics, logger);
+  const Wrapper = wrap(Component, module, epics, logger, options);
   const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(Wrapper);
   return Connected;
 };
 
-export const connectFor = (module, epics, logger) => Component => connect(Component, module, epics, logger);
+export const connectFor = (module, epics, logger) => (Component, options) => connect(Component, module, epics, logger, options);
 
 export default connect;

@@ -475,7 +475,7 @@ export default class RESTResource {
               const data = (records ? json[records] : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               if (!data) {
-                dispatch(this.fetchError({ message: `no records in '${records}' element` }));
+                dispatch(this.actions.fetchError({ message: `no records in '${records}' element` }));
                 return;
               }
               const reqd = options.recordsRequired;
@@ -567,7 +567,7 @@ export default class RESTResource {
             this.logger.log('connect-fetch', `accFetch ${key} (${url}) succeeded with`, data);
             if (!data) {
               const err = { message: `no records in '${records}' element` };
-              dispatch(this.fetchError(err));
+              dispatch(this.actions.fetchError(err));
               throw err;
             }
             const meta = {

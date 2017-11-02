@@ -9,9 +9,10 @@ const actionNames = [
 export function mutationEpics(resource) {
   const options = resource.optionsTemplate;
 
-  return actionNames.map(name =>
+  return actionNames.map(actionName =>
     (action$) => action$
-      .ofType(`@@stripes-connect/${name}`)
+      .ofType(`@@stripes-connect/${actionName}`)
+      .filter(action => action.meta.resource === resource.name)
       .map(action => {
         const path = options.path && options.path.replace(/[\/].*$/g, '');
         const name = resource.name;

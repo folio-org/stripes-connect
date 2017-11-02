@@ -8,7 +8,7 @@ const actionNames = [
 // after mutation happens on a given resource
 export function mutationEpics(resource) {
   const options = resource.optionsTemplate;
-  
+
   return actionNames.map(actionName =>
     (action$) => action$
       .ofType(`@@stripes-connect/${actionName}`)

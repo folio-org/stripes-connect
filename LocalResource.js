@@ -10,7 +10,7 @@ export default class LocalResource {
   }
 
   init = (store) => {
-    if (!(this.stateKey() in store) && this.query.initialValue) {
+    if (!(this.stateKey() in store.getState()) && this.query.initialValue) {
       store.dispatch(this.replaceAction(this.query.initialValue));
     }
   }

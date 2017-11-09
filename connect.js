@@ -84,7 +84,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           store.subscribe(pagingListener);
         }
         this.context.addReducer(resource.stateKey(), resource.reducer);
-
       });
     }
 

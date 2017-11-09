@@ -9,12 +9,6 @@ export default class LocalResource {
     this.dataKey = dataKey;
   }
 
-  init = (store) => {
-    if (!(this.stateKey() in store.getState()) && this.query.initialValue) {
-      store.dispatch(this.replaceAction(this.query.initialValue));
-    }
-  }
-
   getMutator = dispatch => ({
     update: newData => dispatch(this.updateAction(newData)),
     replace: newData => dispatch(this.replaceAction(newData)),
@@ -42,7 +36,7 @@ export default class LocalResource {
 
   stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${_.snakeCase(this.module)}_${this.name}`;
 
-  reducer = (state = {}, action) => {
+  reducer = (state = this.query.initialValue ? this.query.initialValue : {}, action) => {
     if (action.meta !== undefined &&
         action.meta.module === this.module &&
         action.meta.resource === this.name &&

@@ -85,11 +85,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
         }
         this.context.addReducer(resource.stateKey(), resource.reducer);
 
-        // TODO this may move, but while it's here, it's going to be called
-        // more than necessary
-        if (typeof resource.init === 'function') {
-          resource.init(this.context.store);
-        }
       });
     }
 

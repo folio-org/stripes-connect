@@ -90,7 +90,7 @@ function mockProps(state, module, dataKey, logger) {
       const res = re.exec(rawKey);
       if (Array.isArray(res) && res.length > 1) {
         mock.resources[res[1]] = state[key];
-        logger.log('mock', `    added mock[${res[1]}] = ${state[key]}`);
+        logger.log('mock', `    added mock[${res[1]}] =`, state[key]);
       } else {
         logger.log('mock', `    cannot pick apart key '${rawKey}'`);
       }

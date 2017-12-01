@@ -6,8 +6,8 @@
 * Remove `props.data`, resources are now exclusively accessed via `props.resources`. STCON-22.
 * Replace redux-crud with our own actions and reducer. STCON-15.
 * Consistent redux store prefix for local resources. STCON-36.
-* `accumulate` manifest option to enable explicit GET actions. STCON-33. 
-
+* `accumulate` manifest option to enable explicit GET actions. STCON-33.
+* Add logging for `mockProps` (using category `"mock"`). Needed to debug UIORG-38.
 
 ## [2.7.0](https://github.com/folio-org/stripes-connect/tree/v2.7.0) (2017-09-01)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.6.0...v2.7.0)

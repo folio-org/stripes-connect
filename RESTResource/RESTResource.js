@@ -136,15 +136,20 @@ function urlFromOptions(options, pk) {
 // $ - resources
 // ! - properties
 //
+// This now takes so many arguments that it really ought to be a
+// method of RESTResource rather than a standalone function that is
+// passed various parts of the RESTResource object. But since it's
+// exported as a function, I don't want to mess with it until I know
+// what uses it.
 //
-export function substitute(original, props, state, module, logger) {
+export function substitute(original, props, state, module, logger, dataKey) {
   const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
   let dynamicPartsSatisfied = true;
   let result;
 
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey, logger).resources, logger);
+    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey || dataKey, logger).resources, logger);
     dynamicPartsSatisfied = (result !== null);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
@@ -161,7 +166,7 @@ export function substitute(original, props, state, module, logger) {
           return pathComp;
         }
         case '%': case '$': {
-          const localState = processFallback(name.split('.'), ['resources'], mockProps(state, module, props.dataKey, logger));
+          const localState = processFallback(name.split('.'), ['resources'], mockProps(state, module, props.dataKey || dataKey, logger));
           if (localState === null) dynamicPartsSatisfied = false;
           return localState;
         }
@@ -220,7 +225,7 @@ export default class RESTResource {
     if (props) {
       // path
       if (options.path) {
-        const subbed = substitute(options.path, props, state, this.module, this.logger);
+        const subbed = substitute(options.path, props, state, this.module, this.logger, this.dataKey);
         if (typeof subbed === 'string') {
           options.path = subbed;
         } else if (typeof options.staticFallback === 'object') {
@@ -233,7 +238,7 @@ export default class RESTResource {
       // params
       if (typeof options.params === 'object') {
         options.params = _.mapValues(options.params, param =>
-          substitute(param, props, state, this.module, this.logger));
+          substitute(param, props, state, this.module, this.logger, this.dataKey));
       } else if (typeof options.params === 'function') {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
         options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey, this.logger).data, this.logger);
@@ -241,7 +246,7 @@ export default class RESTResource {
 
       // recordsRequired
       if (typeof options.recordsRequired === 'string' || typeof options.recordsRequired === 'function') {
-        const tmplReqd = Number.parseInt(substitute(options.recordsRequired, props, state, this.module, this.logger), 10);
+        const tmplReqd = Number.parseInt(substitute(options.recordsRequired, props, state, this.module, this.logger, this.dataKey), 10);
         if (tmplReqd > 0) {
           options.recordsRequired = tmplReqd;
         } else {
@@ -251,7 +256,7 @@ export default class RESTResource {
 
       // records
       if (options.records) {
-        options.records = substitute(options.records, props, state, this.module, this.logger);
+        options.records = substitute(options.records, props, state, this.module, this.logger, this.dataKey);
       }
     }
 

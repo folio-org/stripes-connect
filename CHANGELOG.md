@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## IN PROGRESS[3.0.0](https://github.com/folio-org/stripes-connect/tree/v3.0.0) (2017-)
+## (IN PROGRESS) [3.0.0](https://github.com/folio-org/stripes-connect/tree/v3.0.0) (2017-)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.7.0...v3.0.0)
 
 * Remove `props.data`, resources are now exclusively accessed via `props.resources`. STCON-22.
@@ -8,6 +8,7 @@
 * Consistent redux store prefix for local resources. STCON-36.
 * `accumulate` manifest option to enable explicit GET actions. STCON-33.
 * Add logging for `mockProps` (using category `"mock"`). Needed to debug UIORG-38.
+* Pass `dataKey` into `substitute`, so it can pass it through to `mockProps`. Allows `mockProps` to work properly with `dataKey` for the first time with the new dataKey-at-connect-time convention. Fixes STCON-50.
 
 ## [2.7.0](https://github.com/folio-org/stripes-connect/tree/v2.7.0) (2017-09-01)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.6.0...v2.7.0)

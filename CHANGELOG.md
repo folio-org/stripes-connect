@@ -3,12 +3,15 @@
 ## (IN PROGRESS) [3.0.0](https://github.com/folio-org/stripes-connect/tree/v3.0.0) (2017-)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.7.0...v3.0.0)
 
-* Remove `props.data`, resources are now exclusively accessed via `props.resources`. STCON-22.
-* Replace redux-crud with our own actions and reducer. STCON-15.
-* Consistent redux store prefix for local resources. STCON-36.
-* `accumulate` manifest option to enable explicit GET actions. STCON-33.
+* Remove `props.data`, resources are now exclusively accessed via `props.resources`. Fixes STCON-22, and makes this release backwards-incompatible (hence the major version-number bump).
+* Replace redux-crud with our own actions and reducer. Fixes STCON-15.
+* Consistent redux store prefix for local resources. Fixes STCON-36.
+* Provide `accumulate` manifest option to enable explicit GET actions. Fixes STCON-33.
+* Avoid unnecessary additional calls in mutation epic. Fixes STCON-46.
+* Repopulate mutator after re-mounting a connected component. Fixes STCON-40.
+* Pass `dataKey` into `substitute`, so it can pass it through to `mockProps`. Allows `mockProps` to work properly with `dataKey` for the first time with the new dataKey-at-connect-time convention of STCON-40. Fixes STCON-50.
 * Add logging for `mockProps` (using category `"mock"`). Needed to debug UIORG-38.
-* Pass `dataKey` into `substitute`, so it can pass it through to `mockProps`. Allows `mockProps` to work properly with `dataKey` for the first time with the new dataKey-at-connect-time convention. Fixes STCON-50.
+* Fix integration tests. Fixes STCON-41.
 
 ## [2.7.0](https://github.com/folio-org/stripes-connect/tree/v2.7.0) (2017-09-01)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.6.0...v2.7.0)

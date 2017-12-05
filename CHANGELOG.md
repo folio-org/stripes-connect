@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## (IN PROGRESS) [3.0.0](https://github.com/folio-org/stripes-connect/tree/v3.0.0) (2017-)
+## [3.0.0](https://github.com/folio-org/stripes-connect/tree/v3.0.0) (2017-12-05)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.7.0...v3.0.0)
 
 * Remove `props.data`, resources are now exclusively accessed via `props.resources`. Fixes STCON-22, and makes this release backwards-incompatible (hence the major version-number bump).

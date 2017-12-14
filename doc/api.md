@@ -160,6 +160,10 @@ via limitParam/offsetParam.
   usually not need to pre-fetch from that resource. To avoid that, it
   can set this to false. Default: `true`.
 
+* `accumulate`: A boolean indicating whether to return a GET value on the
+  resource, which allows it to be used in code that expects to receive a
+  promise. Default: `false`.
+
 In addition to these principal pieces of configuration, which apply to
 all operations on the resource, these values can be overridden for
 specific HTTP operations: the entries `GET`, `POST`, `PUT`, `DELETE`
@@ -255,7 +259,7 @@ strings using four different but related syntaxes:
   the UI is being accessed as (for example)
   `http://ui.folio.org:3000/users/view/45`, the path will be resolved as
   `users/45`.
-  
+
 * `?{name}` -- interpolates the value of the named query parameter
   from the UI URL. For example, if the path is expressed as
   `item-storage?query=?{q}` and the UI is accessed at
@@ -507,6 +511,14 @@ values contain the corresponding data. These records are used in the
 obvious way by the POST, PUT and PATCH operations. For DELETE, the
 record need only contain the `id` field, so that it suffices to call
 `mutator.tenants.DELETE({ id: 43 })`.
+
+For the GET mutator method, i.e. when passing `accumulate: true` in the
+manifest, provide an updated `params` argument rather than an updated record, e.g.
+
+    const query = `query=username=^${username}`;
+    mutator.users.GET({ params: { query } })
+      .then(records => { ... });
+
 <br/>
 <br/>
 <hr/>
@@ -635,4 +647,3 @@ These images may be useful:
 * https://files.slack.com/files-pri/T047C3PCD-F2L37S7C2/pasted_image_at_2016_10_06_11_13_am.png
 * https://files.slack.com/files-pri/T047C3PCD-F2L2RAH5E/pasted_image_at_2016_10_06_11_15_am.png
 * https://files.slack.com/files-pri/T047C3PCD-F2L2WSHA4/pasted_image_at_2016_10_06_11_31_am.png
-

@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 3.1.0 IN PROGRESS
+
+* Document use of GET mutators. Fixes STCON-53.
+
 ## [3.0.0](https://github.com/folio-org/stripes-connect/tree/v3.0.0) (2017-12-05)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.7.0...v3.0.0)
 

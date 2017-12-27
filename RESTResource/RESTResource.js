@@ -466,16 +466,9 @@ export default class RESTResource {
         if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
       } else {
         // Check if resourceShouldRefresh is a boolean or function
-        if (_.isBoolean(resourceShouldRefresh)) {
-          if (!resourceShouldRefresh) return null;
-        } else if (_.isFunction(resourceShouldRefresh)) {
-          // Function should return a boolean!
-          if (!resourceShouldRefresh()) return null;
-        } else {
-          // If not a function or boolean should return error or maintain consistency with prior functionality?
-          // Currently, does not return error, will maintain prior functionality.
-          if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
-        }
+        if (_.isBoolean(resourceShouldRefresh) && !resourceShouldRefresh) return null;
+        // Function should return a boolean!
+        if (_.isFunction(resourceShouldRefresh) && !resourceShouldRefresh()) return null;
       }
       this.lastUrl = url;
       this.lastReqd = options.recordsRequired;

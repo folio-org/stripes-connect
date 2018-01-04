@@ -458,9 +458,18 @@ export default class RESTResource {
       if (options === null) return null; // needs dynamic parts that aren't available
       const url = urlFromOptions(options);
       if (url === null) return null;
-      const { headers, records } = options;
-      // noop if the URL and recordsRequired didn't change
-      if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
+      const { headers, records, resourceShouldRefresh } = options;
+      // Check for existence of resourceShouldRefresh
+      if (_.isUndefined(resourceShouldRefresh)) {
+        // Maintain backward compatability if undefined maintin code
+        // noop if the URL and recordsRequired didn't change
+        if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
+      } else {
+        // Check if resourceShouldRefresh is a boolean or function
+        if (_.isBoolean(resourceShouldRefresh) && !resourceShouldRefresh) return null;
+        // Function should return a boolean!
+        if (_.isFunction(resourceShouldRefresh) && !resourceShouldRefresh()) return null;
+      }
       this.lastUrl = url;
       this.lastReqd = options.recordsRequired;
 
@@ -495,6 +504,7 @@ export default class RESTResource {
                 httpStatus: response.status,
                 other: records ? _.omit(json, records) : {},
               };
+
               if (reqd && total && total > perPage && reqd > perPage) {
                 dispatch(this.fetchMore(options, total, data, meta));
               } else {

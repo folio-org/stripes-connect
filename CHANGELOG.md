@@ -1,6 +1,7 @@
 # Change history for stripes-connect
 
-## 3.1.0 IN PROGRESS
+## [3.1.0](https://github.com/folio-org/stripes-connect/tree/v3.1.0) (2018-01-09)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.0.0...v3.1.0)
 
 * Document use of GET mutators. Fixes STCON-53.
 * Enable `RESTResource.js` to get `totalRecords` from the location inside `resultInfo`, which is where mod-codex-mux puts it. Fixes STCON-55.

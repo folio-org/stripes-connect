@@ -8,6 +8,25 @@ import reducer from './reducer';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 
+// RAML module builder keeps changing where it puts the total
+// record-count, so we have to look in three different places to be
+// safe. *sigh*
+
+function extractTotal(json) {
+  if (json.resultInfo !== undefined &&
+      json.resultInfo.totalRecords !== undefined) {
+    return json.resultInfo.totalRecords;
+  } else if (json.totalRecords !== undefined) {
+    return json.totalRecords;
+  } else if (json.total_records !== undefined) {
+    return json.total_records;
+  }
+
+  // Single-record fetches do not have a total-records count at all
+  return null;
+}
+
+
 function optionsFromState(options, state) {
   if (options.type === 'okapi') {
     if (typeof state.okapi !== 'object') {
@@ -495,9 +514,7 @@ export default class RESTResource {
               }
               const reqd = options.recordsRequired;
               const perPage = options.perRequest;
-              // TODO: Where to find total should be configurable
-              const total = json.total_records === undefined ?
-                json.totalRecords : json.total_records;
+              const total = extractTotal(json);
               const meta = {
                 url: response.url,
                 headers: response.headers,
@@ -505,6 +522,7 @@ export default class RESTResource {
                 other: records ? _.omit(json, records) : {},
               };
 
+              if (meta.other) meta.other.totalRecords = total;
               if (reqd && total && total > perPage && reqd > perPage) {
                 dispatch(this.fetchMore(options, total, data, meta));
               } else {
@@ -543,6 +561,7 @@ export default class RESTResource {
                   httpStatus: response.status,
                   other: records ? _.omit(json, records) : {},
                 };
+                if (meta.other) meta.other.totalRecords = extractTotal(json);
                 const data = (records ? json[records] : json);
                 dispatch(this.actions.pageSuccess(meta, data));
               });

@@ -258,6 +258,11 @@ export default class RESTResource {
       if (typeof options.params === 'object') {
         options.params = _.mapValues(options.params, param =>
           substitute(param, props, state, this.module, this.logger, this.dataKey));
+        for (const key of Object.keys(options.params)) {
+          if (options.params[key] === null) {
+            return null;
+          }
+        }
       } else if (typeof options.params === 'function') {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
         options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey, this.logger).data, this.logger);

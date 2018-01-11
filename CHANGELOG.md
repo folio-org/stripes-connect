@@ -1,11 +1,14 @@
 # Change history for stripes-connect
 
+## 3.2.0 (IN PROGRESS)
+
+* `verbOptions` returns null if any of the templated values are incomplete. Fixes STCON-58.
+
 ## [3.1.0](https://github.com/folio-org/stripes-connect/tree/v3.1.0) (2018-01-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.0.0...v3.1.0)
 
 * Document use of GET mutators. Fixes STCON-53.
 * Enable `RESTResource.js` to get `totalRecords` from the location inside `resultInfo`, which is where mod-codex-mux puts it. Fixes STCON-55.
-* `verbOptions` returns null if the templated values are incomplete. Fixes STCON-58.
 
 ## [3.0.0](https://github.com/folio-org/stripes-connect/tree/v3.0.0) (2017-12-05)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v2.7.0...v3.0.0)

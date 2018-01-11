@@ -259,8 +259,7 @@ export default class RESTResource {
         options.params = _.mapValues(options.params, param =>
           substitute(param, props, state, this.module, this.logger, this.dataKey));
         if (Object.values(options.params).indexOf(null) > -1) {
-          console.log('options.params has a null member: returning null');
-          return null;Z
+          return null;
         }
       } else if (typeof options.params === 'function') {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));

@@ -260,7 +260,6 @@ export default class RESTResource {
           substitute(param, props, state, this.module, this.logger, this.dataKey));
         for (const key of Object.keys(options.params)) {
           if (options.params[key] === null) {
-            console.log(`options.params.${key} is null: returning null`);
             return null;
           }
         }

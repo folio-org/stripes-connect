@@ -258,8 +258,11 @@ export default class RESTResource {
       if (typeof options.params === 'object') {
         options.params = _.mapValues(options.params, param =>
           substitute(param, props, state, this.module, this.logger, this.dataKey));
-        if (Object.values(options.params).indexOf(null) > -1) {
-          return null;
+        for (const key of Object.keys(options.params)) {
+          if (options.params[key] === null) {
+            console.log(`options.params.${key} is null: returning null`);
+            return null;
+          }
         }
       } else if (typeof options.params === 'function') {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));

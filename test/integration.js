@@ -1,6 +1,7 @@
 import 'jsdom-global/register';
 import chai from 'chai';
-import { mount, shallow, render } from 'enzyme';
+import Enzyme, { mount, shallow, render } from 'enzyme';
+import Adapter from 'enzyme-adapter-react-16';
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
@@ -10,6 +11,9 @@ import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 
 import connect from '../connect';
+
+
+Enzyme.configure({ adapter: new Adapter() });
 
 chai.should();
 

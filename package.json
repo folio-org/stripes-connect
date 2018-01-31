@@ -42,14 +42,14 @@
     "lodash": "^4.17.2",
     "prop-types": "^15.5.10",
     "query-string": "^5.0.0",
-    "react": "^15.5.1",
-    "react-dom": "^15.4.0",
     "react-redux": "^5.0.2",
     "redux": "^3.6.0",
     "redux-crud": "^3.0.0",
     "uuid": "^3.0.1"
   },
   "peerDependencies": {
-    "@folio/stripes-logger": "^0.0.2"
+    "@folio/stripes-logger": "^0.0.2",
+    "react": "*",
+    "react-dom": "*"
   }
 }

@@ -170,9 +170,9 @@ describe('connect()', () => {
     const inst = mount(<Root store={store} component={Connected}/>);
     inst.find(Local).props().resources.localResource.should.equal('hi');
     inst.find(Local).props().mutator.localResource.replace({boo:'ya'});
-    inst.find(Local).props().resources.localResource.boo.should.equal('ya');
+    inst.find(Local).instance().props.resources.localResource.boo.should.equal('ya');
     inst.find(Local).props().mutator.localResource.update({boo:'urns'});
-    inst.find(Local).props().resources.localResource.boo.should.equal('urns');
+    inst.find(Local).instance().props.resources.localResource.boo.should.equal('urns');
   });
 
   it('should successfully wrap a component with an okapi resource', (done) => {
@@ -212,8 +212,8 @@ describe('connect()', () => {
     fetchMock.lastCall()[1].body.length.should.equal(64);
 
     setTimeout(() => {
-      inst.find(Remote).props().resources.remoteResource.records[0].someprop.should.equal('someval');
-      inst.find(Remote).props().resources.remoteResource.successfulMutations[0].record.someprop.should.equal('newer');
+      inst.find(Remote).instance().props.resources.remoteResource.records[0].someprop.should.equal('someval');
+      inst.find(Remote).instance().props.resources.remoteResource.successfulMutations[0].record.someprop.should.equal('newer');
       fetchMock.restore();
       done();
     }, 10);
@@ -241,7 +241,7 @@ describe('connect()', () => {
     const inst = mount(<Root store={store} component={Connected}/>);
 
     setTimeout(() => {
-      inst.find(Paged).props().resources.pagedResource.records.length.should.equal(14);
+      inst.find(Paged).instance().props.resources.pagedResource.records.length.should.equal(14);
       fetchMock.restore();
       done();
     }, 40);
@@ -263,8 +263,8 @@ describe('connect()', () => {
     inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 
     setTimeout(() => {
-      inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(true);
-      inst.find(Functional).props().resources.functionalResource.records.length.should.equal(5);
+      inst.find(Functional).instance().props.resources.functionalResource.hasLoaded.should.equal(true);
+      inst.find(Functional).instance().props.resources.functionalResource.records.length.should.equal(5);
       fetchMock.restore();
       done();
     }, 10);
@@ -287,7 +287,7 @@ describe('connect()', () => {
     inst.find(ErrorProne).props().mutator.errorProne.POST({id:1, someprop:'new'})
       .catch(err => err.text().then(msg => msg.should.equal('You are forbidden because reasons.')));
    setTimeout(() => {
-      const res = inst.find(ErrorProne).props().resources.errorProne;
+      const res = inst.find(ErrorProne).instance().props.resources.errorProne;
       res.isPending.should.equal(false);
       res.failed.httpStatus.should.equal(404);
       res.failedMutations[0].message.should.equal('You are forbidden because reasons.');
@@ -322,7 +322,7 @@ describe('connect()', () => {
       .catch(err => err.httpStatus.should.equal(403));
 
     setTimeout(() => {
-      const res = inst.find(Acc).props().resources.accResource;
+      const res = inst.find(Acc).instance().props.resources.accResource;
       res.records[0].someprop.should.equal('someval');
       res.records[1].someprop.should.equal('otherval');
       inst.find(Acc).props().mutator.accResource.reset();

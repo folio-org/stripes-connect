@@ -25,15 +25,17 @@
     "babel-preset-stage-2": "^6.18.0",
     "babel-register": "^6.18.0",
     "chai": "^4.0.2",
-    "enzyme": "^2.6.0",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-16": "^1.1.1",
     "eslint": "^4.7.2",
     "eslint-config-stripes": "^0.0.1",
     "fetch-mock": "5.11.2",
     "jsdom": "^11.0.0",
     "jsdom-global": "^3.0.2",
     "mocha": "^3.1.2",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
     "react-router": "^4.0.0",
-    "react-test-renderer": "^15.6.1",
     "redux-thunk": "^2.1.0",
     "webpack": "^3.6.0"
   },
@@ -42,14 +44,13 @@
     "lodash": "^4.17.2",
     "prop-types": "^15.5.10",
     "query-string": "^5.0.0",
-    "react": "^15.5.1",
-    "react-dom": "^15.4.0",
     "react-redux": "^5.0.2",
     "redux": "^3.6.0",
     "redux-crud": "^3.0.0",
     "uuid": "^3.0.1"
   },
   "peerDependencies": {
-    "@folio/stripes-logger": "^0.0.2"
+    "react": "*",
+    "react-dom": "*"
   }
 }

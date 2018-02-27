@@ -96,7 +96,7 @@ function mockProps(state, module, dataKey, logger) {
       // No dataKey
       if (!dataKey) rawKey = key;
     } else {
-      if (a.length > 2) console.log(`state key '${key}' has multiple '#'`);
+      if (a.length > 2) logger.log('mock', `state key '${key}' has multiple '#'`);
       // 1st component is dataKey
       if (dataKey && dataKey === a[0]) rawKey = a[1];
     }
@@ -149,12 +149,46 @@ function urlFromOptions(options, pk) {
   return path;
 }
 
-// Implements dynamic manifest components with ?{syntax}. Namespaces so far:
+// Process string template with ?{syntax}. Namespaces so far:
 // ? - query parameters in current url
 // : - path components as defined by react-router
 // $ - resources
 // ! - properties
-//
+export function compilePathTemplate(template, parsedQuery, props, localProps) {
+  let dynamicPartsSatisfied = true;
+
+  const result = template.replace(/([?:$%!]){(.*?)}/g, (match, ns, name) => {
+    switch (ns) { // eslint-disable-line default-case
+      case '?': {
+        const queryParam = processFallback(name, [], parsedQuery);
+        if (queryParam === null) dynamicPartsSatisfied = false;
+        return queryParam;
+      }
+      case ':': {
+        const pathComp = processFallback(name, ['match', 'params'], props);
+        if (pathComp === null) dynamicPartsSatisfied = false;
+        return pathComp;
+      }
+      case '%': case '$': {
+        const localState = processFallback(name.split('.'), [], localProps);
+        if (localState === null) dynamicPartsSatisfied = false;
+        return localState;
+      }
+      case '!': {
+        const prop = processFallback(name.split('.'), [], props);
+        if (prop === null) dynamicPartsSatisfied = false;
+        return prop;
+      }
+      default: {
+        dynamicPartsSatisfied = false;
+        return null;
+      }
+    }
+  });
+  return dynamicPartsSatisfied ? result : null;
+}
+
+
 // This now takes so many arguments that it really ought to be a
 // method of RESTResource rather than a standalone function that is
 // passed various parts of the RESTResource object. But since it's
@@ -163,47 +197,23 @@ function urlFromOptions(options, pk) {
 //
 export function substitute(original, props, state, module, logger, dataKey) {
   const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
-  let dynamicPartsSatisfied = true;
   let result;
-
+  const localProps = mockProps(state, module, props.dataKey || dataKey, logger).resources;
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    result = original(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, module, props.dataKey || dataKey, logger).resources, logger);
-    dynamicPartsSatisfied = (result !== null);
+    result = original(parsedQuery, _.get(props, ['match', 'params']), localProps, logger);
   } else if (typeof original === 'string') {
     // eslint-disable-next-line consistent-return
-    result = original.replace(/([?:$%!]){(.*?)}/g, (match, ns, name) => {
-      switch (ns) { // eslint-disable-line default-case
-        case '?': {
-          const queryParam = processFallback(name, [], parsedQuery);
-          if (queryParam === null) dynamicPartsSatisfied = false;
-          return queryParam;
-        }
-        case ':': {
-          const pathComp = processFallback(name, ['match', 'params'], props);
-          if (pathComp === null) dynamicPartsSatisfied = false;
-          return pathComp;
-        }
-        case '%': case '$': {
-          const localState = processFallback(name.split('.'), ['resources'], mockProps(state, module, props.dataKey || dataKey, logger));
-          if (localState === null) dynamicPartsSatisfied = false;
-          return localState;
-        }
-        case '!': {
-          const prop = processFallback(name.split('.'), [], props);
-          if (prop === null) dynamicPartsSatisfied = false;
-          return prop;
-        }
-      }
-    });
+    result = compilePathTemplate(original, parsedQuery, props, localProps);
   } else {
     throw new Error('Invalid type passed to RESTResource.substitute()');
   }
 
   logger.log('substitute', `substitute(${
     (typeof original === 'function') ? '<FUNCTION>' : original
-  }) -> ${result}, satisfied=${dynamicPartsSatisfied}`);
-  return dynamicPartsSatisfied ? result : null;
+  }) -> ${result}, satisfied=${result !== null}`);
+
+  return result;
 }
 
 export default class RESTResource {

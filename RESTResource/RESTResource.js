@@ -96,7 +96,7 @@ function mockProps(state, module, dataKey, logger) {
       // No dataKey
       if (!dataKey) rawKey = key;
     } else {
-      if (a.length > 2) console.log(`state key '${key}' has multiple '#'`);
+      if (a.length > 2) logger.log('mock', `state key '${key}' has multiple '#'`);
       // 1st component is dataKey
       if (dataKey && dataKey === a[0]) rawKey = a[1];
     }
@@ -149,34 +149,6 @@ function urlFromOptions(options, pk) {
   return path;
 }
 
-
-// This now takes so many arguments that it really ought to be a
-// method of RESTResource rather than a standalone function that is
-// passed various parts of the RESTResource object. But since it's
-// exported as a function, I don't want to mess with it until I know
-// what uses it.
-//
-export function substitute(original, props, state, module, logger, dataKey) {
-  const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
-  let result;
-  let localProps = mockProps(state, module, props.dataKey || dataKey, logger).resources;
-  if (typeof original === 'function') {
-    // Call back to resource-specific code
-    result = original(parsedQuery, _.get(props, ['match', 'params']), localProps, logger);
-  } else if (typeof original === 'string') {
-    // eslint-disable-next-line consistent-return
-    result = compilePathTemplate(original, parsedQuery, props, localProps);
-  } else {
-    throw new Error('Invalid type passed to RESTResource.substitute()');
-  }
-
-  logger.log('substitute', `substitute(${
-    (typeof original === 'function') ? '<FUNCTION>' : original
-  }) -> ${result}, satisfied=${result!==null}`);
-
-  return result;
-}
-
 // Process string template with ?{syntax}. Namespaces so far:
 // ? - query parameters in current url
 // : - path components as defined by react-router
@@ -184,8 +156,8 @@ export function substitute(original, props, state, module, logger, dataKey) {
 // ! - properties
 export function compilePathTemplate(template, parsedQuery, props, localProps) {
   let dynamicPartsSatisfied = true;
-  
-  let result = template.replace(/([?:$%!]){(.*?)}/g, (match, ns, name) => {
+
+  const result = template.replace(/([?:$%!]){(.*?)}/g, (match, ns, name) => {
     switch (ns) { // eslint-disable-line default-case
       case '?': {
         const queryParam = processFallback(name, [], parsedQuery);
@@ -207,10 +179,42 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
         if (prop === null) dynamicPartsSatisfied = false;
         return prop;
       }
+      default: {
+        dynamicPartsSatisfied = false;
+        return null;
+      }
     }
   });
   return dynamicPartsSatisfied ? result : null;
-};
+}
+
+
+// This now takes so many arguments that it really ought to be a
+// method of RESTResource rather than a standalone function that is
+// passed various parts of the RESTResource object. But since it's
+// exported as a function, I don't want to mess with it until I know
+// what uses it.
+//
+export function substitute(original, props, state, module, logger, dataKey) {
+  const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
+  let result;
+  const localProps = mockProps(state, module, props.dataKey || dataKey, logger).resources;
+  if (typeof original === 'function') {
+    // Call back to resource-specific code
+    result = original(parsedQuery, _.get(props, ['match', 'params']), localProps, logger);
+  } else if (typeof original === 'string') {
+    // eslint-disable-next-line consistent-return
+    result = compilePathTemplate(original, parsedQuery, props, localProps);
+  } else {
+    throw new Error('Invalid type passed to RESTResource.substitute()');
+  }
+
+  logger.log('substitute', `substitute(${
+    (typeof original === 'function') ? '<FUNCTION>' : original
+  }) -> ${result}, satisfied=${result !== null}`);
+
+  return result;
+}
 
 export default class RESTResource {
   constructor(name, query = {}, module = null, logger, dataKey, defaults = defaultDefaults) {

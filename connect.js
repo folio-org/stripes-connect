@@ -114,7 +114,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
     componentShouldRefreshRemote(nextProps) {
       // Under exactly what conditions should a change of props cause
-      // a refresh? See STRIPES-393. For now, we do this is the UI URL
+      // a refresh? See STRIPES-393. For now, we do this when the UI URL
       // or any local resource has changed.
       if (nextProps.location !== this.props.location) return true;
       const data = this.props.resources;

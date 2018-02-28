@@ -184,6 +184,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
 const defaultLogger = () => {};
 defaultLogger.log = (cat, ...args) => {
+  // eslint-disable-next-line no-console
   console.log(`stripes-connect (${cat})`, ...args);
 };
 

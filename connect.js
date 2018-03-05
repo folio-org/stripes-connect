@@ -20,7 +20,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
   const dataKey = options.dataKey;
 
   _.map(Wrapped.manifest, (query, name) => {
-    const resource = new types[query.type || defaultType](name, query, module, logger, dataKey);
+    const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
     resources.push(resource);
     if (query.type === 'okapi') {
       epics.add(...mutationEpics(resource), refreshEpic(resource));
@@ -147,9 +147,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
     const resourceData = {};
     for (const r of resources) {
-      if (r.dataKey === dataKey) {
-        resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
-      }
+      resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
     }
 
     const newProps = { dataKey, resources: resourceData };
@@ -162,9 +160,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     const res = {};
     res.mutator = {};
     for (const r of resources) {
-      if (r.dataKey === dataKey) {
-        res.mutator[r.name] = r.getMutator(dispatch, ownProps);
-      }
+      res.mutator[r.name] = r.getMutator(dispatch, ownProps);
     }
 
     res.refreshRemote = (params) => {

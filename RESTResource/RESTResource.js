@@ -497,6 +497,7 @@ export default class RESTResource {
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
         // noop if the URL and recordsRequired didn't change
+        this.logger.log('connect-dup', `'${this.name}' reqd=${options.recordsRequired} (${options.recordsRequired === this.lastReqd ? 'same' : 'different'}) ${url}, (${url === this.lastUrl ? 'same' : 'different'})`);
         if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
       } else {
         // Check if resourceShouldRefresh is a boolean or function

@@ -35,8 +35,27 @@ const defaults = {
   },
 };
 
+function optionsFromState(options, state) {
+  if (options.type === 'okapi') {
+    if (typeof state.okapi !== 'object') {
+      throw new Error('State does not contain Okapi settings');
+    }
+    const okapiOptions = {
+      root: state.okapi.url,
+      headers: {
+        'X-Okapi-Tenant': state.okapi.tenant,
+      },
+    };
+    if (state.okapi.token) okapiOptions.headers['X-Okapi-Token'] = state.okapi.token;
+    return okapiOptions;
+  }
+  return {};
+}
+
 export default class OkapiResource extends RESTResource {
   constructor(name, query = {}, module = null, logger, dataKey) {
+    query.optionsFromState = optionsFromState;
+
     super(name, query, module, logger, dataKey, defaults);
     this.visibleCount = 0;
   }

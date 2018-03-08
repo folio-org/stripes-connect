@@ -26,24 +26,6 @@ function extractTotal(json) {
   return null;
 }
 
-
-function optionsFromState(options, state) {
-  if (options.type === 'okapi') {
-    if (typeof state.okapi !== 'object') {
-      throw new Error('State does not contain Okapi settings');
-    }
-    const okapiOptions = {
-      root: state.okapi.url,
-      headers: {
-        'X-Okapi-Tenant': state.okapi.tenant,
-      },
-    };
-    if (state.okapi.token) okapiOptions.headers['X-Okapi-Token'] = state.okapi.token;
-    return okapiOptions;
-  }
-  return {};
-}
-
 // The following fallback syntax is one small part of what Bash
 // implements -- see the "Parameter Expansion" section of its
 // manual. It's the part we need right now, but we should consider
@@ -224,6 +206,7 @@ export default class RESTResource {
     this.dataKey = dataKey;
     this.crudName = module ? `${_.snakeCase(module)}_${_.snakeCase(name)}` : _.snakeCase(name);
     this.optionsTemplate = _.merge({}, defaults, query);
+    this.optionsFromState = query.optionsFromState || (() => undefined);
     this.actions = actionCreatorsFor(this);
     this.pagedFetchSuccess = this.actions.fetchSuccess;
     this.reducer = reducer.bind(this);
@@ -250,7 +233,7 @@ export default class RESTResource {
     const options = _.merge({},
       this.optionsTemplate,
       this.optionsTemplate[verb],
-      optionsFromState(this.optionsTemplate, state));
+      this.optionsFromState(this.optionsTemplate, state));
     if (props) {
       // path
       if (options.path) {

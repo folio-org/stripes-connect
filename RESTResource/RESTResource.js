@@ -472,7 +472,10 @@ export default class RESTResource {
     const key = this.stateKey();
     return (dispatch, getState) => {
       const options = this.verbOptions('GET', getState(), props);
-      if (options === null) return null; // needs dynamic parts that aren't available
+      if (options === null) {
+        dispatch(this.actions.fetchAbort({ message: `cannot satisfy request: missing query?` }));
+        return null; // needs dynamic parts that aren't available
+      }
       const url = urlFromOptions(options);
       if (url === null) return null;
       const { headers, records, resourceShouldRefresh } = options;

@@ -473,7 +473,7 @@ export default class RESTResource {
     return (dispatch, getState) => {
       const options = this.verbOptions('GET', getState(), props);
       if (options === null) {
-        dispatch(this.actions.fetchAbort({ message: `cannot satisfy request: missing query?` }));
+        dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing query?' }));
         return null; // needs dynamic parts that aren't available
       }
       const url = urlFromOptions(options);

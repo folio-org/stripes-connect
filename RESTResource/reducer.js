@@ -88,7 +88,7 @@ export default function (state = initialResourceState, action) {
       });
     }
     case '@@stripes-connect/FETCH_ABORT': {
-      console.log('FETCH_ABORT:', action.payload.message);
+      // We do not use action.payload.message
       return initialResourceState;
     }
     default: {

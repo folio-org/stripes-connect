@@ -87,6 +87,10 @@ export default function (state = initialResourceState, action) {
         failed: Object.assign({}, action.meta, action.payload),
       });
     }
+    case '@@stripes-connect/FETCH_ABORT': {
+      // We do not use action.payload.message
+      return initialResourceState;
+    }
     default: {
       return state;
     }

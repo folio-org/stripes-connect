@@ -41,6 +41,8 @@ export default function actionCreatorsFor(resource) {
 
     fetchError: passPayload('FETCH_ERROR'),
 
+    fetchAbort: passPayload('FETCH_ABORT'),
+
     pagingStart: () => ({
       type: '@@stripes-connect/PAGING_START',
       meta: commonMeta,

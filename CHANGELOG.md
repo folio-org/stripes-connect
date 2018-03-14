@@ -3,6 +3,7 @@
 ## 3.2.0 (IN PROGRESS)
 
 * `verbOptions` returns null if any of the templated values are incomplete. Fixes STCON-58.
+* Failed fetches on a resource clear existing data from that resource. Fixes STCON-64. Available from v3.1.1.
 
 ## [3.1.0](https://github.com/folio-org/stripes-connect/tree/v3.1.0) (2018-01-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.0.0...v3.1.0)

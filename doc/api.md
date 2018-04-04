@@ -19,7 +19,6 @@ Index Data, 2016-2017.
         * [Example path](#example-path)
         * [Functional paths](#functional-paths)
 * [Connecting the component](#connecting-the-component)
-* [Error handling](#error-handling)
 * [Using the connected component](#using-the-connected-component)
 * [Appendices: for developers](#appendices-for-developers)
     * [Appendix A: how state is stored](#appendix-a-how-state-is-stored)
@@ -421,64 +420,6 @@ use
 (At present, it is necessary to pass as a second argument the name of
 the Stripes module that contains the connect component. We hope to
 remove this requirement in future.)
-
-
-
-## Error handling
-
-By default, errors in communicating with a REST service such as Okapi
-are signalled to the user in an alert-box that reports messages
-such as:
-
-> ERROR: in module okapi-console, operation CREATE on resource
-> 'modules' failed with HTTP status 403, saying: Missing Tenant
-
-This is on the basis that it's better to announce errors loudly than
-to allow them to pass silently, But applications will often want to
-handle errors in a more sophisticated way. This can be done by
-installing an error-handler function in a component by providing it as
-part of the component's manifest under the special key
-`@errorHandler`.
-
-The handler object is passed an error object which has the following
-elements (all of type string):
-
-* **module** -- the name of the Stripes module in which the error
-  occurred.
-* **op** -- the operation that Stripes Connect was trying to carry out
-  on behalf of the module: usually one of
-  `FETCH`, `UPDATE`, `CREATE` or `DELETE`.
-* **resource** -- the name of the resource within the component's
-  manifest that Stripes Connect was trying to handle when the error
-  occurred.
-* **status** -- the HTTP status of an operation that failed: this is
-  provided only for HTTP operations, and is null for other kinds of
-  errors.
-* **error** -- a textual description of what went wrong. For HTTP
-  errors, where `status` is defined, this may or may not also be
-  defined: for example, a 404 Not Found status may not be accompanied
-  by additional explanatory text. For for non-HTTP errors, `error` is
-  always defined. So at least one of `status` and `error` is
-  guaranteed to be present.
-
-For example one might define an error-handler that logs the relevant
-information to the JavaScript console, and install it in a component,
-as follows:
-
-        static handler(e) {
-          console.log("TenantList ERROR: in module '" + e.module + "', " +
-                      " operation '" + e.op + "' on " +
-                      " resource '" + e.resource + "' failed, saying: " + e.error);
-        }
-
-        static manifest = {
-          '@errorHandler': TenantList.handler,
-          'tenants': {
-            path: '_/proxy/tenants',
-            type: 'okapi'
-          }
-        };
-
 
 
 ## Using the connected component

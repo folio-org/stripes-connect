@@ -474,10 +474,16 @@ export default class RESTResource {
       const options = this.verbOptions('GET', getState(), props);
       if (options === null) {
         dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing query?' }));
+        this.lastUrl = null;
         return null; // needs dynamic parts that aren't available
       }
+
       const url = urlFromOptions(options);
-      if (url === null) return null;
+      if (url === null) {
+        this.lastUrl = null;
+        return null;
+      }
+
       const { headers, records, resourceShouldRefresh } = options;
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {

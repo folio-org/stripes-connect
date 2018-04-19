@@ -321,6 +321,22 @@ only if the names path-component, query parameter or local resource
 _does_ exist: `%{name:+val}` yields either the constant `val` or an
 empty string, according as `%{name}` is or is not defined.
 
+#### Error handling
+
+Normally, errors will be caught and processed by Stripes Connect.
+Currently, errors are being reported in an `alert()` via Stripes
+Core to ensure that they are noticed during development. However,
+this means that `catch` calls like
+`mutator.values.DELETE(...).then(...).catch(...)` will never be
+executed.
+
+If you wish to be responsible for and handle your own errors
+for a particular resource, add a `throwErrors: false` property
+to that resource's object in the manifest.
+
+Note that the errors will still be listed in `failedMutations`,
+this just turns off the current error handling in Stripes Core.
+
 #### Example path
 
 Putting these facilities together, the following `path` could be

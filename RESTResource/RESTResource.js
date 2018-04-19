@@ -207,6 +207,7 @@ export default class RESTResource {
     this.crudName = module ? `${_.snakeCase(module)}_${_.snakeCase(name)}` : _.snakeCase(name);
     this.optionsTemplate = _.merge({}, defaults, query);
     this.optionsFromState = query.optionsFromState || (() => undefined);
+    this.throwErrors = query.throwErrors === undefined ? true : query.throwErrors;
     this.actions = actionCreatorsFor(this);
     this.pagedFetchSuccess = this.actions.fetchSuccess;
     this.reducer = reducer.bind(this);

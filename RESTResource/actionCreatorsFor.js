@@ -3,6 +3,7 @@ export default function actionCreatorsFor(resource) {
     resource: resource.name,
     module: resource.module,
     dataKey: resource.dataKey,
+    throwErrors: resource.throwErrors,
   };
   const passPayload = name => data => ({
     type: `@@stripes-connect/${name}`,

@@ -36,7 +36,7 @@ export default class LocalResource {
 
   stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${_.snakeCase(this.module)}_${this.name}`;
 
-  reducer = (state = this.query.initialValue ? this.query.initialValue : {}, action) => {
+  reducer = (state = this.query.initialValue !== undefined ? this.query.initialValue : {}, action) => {
     if (action.meta !== undefined &&
         action.meta.module === this.module &&
         action.meta.resource === this.name &&

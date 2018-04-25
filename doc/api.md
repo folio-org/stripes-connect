@@ -151,7 +151,7 @@ via limitParam/offsetParam.
   resources.)
 
 * `clientGeneratePk`: a boolean indicating whether the client must
-  generate a "sufficiently unique" private key for newly created
+  generate a "sufficiently unique" primary key for newly created
   records, or must accept one that is supplied by the service in
   response to a create request. Default: `true`.
 

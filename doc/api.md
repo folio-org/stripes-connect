@@ -431,12 +431,28 @@ use
         class Widget extends React.Component {
           // ...
         }
-        export connect(Widget, 'stripes-module-name');
+        export connect(Widget);
 
-(At present, it is necessary to pass as a second argument the name of
-the Stripes module that contains the connect component. We hope to
-remove this requirement in future.)
+When displaying multiple instances of the same connected component,
+as for a list of loans where the `<LoanDetails>` is connected repeatedly
+to retrieve the details of each individual loan, pass the `dataKey` option
+with a unique value to connect:
 
+        constructor(props) {
+          super();
+          this.connectedLoans = this.props.IDs.map(id => props.stripes.connect(LoanDetails, { dataKey: id }));
+        }
+
+        render() {
+          return (
+            <div>
+              {this.connectedLoans.map(comp =><comp stripes={this.props.stripes} />}
+            </div>
+          );
+        }
+
+Because the resource object is global to the module, it needs a value,
+`dataKey`, to distinguish among multiple instances.
 
 ## Using the connected component
 

@@ -437,6 +437,33 @@ use
 the Stripes module that contains the connect component. We hope to
 remove this requirement in future.)
 
+When a parent component is connecting one of its children, it may use the
+curried form of `connect`, provided on the `stripes` prop, which implicitly
+passes the module name to connect:
+
+        constructor(props) {
+          super();
+          this.connectedWidget = props.stripes.connect(Widget);
+        }
+
+Because the resource object is global to the module, if the same component
+will be used repeatedly to retrieve different value for each item on a list,
+e.g. when connecting `<LoanDetails>` repeatedly to retrieve the details of
+multiple loan, it is necessary to provide the `dataKey` option with a unique
+value for each connected instance:
+
+        constructor(props) {
+          super();
+          this.connectedLoans = this.props.IDs.map(id => props.stripes.connect(LoanDetails, { dataKey: id }));
+        }
+
+        render() {
+          return (
+            <div>
+              {this.connectedLoans.map(comp =><comp stripes={this.props.stripes} />}
+            </div>
+          );
+        }
 
 ## Using the connected component
 

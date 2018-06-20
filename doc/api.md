@@ -460,7 +460,7 @@ value for each connected instance:
         render() {
           return (
             <div>
-              {this.connectedLoans.map(comp => <comp stripes={this.props.stripes} />}
+              {this.connectedLoans.map(comp => <comp stripes={this.props.stripes} />)}
             </div>
           );
         }

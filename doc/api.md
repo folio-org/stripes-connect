@@ -447,9 +447,9 @@ passes the module name to connect:
         }
 
 Because the resource object is global to the module, if the same component
-will be used repeatedly to retrieve different value for each item on a list,
+will be used repeatedly to retrieve a different value for each item on a list,
 e.g. when connecting `<LoanDetails>` repeatedly to retrieve the details of
-multiple loan, it is necessary to provide the `dataKey` option with a unique
+multiple loans, it is necessary to provide the `dataKey` option with a unique
 value for each connected instance:
 
         constructor(props) {
@@ -460,7 +460,7 @@ value for each connected instance:
         render() {
           return (
             <div>
-              {this.connectedLoans.map(comp =><comp stripes={this.props.stripes} />}
+              {this.connectedLoans.map(comp => <comp stripes={this.props.stripes} />}
             </div>
           );
         }

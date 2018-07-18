@@ -15,7 +15,7 @@ const types = {
   rest: RESTResource,
 };
 
-const wrap = (Wrapped, module, epics, logger, options = {}) => {
+const wrap = (Wrapped, module, epics, logger, addReducer, store, options = {}) => {
   const resources = [];
   const dataKey = options.dataKey;
 
@@ -45,18 +45,14 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       dataKey: PropTypes.string,
     };
 
-    constructor(props, context) {
+    constructor() {
       super();
-      this.context = context;
       this.logger = logger;
       Wrapper.logger = logger;
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
-    }
 
-    componentWillMount() {
-      // this.logger.log('connect', `in componentWillMount for ${Wrapped.name}`);
-      if (!(this.context.addReducer)) {
-        throw new Error('No addReducer function available in component context');
+      if (!(addReducer)) {
+        throw new Error('No addReducer function available');
       }
       resources.forEach((resource) => {
         // Hopefully paging can all be absorbed into the resource in some future
@@ -64,8 +60,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
         // few million less times)
         if (resource.pagingReducer) {
           const pagingKey = `${resource.stateKey()}_paging`;
-          this.context.addReducer(pagingKey, resource.pagingReducer);
-          const store = this.context.store;
+          addReducer(pagingKey, resource.pagingReducer);
           const onPageSuccess = (paging) => {
             const records = paging.reduce((acc, val) => acc.concat(val.records), []);
             // store.dispatch(resource.pagedFetchSuccess(records));
@@ -83,7 +78,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           };
           store.subscribe(pagingListener);
         }
-        this.context.addReducer(resource.stateKey(), resource.reducer);
+        addReducer(resource.stateKey(), resource.reducer);
       });
     }
 
@@ -137,11 +132,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     }
   }
 
-  Wrapper.contextTypes = {
-    addReducer: PropTypes.func,
-    store: PropTypes.object,
-  };
-
   Wrapper.mapState = (state) => {
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
 
@@ -184,18 +174,18 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
-export const connect = (Component, module, epics, loggerArg, options) => {
+export const connect = (Component, module, epics, loggerArg, addReducer, store, options) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
     return Component;
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
-  const Wrapper = wrap(Component, module, epics, logger, options);
+  const Wrapper = wrap(Component, module, epics, logger, addReducer, store, options);
   const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(Wrapper);
   return Connected;
 };
 
-export const connectFor = (module, epics, logger) => (Component, options) => connect(Component, module, epics, logger, options);
+export const connectFor = (module, epics, logger, addReducer, store) => (Component, options) => connect(Component, module, epics, logger, addReducer, store, options);
 
 export default connect;

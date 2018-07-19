@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
+import { withRoot } from '@folio/stripes-core/src/components/Root/RootContext';
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
@@ -47,6 +48,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
     constructor(props, context) {
       super();
+      console.log(Wrapped.name, 'props.root:', props.root)
       this.context = context;
       this.logger = logger;
       Wrapper.logger = logger;
@@ -192,7 +194,7 @@ export const connect = (Component, module, epics, loggerArg, options) => {
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
   const Wrapper = wrap(Component, module, epics, logger, options);
-  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(Wrapper);
+  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(withRoot(Wrapper));
   return Connected;
 };
 

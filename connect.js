@@ -15,7 +15,7 @@ const types = {
   rest: RESTResource,
 };
 
-const wrap = (Wrapped, module, epics, logger, addReducer, store, options = {}) => {
+const wrap = (Wrapped, module, epics, logger, options = {}, addReducer, store) => {
   const resources = [];
   const dataKey = options.dataKey;
 
@@ -185,18 +185,18 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
-export const connect = (Component, module, epics, loggerArg, addReducer, store, options) => {
+export const connect = (Component, module, epics, loggerArg, options, addReducer, store) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
     return Component;
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
-  const Wrapper = wrap(Component, module, epics, logger, addReducer, store, options);
+  const Wrapper = wrap(Component, module, epics, logger, options, addReducer, store);
   const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(Wrapper);
   return Connected;
 };
 
-export const connectFor = (module, epics, logger, addReducer = null, store = null) => (Component, options) => connect(Component, module, epics, logger, addReducer, store, options);
+export const connectFor = (module, epics, logger, addReducer = null, store = null) => (Component, options) => connect(Component, module, epics, logger, options, addReducer, store);
 
 export default connect;

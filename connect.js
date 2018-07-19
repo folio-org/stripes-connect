@@ -45,14 +45,20 @@ const wrap = (Wrapped, module, epics, logger, addReducer, store, options = {}) =
       dataKey: PropTypes.string,
     };
 
-    constructor() {
+    constructor(props, context) {
       super();
+      this.context = context;
       this.logger = logger;
       Wrapper.logger = logger;
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
 
       if (!(addReducer)) {
-        throw new Error('No addReducer function available. You need to call connectFor() first to initialize connect() with redux');
+        // check if available via legacy context API
+        addReducer = context.addReducer; // eslint-disable-line no-param-reassign
+        store = context.store; // eslint-disable-line no-param-reassign
+        if (!(addReducer)) {
+          throw new Error('No addReducer function available');
+        }
       }
       resources.forEach((resource) => {
         // Hopefully paging can all be absorbed into the resource in some future
@@ -132,6 +138,11 @@ const wrap = (Wrapped, module, epics, logger, addReducer, store, options = {}) =
     }
   }
 
+  Wrapper.contextTypes = {
+    addReducer: PropTypes.func,
+    store: PropTypes.object,
+  };
+
   Wrapper.mapState = (state) => {
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
 
@@ -186,6 +197,6 @@ export const connect = (Component, module, epics, loggerArg, addReducer, store, 
   return Connected;
 };
 
-export const connectFor = (module, epics, logger, addReducer, store) => (Component, options) => connect(Component, module, epics, logger, addReducer, store, options);
+export const connectFor = (module, epics, logger, addReducer = null, store = null) => (Component, options) => connect(Component, module, epics, logger, addReducer, store, options);
 
 export default connect;

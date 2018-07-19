@@ -1,25 +1,34 @@
 import 'jsdom-global/register';
 import chai from 'chai';
-import Enzyme, { mount, shallow, render } from 'enzyme';
+import Enzyme, { mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 
-import connect from '../connect';
-
+import { connectFor } from '../connect';
 
 Enzyme.configure({ adapter: new Adapter() });
 
 chai.should();
 
-// Provide a redux store and addReducer() function in context
+const defaultLogger = () => {};
+defaultLogger.log = (cat, ...args) => {};
+
+const mockedEpics = {
+  add: () => {}
+};
+
+// Provide a redux store and addReducer() function
 let reducers = { okapi: (state = {}) => state };
 class Root extends Component {
+  constructor(props) {
+    super(props);
+    this.connect = connectFor('@folio/core', mockedEpics, defaultLogger, this.addReducer, props.store);
+  }
   addReducer = (key, reducer) => {
     if (reducers[key] === undefined) {
       reducers[key] = reducer;
@@ -29,145 +38,44 @@ class Root extends Component {
     return false;
   }
 
-  getChildContext() {
-    return { addReducer: this.addReducer.bind(this) };
-  }
-
   render() {
-    const { component:ToTest } = this.props;
+    const { component:ToTest, store } = this.props;
     return (
-      <Provider store={this.props.store}>
-        <ToTest {...this.props} />
+      <Provider store={store}>
+        <ToTest {...this.props} connect={this.connect} />
       </Provider>
     );
   }
 }
 
-Root.childContextTypes = {
-  addReducer: PropTypes.func,
-};
-
-class Simple extends Component {
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-
-class Local extends Component {
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-Local.manifest = { localResource : { initialValue: 'hi' } };
-
-class Remote extends Component {
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-Remote.manifest = { remoteResource: {
-  type: 'okapi',
-  path: 'turnip',
-} };
-
-class Paged extends Component {
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-Paged.manifest = { pagedResource: {
-  type: 'okapi',
-  path: 'turnip',
-  params: { q: 'dinner' },
-  records: 'records',
-  recordsRequired: 20,
-  perRequest: 5,
-} };
-
-class Functional extends Component {
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-Functional.manifest = { functionalResource: {
-  type: 'okapi',
-  path: () => 'turnip',
-  GET: {
-    params: () => ({ q: 'dinner' }),
-  }
-} };
-
-class ErrorProne extends Component {
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-ErrorProne.manifest = { errorProne: {
-  type: 'okapi',
-  path: () => 'turnep',
-} };
-
-class Acc extends Component {
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-Acc.manifest = { accResource: {
-  type: 'okapi',
-  accumulate: true,
-  path: 'turnip',
-} };
-
-class Child2 extends Component {
-  static manifest = { childResource2 : { initialValue: 'child2' } };
-
-  render() {
-    return <div id="somediv"></div>
-  }
-};
-
-class Child1 extends Component {
-  static manifest = { childResource1 : { initialValue: 'child1' } };
-
-  constructor() {
-    super();
-    this.childConnect = connect(Child2, 'child2', mockedEpics, defaultLogger);
-  }
-  render() {
-    return <this.childConnect />
-  }
-};
-
-class Parent extends Component {
-  static manifest =  { parentResource : { initialValue: 'parent' } };
-
-  constructor() {
-    super();
-    this.childConnect = connect(Child1, 'child1', mockedEpics, defaultLogger);
-  }
-
-  render() {
-    return this.props.showChild ? (<this.childConnect />) : (<div></div>);
-  }
-};
-
-const defaultLogger = () => {};
-defaultLogger.log = (cat, ...args) => {};
-
-const mockedEpics = {
-  add: () => {}
-};
-
-describe('connect()', () => {
+describe('Test: connect()', () => {
 
   it('should pass through a component with no manifest', () => {
-    Simple.should.equal(connect(Simple, 'NoModule', mockedEpics, defaultLogger));
+    const Simple = () => (<div id="somediv"></div>);
+    const SimpleWrapper = ({ connect }) => {
+      const ConnectedSimple = connect(Simple);
+      return <ConnectedSimple/>
+    };
+    const inst = mount(
+      <Root component={SimpleWrapper} store={createStore((state) => state, {})} />
+    );
+    inst.containsMatchingElement(<Simple/>).should.equal(true);
   });
 
   it('should successfully wrap a component with a local resource', () => {
-    const store = createStore((state) => state, {});
-    const Connected = connect(Local, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected}/>);
+    class Local extends Component {
+      static manifest = { localResource : { initialValue: 'hi' } };
+      render() {
+        return (<div id="somediv"></div>);
+      }
+    }
+    const LocalWrapper = ({ connect }) => {
+      const ConnectedLocal = connect(Local);
+      return <ConnectedLocal/>
+    };
+    const inst = mount(
+      <Root component={LocalWrapper} store={createStore((state) => state, {})} />
+    );
     inst.find(Local).props().resources.localResource.should.equal('hi');
     inst.find(Local).props().mutator.localResource.replace({boo:'ya'});
     inst.find(Local).instance().props.resources.localResource.boo.should.equal('ya');
@@ -176,6 +84,19 @@ describe('connect()', () => {
   });
 
   it('should successfully wrap a component with an okapi resource', (done) => {
+    class Remote extends Component {
+      static manifest = { remoteResource: {
+        type: 'okapi',
+        path: 'turnip',
+      } };
+      render() {
+        return <div id="somediv"></div>
+      }
+    };
+    const RemoteWrapper = ({ connect }) => {
+      const ConnectedRemote = connect(Remote);
+      return <ConnectedRemote/>
+    };
     fetchMock
       .get('http://localhost/turnip',
          [{ id: 1, someprop: 'someval' }],
@@ -195,8 +116,9 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Remote, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected}/>);
+    const inst = mount(
+      <Root component={RemoteWrapper} store={store} />
+    );
 
     inst.find(Remote).props().mutator.remoteResource.PUT({id:1, someprop:'new'})
       .then(res => res.someprop.should.equal('new'));
@@ -220,6 +142,23 @@ describe('connect()', () => {
   });
 
   it('should make multiple requests for a paged resource', (done) => {
+    class Paged extends Component {
+      static manifest = { pagedResource: {
+        type: 'okapi',
+        path: 'turnip',
+        params: { q: 'dinner' },
+        records: 'records',
+        recordsRequired: 20,
+        perRequest: 5,
+      } };
+      render() {
+        return <div id="somediv"></div>
+      }
+    };
+    const PagedWrapper = ({ connect }) => {
+      const ConnectedPaged = connect(Paged);
+      return <ConnectedPaged/>
+    };
     fetchMock
       .getOnce('http://localhost/turnip?limit=5&q=dinner',
         {records:[{"id":"58e5356fe84698a0a279a903","name":"Alberta"},{"id":"58e5356f364668c082d3d87a","name":"David"},{"id":"58e5356ff56928961932c1db","name":"Roxie"},{"id":"58e5356ff66b0af6f1332145","name":"Tammy"},{"id":"58e5356fd18c30d6c63503c6","name":"Sanford"}],total_records:14},
@@ -237,8 +176,9 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Paged, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected}/>);
+    const inst = mount(
+      <Root component={PagedWrapper} store={store} />
+    );
 
     setTimeout(() => {
       inst.find(Paged).instance().props.resources.pagedResource.records.length.should.equal(14);
@@ -248,6 +188,22 @@ describe('connect()', () => {
   });
 
   it('should run manifest functions', (done) => {
+    class Functional extends Component {
+      static manifest = { functionalResource: {
+        type: 'okapi',
+        path: () => 'turnip',
+        GET: {
+          params: () => ({ q: 'dinner' }),
+        }
+      } };
+      render() {
+        return <div id="somediv"></div>
+      }
+    };
+    const FunctionalWrapper = ({ connect }) => {
+      const ConnectedFunctional = connect(Functional);
+      return <ConnectedFunctional/>
+    };
     fetchMock
       .get('http://localhost/turnip?q=dinner',
         [{"id":"58e5356fe84698a0a279a903","name":"Alberta"},{"id":"58e5356f364668c082d3d87a","name":"David"},{"id":"58e5356ff56928961932c1db","name":"Roxie"},{"id":"58e5356ff66b0af6f1332145","name":"Tammy"},{"id":"58e5356fd18c30d6c63503c6","name":"Sanford"}],
@@ -258,8 +214,9 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Functional, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected}/>);
+    const inst = mount(
+      <Root component={FunctionalWrapper} store={store} />
+    );
     inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 
     setTimeout(() => {
@@ -271,6 +228,19 @@ describe('connect()', () => {
   });
 
   it('should fail appropriately', (done) => {
+    class ErrorProne extends Component {
+      static manifest = { errorProne: {
+        type: 'okapi',
+        path: () => 'turnep',
+      } };
+      render() {
+        return <div id="somediv"></div>
+      }
+    };
+    const ErrorProneWrapper = ({ connect }) => {
+      const ConnectedErrorProne = connect(ErrorProne);
+      return <ConnectedErrorProne/>
+    };
     fetchMock
       .get('http://localhost/turnep',
         { status: 404 })
@@ -282,11 +252,12 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(ErrorProne, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected}/>);
+    const inst = mount(
+      <Root component={ErrorProneWrapper} store={store} />
+    );
     inst.find(ErrorProne).props().mutator.errorProne.POST({id:1, someprop:'new'})
       .catch(err => err.text().then(msg => msg.should.equal('You are forbidden because reasons.')));
-   setTimeout(() => {
+    setTimeout(() => {
       const res = inst.find(ErrorProne).instance().props.resources.errorProne;
       res.isPending.should.equal(false);
       res.failed.httpStatus.should.equal(404);
@@ -297,6 +268,20 @@ describe('connect()', () => {
   });
 
   it('should accumulate records', (done) => {
+    class Acc extends Component {
+      static manifest = { accResource: {
+        type: 'okapi',
+        accumulate: true,
+        path: 'turnip',
+      } };
+      render() {
+        return <div id="somediv"></div>
+      }
+    };
+    const AccWrapper = ({ connect }) => {
+      const ConnectedAcc = connect(Acc);
+      return <ConnectedAcc/>
+    };
     fetchMock
       .get('http://localhost/turnip',
          [{ id: 1, someprop: 'someval' }],
@@ -312,8 +297,9 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Acc, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected}/>);
+    const inst = mount(
+      <Root component={AccWrapper} store={store} />
+    );
 
     inst.find(Acc).props().mutator.accResource.GET({})
     inst.find(Acc).props().mutator.accResource.GET({path: 'parsnip'})
@@ -333,9 +319,39 @@ describe('connect()', () => {
   });
 
   it('should reconnect previously connected component', () => {
-    const store = createStore((state) => state, {});
-    const Connected = connect(Parent, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root showChild={true} store={store} component={Connected}/>);
+    class Child2 extends Component {
+      static manifest = { childResource2 : { initialValue: 'child2' } };
+      render() {
+        return <div id="somediv"></div>
+      }
+    };
+    class Child1 extends Component {
+      static manifest = { childResource1 : { initialValue: 'child1' } };
+      constructor(props) {
+        super(props);
+        this.childConnect = props.connect(Child2);
+      }
+      render() {
+        return <this.childConnect connect={this.props.connect} />
+      }
+    };
+    class Parent extends Component {
+      static manifest = { parentResource : { initialValue: 'parent' } };
+      constructor(props) {
+        super();
+        this.childConnect = props.connect(Child1);
+      }
+      render() {
+        return this.props.showChild ? (<this.childConnect connect={this.props.connect}/>) : (<div></div>);
+      }
+    };
+    const ParentWrapper = ({ connect, showChild }) => {
+      const ConnectedParent = connect(Parent);
+      return <ConnectedParent connect={connect} showChild={showChild} />
+    };
+    const inst = mount(
+      <Root showChild={true} component={ParentWrapper} store={createStore((state) => state, {})} />
+    );
 
     inst.find(Child2).props().resources.should.have.property('childResource2');
     inst.find(Child2).props().mutator.should.have.property('childResource2');

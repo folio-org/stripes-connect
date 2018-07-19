@@ -52,7 +52,7 @@ const wrap = (Wrapped, module, epics, logger, addReducer, store, options = {}) =
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
 
       if (!(addReducer)) {
-        throw new Error('No addReducer function available');
+        throw new Error('No addReducer function available. You need to call connectFor() first to initialize connect() with redux');
       }
       resources.forEach((resource) => {
         // Hopefully paging can all be absorbed into the resource in some future

@@ -40,6 +40,7 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
+    "@folio/stripes-core": "^2.10.3",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.2",
     "prop-types": "^15.5.10",

@@ -44,20 +44,17 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       }),
       resources: PropTypes.object, // eslint-disable-line react/forbid-prop-types
       dataKey: PropTypes.string,
+      root: PropTypes.object,
     };
 
-    constructor(props, context) {
+    constructor(props) {
       super();
-      console.log(Wrapped.name, 'props.root:', props.root)
-      this.context = context;
+      const context = props.root;
       this.logger = logger;
       Wrapper.logger = logger;
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
-    }
 
-    componentWillMount() {
-      // this.logger.log('connect', `in componentWillMount for ${Wrapped.name}`);
-      if (!(this.context.addReducer)) {
+      if (!(context.addReducer)) {
         throw new Error('No addReducer function available in component context');
       }
       resources.forEach((resource) => {
@@ -66,8 +63,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
         // few million less times)
         if (resource.pagingReducer) {
           const pagingKey = `${resource.stateKey()}_paging`;
-          this.context.addReducer(pagingKey, resource.pagingReducer);
-          const store = this.context.store;
+          context.addReducer(pagingKey, resource.pagingReducer);
+          const store = context.store;
           const onPageSuccess = (paging) => {
             const records = paging.reduce((acc, val) => acc.concat(val.records), []);
             // store.dispatch(resource.pagedFetchSuccess(records));
@@ -85,7 +82,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           };
           store.subscribe(pagingListener);
         }
-        this.context.addReducer(resource.stateKey(), resource.reducer);
+        context.addReducer(resource.stateKey(), resource.reducer);
       });
     }
 

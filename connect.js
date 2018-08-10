@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
+import { withRoot } from '@folio/stripes-core/src/components/Root/RootContext';
+
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
@@ -43,19 +45,17 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       }),
       resources: PropTypes.object, // eslint-disable-line react/forbid-prop-types
       dataKey: PropTypes.string,
+      root: PropTypes.object,
     };
 
-    constructor(props, context) {
-      super();
-      this.context = context;
+    constructor(props) {
+      super(props);
+      const context = props.root;
       this.logger = logger;
       Wrapper.logger = logger;
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
-    }
 
-    componentWillMount() {
-      // this.logger.log('connect', `in componentWillMount for ${Wrapped.name}`);
-      if (!(this.context.addReducer)) {
+      if (!(context.addReducer)) {
         throw new Error('No addReducer function available in component context');
       }
       resources.forEach((resource) => {
@@ -64,8 +64,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
         // few million less times)
         if (resource.pagingReducer) {
           const pagingKey = `${resource.stateKey()}_paging`;
-          this.context.addReducer(pagingKey, resource.pagingReducer);
-          const store = this.context.store;
+          context.addReducer(pagingKey, resource.pagingReducer);
+          const store = context.store;
           const onPageSuccess = (paging) => {
             const records = paging.reduce((acc, val) => acc.concat(val.records), []);
             // store.dispatch(resource.pagedFetchSuccess(records));
@@ -83,7 +83,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           };
           store.subscribe(pagingListener);
         }
-        this.context.addReducer(resource.stateKey(), resource.reducer);
+        context.addReducer(resource.stateKey(), resource.reducer);
       });
     }
 
@@ -192,7 +192,7 @@ export const connect = (Component, module, epics, loggerArg, options) => {
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
   const Wrapper = wrap(Component, module, epics, logger, options);
-  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(Wrapper);
+  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(withRoot(Wrapper));
   return Connected;
 };
 

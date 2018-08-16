@@ -7,6 +7,7 @@
 * Added ability to specify `throwErrors` boolean in resource manifests. Setting to `false` turns off global error reporting for that resource. Available from v3.1.2.
 * Allow LocalResource to be initalized with a non-object falsey value. Refs STCON-65. Available from v3.1.3.
 * Updating `connect` documentation.
+* Add a new `permissionsRequired` prop to a manifest's object. Fixes STCON-68. Available from v3.1.5.
 
 ## [3.1.0](https://github.com/folio-org/stripes-connect/tree/v3.1.0) (2018-01-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.0.0...v3.1.0)

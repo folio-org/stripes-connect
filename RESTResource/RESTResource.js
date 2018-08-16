@@ -337,6 +337,12 @@ export default class RESTResource {
     this.dispatch(this.fetchAction(this.cachedProps));
   }
 
+  hasPerm(state, perms) {
+    const currentPerms = _.get(state, ['okapi', 'currentPerms'], {});
+    const reqPerms = _.isArray(perms) ? perms : perms.split(',');
+    return !reqPerms.find(perm => !currentPerms[perm]);
+  }
+
   createAction = (record, props) => (dispatch, getState) => {
     const options = this.verbOptions('POST', getState(), props);
     const { pk, clientGeneratePk, headers } = options;
@@ -471,8 +477,16 @@ export default class RESTResource {
 
   fetchAction = (props) => {
     const key = this.stateKey();
+
     return (dispatch, getState) => {
-      const options = this.verbOptions('GET', getState(), props);
+      const state = getState();
+      const options = this.verbOptions('GET', state, props);
+
+      if (options.permissionsRequired && !this.hasPerm(state, options.permissionsRequired)) {
+        dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing permissions' }));
+        return null;
+      }
+
       if (options === null) {
         dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing query?' }));
         this.lastUrl = null;

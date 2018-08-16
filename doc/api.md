@@ -163,6 +163,9 @@ via limitParam/offsetParam.
   resource, which allows it to be used in code that expects to receive a
   promise. Default: `false`.
 
+* `permissionsRequired`: A string (or an array of strings) indicating the list
+  of permissions required for the given resource to be fetched.
+
 In addition to these principal pieces of configuration, which apply to
 all operations on the resource, these values can be overridden for
 specific HTTP operations: the entries `GET`, `POST`, `PUT`, `DELETE`

@@ -330,7 +330,6 @@ describe('connect()', () => {
       const res = inst.find(CompWithPerms).instance().props.resources.resourceWithPerms;
       res.isPending.should.equal(false);
       res.hasLoaded.should.equal(false);
-      console.log(store.getState());
       fetchMock.restore();
       done();
     }, 10);

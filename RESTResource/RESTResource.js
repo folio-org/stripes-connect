@@ -337,10 +337,10 @@ export default class RESTResource {
     this.dispatch(this.fetchAction(this.cachedProps));
   }
 
-  hasPerm(state, perms) {
+  hasMissingPerms(state, perms) {
     const currentPerms = _.get(state, ['okapi', 'currentPerms'], {});
     const reqPerms = _.isArray(perms) ? perms : perms.split(',');
-    return !reqPerms.find(perm => !currentPerms[perm]);
+    return reqPerms.filter(perm => !currentPerms[perm]);
   }
 
   createAction = (record, props) => (dispatch, getState) => {
@@ -488,9 +488,12 @@ export default class RESTResource {
         return null; // needs dynamic parts that aren't available
       }
 
-      if (options.permissionsRequired && !this.hasPerm(state, options.permissionsRequired)) {
-        dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing permissions' }));
-        return null;
+      if (options.permissionsRequired) {
+        const missingPerms = this.hasMissingPerms(state, options.permissionsRequired);
+        if (missingPerms.length) {
+          dispatch(this.actions.fetchAbort({ message: `missing permissions: ${missingPerms.join(',')}` }));
+          return null;
+        }
       }
 
       const url = urlFromOptions(options);

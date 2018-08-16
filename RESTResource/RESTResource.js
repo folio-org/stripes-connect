@@ -482,15 +482,15 @@ export default class RESTResource {
       const state = getState();
       const options = this.verbOptions('GET', state, props);
 
-      if (options.permissionsRequired && !this.hasPerm(state, options.permissionsRequired)) {
-        dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing permissions' }));
-        return null;
-      }
-
       if (options === null) {
         dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing query?' }));
         this.lastUrl = null;
         return null; // needs dynamic parts that aren't available
+      }
+
+      if (options.permissionsRequired && !this.hasPerm(state, options.permissionsRequired)) {
+        dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing permissions' }));
+        return null;
       }
 
       const url = urlFromOptions(options);

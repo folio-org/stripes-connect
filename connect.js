@@ -97,7 +97,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       });
     }
 
-    componentWillReceiveProps(nextProps) {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillReceiveProps(nextProps) {
       // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
       if (this.componentShouldRefreshRemote(nextProps)) {
         this.props.refreshRemote({ ...nextProps });

@@ -480,7 +480,6 @@ export default class RESTResource {
 
     return (dispatch, getState) => {
       const state = getState();
-      console.log('params', _.get(props, ['match', 'params']));
       const options = this.verbOptions('GET', state, props);
 
       if (options === null) {

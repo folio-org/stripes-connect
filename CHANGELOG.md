@@ -1,6 +1,11 @@
 # Change history for stripes-connect
 
-## 3.2.0 (IN PROGRESS)
+## 3.2.1 (IN PROGRESS)
+
+* stripes-core should be a peerDependency. Refs STRIPES-557.
+
+## [3.2.0](https://github.com/folio-org/stripes-connect/tree/v3.2.0) (2018-09-05)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.1.0...v3.2.0)
 
 * `verbOptions` returns null if any of the templated values are incomplete. Fixes STCON-58.
 * Failed fetches on a resource clear existing data from that resource. Fixes STCON-64. Available from v3.1.1.

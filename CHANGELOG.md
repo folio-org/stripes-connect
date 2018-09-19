@@ -1,6 +1,7 @@
 # Change history for stripes-connect
 
-## 3.2.1 (IN PROGRESS)
+## [3.2.1](https://github.com/folio-org/stripes-connect/tree/v3.2.1) (2018-09-19)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.2.0...v3.2.1)
 
 * stripes-core should be a peerDependency. Refs STRIPES-557.
 

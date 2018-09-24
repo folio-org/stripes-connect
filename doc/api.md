@@ -166,6 +166,9 @@ via limitParam/offsetParam.
 * `permissionsRequired`: A string (or an array of strings) indicating the list
   of permissions required for the given resource to be fetched.
 
+* `shouldRefresh`: An optional function which can be used to indicate if the
+given resource should be refreshed when another resource is mutated.
+
 In addition to these principal pieces of configuration, which apply to
 all operations on the resource, these values can be overridden for
 specific HTTP operations: the entries `GET`, `POST`, `PUT`, `DELETE`

@@ -5,8 +5,17 @@ export function refreshEpic(resource) {
     .ofType('REFRESH')
     .filter(action => {
       const { name, path } = action.meta;
-      const resPath = resource.optionsTemplate.path || '';
-      return resource.isVisible() && resPath.startsWith(path);
+      const options = resource.optionsTemplate;
+      const resPath = options.path || '';
+
+      if (!resource.isVisible()) return false;
+
+      if (options.shouldRefresh) {
+        return options.shouldRefresh(resource, action);
+      }
+      else {
+        return resPath.startsWith(path);
+      }
     })
     .debounceTime(100)
     .map(action => {

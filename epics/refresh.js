@@ -4,18 +4,20 @@ export function refreshEpic(resource) {
   return (action$) => action$
     .ofType('REFRESH')
     .filter(action => {
-      const { name, path } = action.meta;
+      const { path } = action.meta;
       const options = resource.optionsTemplate;
-      const resPath = options.path || '';
+      const resPath = options.path || (options.GET || {}).path || '';
 
       if (!resource.isVisible()) return false;
 
+      let refresh = resPath.startsWith(path);
+
       if (options.shouldRefresh) {
-        return options.shouldRefresh(resource, action);
+        refresh ||= options.shouldRefresh(resource, action);
       }
-      else {
-        return resPath.startsWith(path);
-      }
+
+      return refresh;
+
     })
     .debounceTime(100)
     .map(action => {

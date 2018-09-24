@@ -13,7 +13,7 @@ export function refreshEpic(resource) {
       let refresh = resPath.startsWith(path);
 
       if (options.shouldRefresh) {
-        refresh ||= options.shouldRefresh(resource, action);
+        refresh = refresh || options.shouldRefresh(resource, action);
       }
 
       return refresh;

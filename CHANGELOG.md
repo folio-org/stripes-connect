@@ -3,6 +3,7 @@
 ## 3.2.1 (IN PROGRESS)
 
 * stripes-core should be a peerDependency. Refs STRIPES-557.
+* Add `shouldRefresh` function to a manifest's object. Part of STCON-71.
 
 ## [3.2.0](https://github.com/folio-org/stripes-connect/tree/v3.2.0) (2018-09-05)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.1.0...v3.2.0)

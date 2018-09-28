@@ -392,10 +392,10 @@ export default class RESTResource {
         // single-use promise for getting them message body available for external
         // catch()
         if (!reason.status && !reason.headers) {
-          dispatch(this.mutationError({ message: reason.message }, 'POST'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'POST'));
         }
       } else {
-        dispatch(this.mutationError({ message: reason }, 'POST'));
+        dispatch(this.actions.mutationError({ message: reason }, 'POST'));
       }
     });
 

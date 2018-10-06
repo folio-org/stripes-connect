@@ -1,2 +1,2 @@
-export * from './mutations';
-export * from './refresh';
+export { default as mutationEpics } from './mutations';
+export { default as refreshEpic } from './refresh';

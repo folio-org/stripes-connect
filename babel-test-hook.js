@@ -1,4 +1,4 @@
-require('babel-register')({ // eslint-disable-line import/no-extraneous-dependencies
+require('babel-register')({
   presets: ['env', 'stage-2', 'react'],
   ignore: (fileName) => {
     const nodeModIdx = fileName.lastIndexOf('node_modules');

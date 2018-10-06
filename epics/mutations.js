@@ -6,18 +6,16 @@ const actionNames = [
 
 // returns list of epics which execute
 // after mutation happens on a given resource
-export function mutationEpics(resource) {
+export default function mutationEpics(resource) {
   const options = resource.optionsTemplate;
 
-  return actionNames.map(actionName =>
-    (action$) => action$
-      .ofType(`@@stripes-connect/${actionName}`)
-      .filter(action => action.meta.resource === resource.name)
-      .map(action => {
-        const path = options.path && options.path.replace(/[\/].*$/g, '');
-        const name = resource.name;
-        const meta = Object.assign({}, action.meta, { path, name });
-        return { ...action, meta, type: 'REFRESH' };
-      })
-  );
+  return actionNames.map(actionName => (action$) => action$
+    .ofType(`@@stripes-connect/${actionName}`)
+    .filter(action => action.meta.resource === resource.name)
+    .map(action => {
+      const path = options.path && options.path.replace(/[\/].*$/g, '');  // eslint-disable-line no-useless-escape
+      const name = resource.name;
+      const meta = Object.assign({}, action.meta, { path, name });
+      return { ...action, meta, type: 'REFRESH' };
+    }));
 }

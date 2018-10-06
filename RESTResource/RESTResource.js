@@ -140,7 +140,7 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
   let dynamicPartsSatisfied = true;
 
   const result = template.replace(/([?:$%!]){(.*?)}/g, (match, ns, name) => {
-    switch (ns) { // eslint-disable-line default-case
+    switch (ns) {
       case '?': {
         const queryParam = processFallback(name, [], parsedQuery);
         if (queryParam === null) dynamicPartsSatisfied = false;
@@ -185,7 +185,6 @@ export function substitute(original, props, state, module, logger, dataKey) {
     // Call back to resource-specific code
     result = original(parsedQuery, _.get(props, ['match', 'params']), localProps, logger);
   } else if (typeof original === 'string') {
-    // eslint-disable-next-line consistent-return
     result = compilePathTemplate(original, parsedQuery, props, localProps);
   } else {
     throw new Error('Invalid type passed to RESTResource.substitute()');
@@ -250,8 +249,10 @@ export default class RESTResource {
 
       // params
       if (typeof options.params === 'object') {
-        options.params = _.mapValues(options.params, param =>
-          substitute(param, props, state, this.module, this.logger, this.dataKey));
+        options.params = _.mapValues(
+          options.params,
+          param => substitute(param, props, state, this.module, this.logger, this.dataKey)
+        );
         for (const key of Object.keys(options.params)) {
           if (options.params[key] === null) {
             return null;

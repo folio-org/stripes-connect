@@ -1,6 +1,6 @@
 // returns epic which executes after a refresh action
 // and syncs/refreshes given resource
-export function refreshEpic(resource) {
+export default function refreshEpic(resource) {
   return (action$) => action$
     .ofType('REFRESH')
     .filter(action => {
@@ -17,12 +17,10 @@ export function refreshEpic(resource) {
       }
 
       return refresh;
-
     })
     .debounceTime(100)
     .map(action => {
       resource.sync();
       return { ...action, type: 'REFRESH_SUCCESS' };
-    })
+    });
 }
-

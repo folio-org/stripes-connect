@@ -33,7 +33,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     static propTypes = {
       refreshRemote: PropTypes.func.isRequired,
       // We use it, but via ...props, so:
-      // eslint-disable-next-line react/no-unused-prop-types
       location: PropTypes.shape({
         hostname: PropTypes.string, // First two are not defined in some parts of lifecyle
         port: PropTypes.string,
@@ -43,7 +42,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
         // query: null
         // state: null
       }),
-      resources: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+      resources: PropTypes.object,
       dataKey: PropTypes.string,
       root: PropTypes.object,
     };
@@ -97,7 +96,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       });
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps) { // eslint-disable-line react/no-deprecated
       // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
       if (this.componentShouldRefreshRemote(nextProps)) {
         this.props.refreshRemote({ ...nextProps });

@@ -1,5 +1,11 @@
 # Change history for stripes-connect
 
+## [3.3.1](https://github.com/folio-org/stripes-connect/tree/v3.3.1) (2018-11-06)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.3.0...v3.3.1)
+
+* Upgrade linting and dependencies
+* Unsubscribe from store on unmount
+
 ## [3.3.0](https://github.com/folio-org/stripes-connect/tree/v3.3.0) (2018-10-02)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.2.0...v3.3.0)
 

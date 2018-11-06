@@ -57,6 +57,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       if (!(context.addReducer)) {
         throw new Error('No addReducer function available in component context');
       }
+
+      this._subscribers = [];
       resources.forEach((resource) => {
         // Hopefully paging can all be absorbed into the resource in some future
         // rearchitecting (we might also reiterate these function definitions a
@@ -80,7 +82,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
             currentPaging = store.getState()[pagingKey];
             if (currentPaging && currentPaging !== previousPaging) onPageChange(currentPaging);
           };
-          store.subscribe(pagingListener);
+          const unsubscribe = store.subscribe(pagingListener);
+          this._subscribers.push(unsubscribe);
         }
         context.addReducer(resource.stateKey(), resource.reducer);
       });
@@ -104,6 +107,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     }
 
     componentWillUnmount() {
+      this._subscribers.forEach((unsubscribe) => unsubscribe());
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           resource.markInvisible();

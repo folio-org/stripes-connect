@@ -1,6 +1,6 @@
 {
   "name": "@folio/stripes-connect",
-  "version": "3.4.1",
+  "version": "4.0.0",
   "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-connect",
   "publishConfig": {
@@ -34,7 +34,7 @@
     "redux-thunk": "^2.1.0"
   },
   "dependencies": {
-    "@folio/stripes-core": "^2.15.0",
+    "@folio/stripes-core": "^3.0.0",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.2",
     "prop-types": "^15.5.10",

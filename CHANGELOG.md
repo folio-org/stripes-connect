@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## [3.4.1](https://github.com/folio-org/stripes-connect/tree/v3.4.0) (2019-01-16)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.4.0...v3.4.1)
+
+* Revert `stripes-core` `v3.0.0` dependency change
+
 ## [3.4.0](https://github.com/folio-org/stripes-connect/tree/v3.4.0) (2019-01-15)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.3.1...v3.4.0)
 

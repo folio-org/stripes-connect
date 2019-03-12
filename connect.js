@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
-import { withRoot } from '@folio/stripes-core/src/components/Root/RootContext';
+import { withRoot } from '@folio/stripes-core/src/components/Root/RootContext'; // eslint-disable-line import/no-extraneous-dependencies
 
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';

@@ -10,7 +10,7 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
-import { RootContext } from '@folio/stripes-core/src/components/Root/RootContext';
+import { RootContext } from '@folio/stripes-core/src/components/Root/RootContext'; // eslint-disable-line import/no-extraneous-dependencies
 
 import { connect } from '../connect';
 

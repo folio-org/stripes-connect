@@ -1,6 +1,11 @@
 # Change history for stripes-connect
 
-## 4.0.1 (IN PROGRESS)
+## 4.1.0 (IN PROGRESS)
+
+* Depend on stripes-core 3.1.0. Refs STRIPES-608.
+
+## [4.0.1](https://github.com/folio-org/stripes-connect/tree/v4.0.1) (2019-03-13)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v4.0.1...v4.0.1)
 
 * Make the stripes-core dependency more strict with ~ instead of ^.
 

@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 4.0.1 (IN PROGRESS)
+
+* Make the stripes-core dependency more strict with ~ instead of ^.
+
 ## [4.0.0](https://github.com/folio-org/stripes-connect/tree/v4.0.0) (2019-01-16)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v3.4.1...v4.0.0)
 

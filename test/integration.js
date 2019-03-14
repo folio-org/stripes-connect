@@ -10,9 +10,29 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
-import { RootContext } from '@folio/stripes-core/src/components/Root/RootContext';
+// import { RootContext } from '@folio/stripes-core/src/components/Root/RootContext';
 
 import { connect } from '../connect';
+
+const MockRootContext = React.createContext();
+
+function getDisplayName(WrappedComponent) {
+  return WrappedComponent.displayName || WrappedComponent.name || 'Component';
+}
+
+function withMockRoot(WrappedComponent) {
+  class WithMockRoot extends React.Component {
+    render() {
+      return (
+        <MockRootContext.Consumer>
+          {root => <WrappedComponent {...this.props} root={root} /> }
+        </MockRootContext.Consumer>
+      );
+    }
+  }
+  WithMockRoot.displayName = `WithMockRoot(${getDisplayName(WrappedComponent)})`;
+  return WithMockRoot;
+}
 
 
 Enzyme.configure({ adapter: new Adapter() });
@@ -162,7 +182,7 @@ class Child1 extends Component { // eslint-disable-line react/no-multi-comp
 
   constructor() {
     super();
-    this.childConnect = connect(Child2, 'child2', mockedEpics, defaultLogger);
+    this.childConnect = connect(Child2, 'child2', mockedEpics, defaultLogger, {}, withMockRoot);
   }
 
   render() {
@@ -175,7 +195,7 @@ class Parent extends Component { // eslint-disable-line react/no-multi-comp
 
   constructor() {
     super();
-    this.childConnect = connect(Child1, 'child1', mockedEpics, defaultLogger);
+    this.childConnect = connect(Child1, 'child1', mockedEpics, defaultLogger, {}, withMockRoot);
   }
 
   render() {
@@ -185,12 +205,12 @@ class Parent extends Component { // eslint-disable-line react/no-multi-comp
 
 describe('connect()', () => {
   it('should pass through a component with no manifest', () => {
-    Simple.should.equal(connect(Simple, 'NoModule', mockedEpics, defaultLogger));
+    Simple.should.equal(connect(Simple, 'NoModule', mockedEpics, defaultLogger, {}, withMockRoot));
   });
 
   it('should successfully wrap a component with a local resource', () => {
     const store = createStore((state) => state, {});
-    const Connected = connect(Local, 'test', mockedEpics, defaultLogger);
+    const Connected = connect(Local, 'test', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
     inst.find(Local).props().resources.localResource.should.equal('hi');
     inst.find(Local).props().mutator.localResource.replace({ boo:'ya' });
@@ -219,7 +239,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Remote, 'test', mockedEpics, defaultLogger);
+    const Connected = connect(Remote, 'test', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
 
     inst.find(Remote).props().mutator.remoteResource.PUT({ id:1, someprop:'new' })
@@ -261,7 +281,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Paged, 'test', mockedEpics, defaultLogger);
+    const Connected = connect(Paged, 'test', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
 
     setTimeout(() => {
@@ -282,7 +302,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Functional, 'test', mockedEpics, defaultLogger);
+    const Connected = connect(Functional, 'test', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
     inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
 
@@ -306,7 +326,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(ErrorProne, 'test', mockedEpics, defaultLogger);
+    const Connected = connect(ErrorProne, 'test', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
     inst.find(ErrorProne).props().mutator.errorProne.POST({ id:1, someprop:'new' })
       .catch(err => err.text().then(msg => msg.should.equal('You are forbidden because reasons.')));
@@ -330,7 +350,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid', currentPerms: { perm1: true } } },
       applyMiddleware(thunk));
 
-    const Connected = connect(CompWithPerms, 'test2', mockedEpics, defaultLogger);
+    const Connected = connect(CompWithPerms, 'test2', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
 
     setTimeout(() => {
@@ -352,7 +372,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid', currentPerms: { perm1: true, perm2: true, perm3: true } } },
       applyMiddleware(thunk));
 
-    const Connected = connect(CompWithPerms, 'test1', mockedEpics, defaultLogger);
+    const Connected = connect(CompWithPerms, 'test1', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
 
     setTimeout(() => {
@@ -381,7 +401,7 @@ describe('connect()', () => {
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
-    const Connected = connect(Acc, 'test', mockedEpics, defaultLogger);
+    const Connected = connect(Acc, 'test', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root store={store} component={Connected} />);
 
     inst.find(Acc).props().mutator.accResource.GET({});
@@ -403,7 +423,7 @@ describe('connect()', () => {
 
   it('should reconnect previously connected component', () => {
     const store = createStore((state) => state, {});
-    const Connected = connect(Parent, 'test', mockedEpics, defaultLogger);
+    const Connected = connect(Parent, 'test', mockedEpics, defaultLogger, {}, withMockRoot);
     const inst = mount(<Root showChild store={store} component={Connected} />);
 
     inst.find(Child2).props().resources.should.have.property('childResource2');

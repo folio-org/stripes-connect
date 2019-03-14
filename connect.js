@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
-import { withRoot } from '@folio/stripes-core/src/components/Root/RootContext';
+// import { withRoot } from '@folio/stripes-core/src/components/Root/RootContext';
 
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
@@ -187,7 +187,7 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
-export const connect = (Component, module, epics, loggerArg, options) => {
+export const connect = (Component, module, epics, loggerArg, options = {}, rootConnector) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
@@ -195,10 +195,10 @@ export const connect = (Component, module, epics, loggerArg, options) => {
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
   const Wrapper = wrap(Component, module, epics, logger, options);
-  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(withRoot(Wrapper));
+  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(rootConnector(Wrapper));
   return Connected;
 };
 
-export const connectFor = (module, epics, logger) => (Component, options) => connect(Component, module, epics, logger, options);
+export const connectFor = (module, epics, logger, rootConnector) => (Component, options = {}) => connect(Component, module, epics, logger, options, rootConnector);
 
 export default connect;

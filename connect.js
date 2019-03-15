@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
-import { withRoot } from '@folio/stripes-core/src/components/Root/RootContext';
+import { withConnect } from './ConnectContext';
 
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
@@ -195,10 +195,12 @@ export const connect = (Component, module, epics, loggerArg, options) => {
   }
   logger.log('connect', `connecting <${Component.name}> for '${module}'`);
   const Wrapper = wrap(Component, module, epics, logger, options);
-  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(withRoot(Wrapper));
+  const Connected = reduxConnect(Wrapper.mapState, Wrapper.mapDispatch, Wrapper.mergeProps)(withConnect(Wrapper));
   return Connected;
 };
 
 export const connectFor = (module, epics, logger) => (Component, options) => connect(Component, module, epics, logger, options);
+
+export { default as ConnectContext, withConnect } from './ConnectContext';
 
 export default connect;

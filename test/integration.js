@@ -10,30 +10,9 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
-// import { RootContext } from '@folio/stripes-core/src/components/Root/RootContext';
+import MockRootContext, { withMockRoot } from './MockRootContext';
 
 import { connect } from '../connect';
-
-const MockRootContext = React.createContext();
-
-function getDisplayName(WrappedComponent) {
-  return WrappedComponent.displayName || WrappedComponent.name || 'Component';
-}
-
-function withMockRoot(WrappedComponent) {
-  class WithMockRoot extends React.Component {
-    render() {
-      return (
-        <MockRootContext.Consumer>
-          {root => <WrappedComponent {...this.props} root={root} /> }
-        </MockRootContext.Consumer>
-      );
-    }
-  }
-  WithMockRoot.displayName = `WithMockRoot(${getDisplayName(WrappedComponent)})`;
-  return WithMockRoot;
-}
-
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -59,9 +38,9 @@ class Root extends Component {
     const { component:ToTest } = this.props;
     return (
       <Provider store={this.props.store}>
-        <RootContext.Provider value={{ addReducer: this.addReducer, addEpic: this.addEpic, store: this.props.store }}>
+        <MockRootContext.Provider value={{ addReducer: this.addReducer, addEpic: this.addEpic, store: this.props.store }}>
           <ToTest {...this.props} />
-        </RootContext.Provider>
+        </MockRootContext.Provider>
       </Provider>
     );
   }

@@ -187,7 +187,7 @@ defaultLogger.log = (cat, ...args) => {
   console.log(`stripes-connect (${cat})`, ...args);
 };
 
-export const connect = (Component, module, epics, loggerArg, options = {}, rootConnector) => {
+export const connect = (Component, module, epics, loggerArg, rootConnector, options) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
@@ -199,6 +199,6 @@ export const connect = (Component, module, epics, loggerArg, options = {}, rootC
   return Connected;
 };
 
-export const connectFor = (module, epics, logger, rootConnector) => (Component, options = {}) => connect(Component, module, epics, logger, options, rootConnector);
+export const connectFor = (module, epics, logger, rootConnector) => (Component, options) => connect(Component, module, epics, logger, rootConnector, options);
 
 export default connect;

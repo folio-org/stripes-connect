@@ -10,7 +10,7 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
-import { RootContext } from '@folio/stripes-core/src/components/Root/RootContext';
+import ConnectContext from '../ConnectContext';
 
 import { connect } from '../connect';
 
@@ -39,9 +39,9 @@ class Root extends Component {
     const { component:ToTest } = this.props;
     return (
       <Provider store={this.props.store}>
-        <RootContext.Provider value={{ addReducer: this.addReducer, addEpic: this.addEpic, store: this.props.store }}>
+        <ConnectContext.Provider value={{ addReducer: this.addReducer, addEpic: this.addEpic, store: this.props.store }}>
           <ToTest {...this.props} />
-        </RootContext.Provider>
+        </ConnectContext.Provider>
       </Provider>
     );
   }

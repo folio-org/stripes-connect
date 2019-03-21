@@ -74,8 +74,8 @@ configuration that specifies how to deal with them:
 
 Each resource is a piece of data -- perhaps a single string, perhaps a
 set of structured records. The values of all resources are available
-to components as the `data` property -- in this case,
-`this.props.data.bibs` etc.
+to components as the `resources` property -- in this case,
+`this.props.resources.bibs` etc.
 
 ### Resource types
 
@@ -476,7 +476,7 @@ value for each connected instance:
 When a connected component is invoked, two properties are passed to
 the wrapped component:
 
-* `data`: contains the data associated with the resources in the
+* `resources`: contains the data associated with the resources in the
   manifest, as a JavaScript object whose keys are the names of
   resources. This is null if the data is pending and has not yet been
   fetched.

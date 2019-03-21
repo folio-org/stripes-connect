@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## [5.0.0](https://github.com/folio-org/stripes-connect/tree/v5.0.0) (2019-03-14)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v4.1.0...v5.0.0)
+
+* Provide ConnectContext internally to eliminate dependency on stripes-core/circular dependency. Fixes STCON-76.
+
 ## [4.1.0](https://github.com/folio-org/stripes-connect/tree/v4.1.0) (2019-03-14)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v4.0.1...v4.1.0)
 

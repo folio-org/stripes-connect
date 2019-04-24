@@ -1,5 +1,8 @@
 # Change history for stripes-connect
 
+## 5.0.1 (IN-PROGRESS)
+* Turned off sideEffects to enable tree-shaking for production builds. Refs STRIPES-564 and STRIPES-581.
+
 ## [5.0.0](https://github.com/folio-org/stripes-connect/tree/v5.0.0) (2019-03-14)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v4.1.0...v5.0.0)
 

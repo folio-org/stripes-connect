@@ -40,7 +40,7 @@ class Root extends Component {
     return (
       <Provider store={this.props.store}>
         <ConnectContext.Provider value={{ addReducer: this.addReducer, addEpic: this.addEpic, store: this.props.store }}>
-          <ToTest {...this.props} />
+          <ToTest fooProp="foo" {...this.props} />
         </ConnectContext.Provider>
       </Provider>
     );
@@ -76,7 +76,6 @@ class Remote extends Component { // eslint-disable-line react/no-multi-comp
     return <div id="somediv" />;
   }
 }
-
 Remote.manifest = { remoteResource: {
   type: 'okapi',
   path: 'turnip',
@@ -87,7 +86,6 @@ class Paged extends Component { // eslint-disable-line react/no-multi-comp
     return <div id="somediv" />;
   }
 }
-
 Paged.manifest = { pagedResource: {
   type: 'okapi',
   path: 'turnip',
@@ -102,7 +100,6 @@ class CompWithPerms extends Component { // eslint-disable-line react/no-multi-co
     return <div id="somediv" />;
   }
 }
-
 CompWithPerms.manifest = { resourceWithPerms: {
   type: 'okapi',
   path: () => 'turnip',
@@ -112,12 +109,32 @@ CompWithPerms.manifest = { resourceWithPerms: {
   permissionsRequired: 'perm1,perm2',
 } };
 
+class Conditional extends Component { // eslint-disable-line react/no-multi-comp
+  render() {
+    return <div id="somediv" />;
+  }
+}
+Conditional.manifest = {
+  yes: {
+    type: 'okapi',
+    path: 'turnip',
+    fetch: (props) => {
+      if (props.fooProp !== 'foo') throw new Error('Props not passed to condition function');
+      return true;
+    }
+  },
+  no: {
+    type: 'okapi',
+    path: 'turnip',
+    fetch: () => false
+  }
+};
+
 class Functional extends Component { // eslint-disable-line react/no-multi-comp
   render() {
     return <div id="somediv" />;
   }
 }
-
 Functional.manifest = { functionalResource: {
   type: 'okapi',
   path: () => 'turnip',
@@ -360,6 +377,31 @@ describe('connect()', () => {
       res.isPending.should.equal(false);
       res.hasLoaded.should.equal(true);
       res.records.length.should.equal(1);
+      fetchMock.restore();
+      done();
+    }, 10);
+  });
+
+  it('should respect conditions', (done) => {
+    fetchMock
+      .get('http://localhost/turnip',
+        [{ 'id':'58e5356fe84698a0a279a903', 'name':'Alberta' }],
+        { headers: { 'Content-Type': 'application/json' } });
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Conditional, 'test', mockedEpics, defaultLogger);
+    const inst = mount(<Root store={store} component={Connected} />);
+
+    setTimeout(() => {
+      let res = inst.find(Conditional).instance().props.resources.yes;
+      res.hasLoaded.should.equal(true);
+      res.isPending.should.equal(false);
+      res = inst.find(Conditional).instance().props.resources.no;
+      res.hasLoaded.should.equal(false);
+      res.isPending.should.equal(false);
       fetchMock.restore();
       done();
     }, 10);

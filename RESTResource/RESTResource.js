@@ -186,8 +186,10 @@ export function substitute(original, props, state, module, logger, dataKey) {
     result = original(parsedQuery, _.get(props, ['match', 'params']), localProps, logger);
   } else if (typeof original === 'string') {
     result = compilePathTemplate(original, parsedQuery, props, localProps);
+  } else if (typeof original === 'boolean') {
+    result = original;
   } else {
-    throw new Error('Invalid type passed to RESTResource.substitute()');
+    throw new Error(`Invalid type passed to RESTResource.substitute(): ${typeof original} (${original})`);
   }
 
   logger.log('substitute', `substitute(${
@@ -276,6 +278,10 @@ export default class RESTResource {
       // records
       if (options.records) {
         options.records = substitute(options.records, props, state, this.module, this.logger, this.dataKey);
+      }
+
+      if (options.clientGeneratePk) {
+        options.clientGeneratePk = substitute(options.clientGeneratePk, props, state, this.module, this.logger, this.dataKey);
       }
     }
 

@@ -118,7 +118,7 @@ Conditional.manifest = {
   yes: {
     type: 'okapi',
     path: 'turnip',
-    condition: (props) => {
+    fetch: (props) => {
       if (props.fooProp !== 'foo') throw new Error('Props not passed to condition function');
       return true;
     }
@@ -126,7 +126,7 @@ Conditional.manifest = {
   no: {
     type: 'okapi',
     path: 'turnip',
-    condition: () => false
+    fetch: () => false
   }
 };
 

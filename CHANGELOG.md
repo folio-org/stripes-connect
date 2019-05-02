@@ -3,6 +3,7 @@
 ## 5.2.0 (IN PROGRESS)
 
 * Run substitution on the `clientGeneratePk` manifest option, allowing it to be set from (for example) a prop.
+* Allow `fetch` manifest option to be a callback. STCON-78.
 
 ## [5.1.0](https://github.com/folio-org/stripes-connect/tree/v5.1.0) (2019-04-25)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.0.0...v5.1.0)

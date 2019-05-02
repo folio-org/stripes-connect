@@ -155,9 +155,11 @@ via limitParam/offsetParam.
   records, or must accept one that is supplied by the service in
   response to a create request. Default: `true`.
 
-* `fetch`: a component that adds a new record to an end-point would
-  usually not need to pre-fetch from that resource. To avoid that, it
-  can set this to false. Default: `true`.
+* `fetch`: a component that adds a new record to an end-point would usually not
+  need to pre-fetch from that resource. To avoid that, it can set this to
+  false. If set to a function, it will be passed the current props of the
+  connected component and the return value used to determine if the resource
+  should be fetched. Default: `true`.
 
 * `accumulate`: A boolean indicating whether to return a GET value on the
   resource, which allows it to be used in code that expects to receive a

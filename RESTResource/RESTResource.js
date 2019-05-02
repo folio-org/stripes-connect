@@ -335,8 +335,8 @@ export default class RESTResource {
     const opt = this.optionsTemplate;
     if (opt.accumulate === true
       || opt.fetch === false
-      || (typeof opt.condition === 'function'
-          && opt.condition(props) !== true)
+      || (typeof opt.fetch === 'function'
+          && opt.fetch(props) !== true)
     ) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
     this.dispatch = dispatch;

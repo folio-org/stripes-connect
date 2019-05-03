@@ -332,8 +332,12 @@ export default class RESTResource {
   }
 
   refresh(dispatch, props) {
-    if (this.optionsTemplate.accumulate === true) return;
-    if (this.optionsTemplate.fetch === false) return;
+    const opt = this.optionsTemplate;
+    if (opt.accumulate === true
+      || opt.fetch === false
+      || (typeof opt.fetch === 'function'
+          && opt.fetch(props) !== true)
+    ) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
     this.dispatch = dispatch;
     this.cachedProps = { ...props, sync: true };

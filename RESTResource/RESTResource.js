@@ -351,8 +351,7 @@ export default class RESTResource {
   }
 
   createAction = (record, props) => (dispatch, getState) => {
-    const patchedUpProps = { clientGeneratePk: true, ...props };
-    const options = this.verbOptions('POST', getState(), patchedUpProps);
+    const options = this.verbOptions('POST', getState(), { clientGeneratePk: true, ...props });
     const { pk, clientGeneratePk, headers } = options;
     const url = urlFromOptions(options);
     if (url === null) return null; // needs dynamic parts that aren't available

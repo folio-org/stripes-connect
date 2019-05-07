@@ -1,3 +1,5 @@
+import isString from 'lodash/isString';
+
 // returns epic which executes after a refresh action
 // and syncs/refreshes given resource
 export default function refreshEpic(resource) {
@@ -10,7 +12,7 @@ export default function refreshEpic(resource) {
 
       if (!resource.isVisible()) return false;
 
-      let refresh = resPath.startsWith(path);
+      let refresh = isString(resPath) && resPath.startsWith(path);
 
       if (options.shouldRefresh) {
         refresh = options.shouldRefresh(resource, action, refresh);

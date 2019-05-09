@@ -18,15 +18,15 @@ export default function actionCreatorsFor(resource) {
   return {
     createStart: passPayload('CREATE_START'),
 
-    createSuccess: passPayload('CREATE_SUCCESS'),
+    createSuccess: passMetaPayload('CREATE_SUCCESS'),
 
     updateStart: passPayload('UPDATE_START'),
 
-    updateSuccess: passPayload('UPDATE_SUCCESS'),
+    updateSuccess: passMetaPayload('UPDATE_SUCCESS'),
 
     deleteStart: passPayload('DELETE_START'),
 
-    deleteSuccess: passPayload('DELETE_SUCCESS'),
+    deleteSuccess: passMetaPayload('DELETE_SUCCESS'),
 
     mutationError: (err, mutator) => ({
       type: '@@stripes-connect/MUTATION_ERROR',

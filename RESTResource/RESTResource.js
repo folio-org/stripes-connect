@@ -354,6 +354,13 @@ export default class RESTResource {
     return reqPerms.filter(perm => !currentPerms[perm]);
   }
 
+  getMeta(options) {
+    const { path } = options;
+    return {
+      path,
+    };
+  }
+
   createAction = (record, props) => (dispatch, getState) => {
     const options = this.verbOptions('POST', getState(), { clientGeneratePk: true, ...props });
     const { pk, clientGeneratePk, headers } = options;
@@ -383,16 +390,20 @@ export default class RESTResource {
         throw clonedResponse;
       } else {
         const contentType = response.headers.get('Content-Type');
+        const meta = this.getMeta(options);
+
         if (contentType && contentType.startsWith('application/json')) {
           return response.json().then((json) => {
             const responseRecord = { ...json };
             if (responseRecord[pk] && !responseRecord.id) responseRecord.id = responseRecord[pk];
-            dispatch(this.actions.createSuccess(responseRecord, clientGeneratedId));
+            dispatch(this.actions.createSuccess(meta, responseRecord, clientGeneratedId));
             return responseRecord;
           });
         }
+
         // Response is not JSON; maybe no body at all. Assume the client-record is good enough
-        dispatch(this.actions.createSuccess(clientRecord, clientGeneratedId));
+
+        dispatch(this.actions.createSuccess(meta, clientRecord, clientGeneratedId));
         return clientRecord;
       }
     });
@@ -439,7 +450,10 @@ export default class RESTResource {
               dispatch(crudActions.updateSuccess(json));
             });
             */
-            dispatch(this.actions.updateSuccess(clientRecord));
+
+            const meta = this.getMeta(options);
+            dispatch(this.actions.updateSuccess(meta, clientRecord));
+
             return clientRecord;
           }
         });
@@ -473,7 +487,8 @@ export default class RESTResource {
           dispatch(this.mutationHTTPError(response, 'DELETE'));
           throw clonedResponse;
         } else {
-          dispatch(this.actions.deleteSuccess(clientRecord));
+          const meta = this.getMeta(options);
+          dispatch(this.actions.deleteSuccess(meta, clientRecord));
         }
       });
 

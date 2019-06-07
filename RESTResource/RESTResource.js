@@ -631,8 +631,11 @@ export default class RESTResource {
   accFetch = (paramOpts, props) => {
     const key = this.stateKey();
     return (dispatch, getState) => {
-      const options = Object.assign(this.verbOptions('GET', getState(), props), paramOpts);
+      let options = this.verbOptions('GET', getState(), props);
       if (options === null) return null; // needs dynamic parts that aren't available
+
+      options = Object.assign(options, paramOpts);
+
       const url = urlFromOptions(options);
       if (url === null) return null;
       const { headers, records } = options;

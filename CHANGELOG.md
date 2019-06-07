@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## [5.2.1](https://github.com/folio-org/stripes-connect/tree/v5.2.1) (2019-06-07)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.2.0...v5.2.1)
+
+* prevent crash when `RESTResource.verbOptions` returns null.
+
 ## [5.2.0](https://github.com/folio-org/stripes-connect/tree/v5.2.0) (2019-05-10)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.1.0...v5.2.0)
 

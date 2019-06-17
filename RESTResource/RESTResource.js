@@ -558,7 +558,7 @@ export default class RESTResource {
                 this.logger.log('connect', `Response ${response.url} does not match most recent request ${this.lastUrl}`);
                 return;
               }
-              const data = (records ? json[records] : json);
+              const data = (records ? _.get(json, records) : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               if (!data) {
                 dispatch(this.actions.fetchError({ message: `no records in '${records}' element` }));

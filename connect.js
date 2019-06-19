@@ -19,11 +19,13 @@ const types = {
 
 const wrap = (Wrapped, module, epics, logger, options = {}) => {
   const resources = [];
+  const resourceMap = {};
   const dataKey = options.dataKey;
 
   _.map(Wrapped.manifest, (query, name) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
     resources.push(resource);
+    resourceMap[name] = resource;
     if (query.type === 'okapi') {
       epics.add(...mutationEpics(resource), refreshEpic(resource));
     }
@@ -120,18 +122,20 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       // a refresh? See STRIPES-393. For now, we do this when the UI URL
       // or any local resource has changed.
       if (nextProps.location !== this.props.location) return true;
+
       const data = this.props.resources;
       for (const key of Object.keys(data)) {
-        const m = Wrapped.manifest[key];
-        const type = m.type || defaultType;
-        if (type === 'local') {
+        const resource = resourceMap[key];
+        if (resource instanceof LocalResource) {
           const same = _.isEqual(data[key], nextProps.resources[key]);
-          // console.log(`local resource '${key}': OLD =`, data[key], 'NEW =', nextProps.data[key], `-- same=${same}`);
           if (!same) return true;
+        } else if (resource instanceof OkapiResource) {
+          return resource.shouldRefresh(this.props, nextProps);
         }
       }
       return false;
     }
+
 
     render() {
       return (

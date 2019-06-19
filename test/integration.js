@@ -130,6 +130,18 @@ Conditional.manifest = {
   }
 };
 
+class CompWithParams extends Component { // eslint-disable-line react/no-multi-comp
+  render() {
+    return <div id="somediv" />;
+  }
+}
+CompWithParams.manifest = {
+  resourceWithParam: {
+    type: 'okapi',
+    path: 'turnip?id=!{id}',
+  },
+};
+
 class Functional extends Component { // eslint-disable-line react/no-multi-comp
   render() {
     return <div id="somediv" />;
@@ -457,5 +469,34 @@ describe('connect()', () => {
 
     inst.find(Child2).props().resources.should.have.property('childResource2');
     inst.find(Child2).props().mutator.should.have.property('childResource2');
+  });
+
+  it('should refetch data when props change', (done) => {
+    fetchMock
+      .get('http://localhost/turnip?id=1',
+        [{ id: 1, someprop: 'someval' }],
+        { headers: { 'Content-Type': 'application/json' } })
+      .get('http://localhost/turnip?id=2',
+        [{ id: 2, someprop: 'otherval' }],
+        { headers: { 'Content-Type': 'application/json' } });
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(CompWithParams, 'test', mockedEpics, defaultLogger);
+    const inst = mount(<Root id={1} store={store} component={Connected} />);
+
+    setTimeout(() => {
+      const res = inst.find(CompWithParams).instance().props.resources.resourceWithParam;
+      res.records[0].someprop.should.equal('someval');
+      inst.setProps({ id: 2 });
+    });
+
+    setTimeout(() => {
+      const res = inst.find(CompWithParams).instance().props.resources.resourceWithParam;
+      res.records[0].someprop.should.equal('otherval');
+      done();
+    }, 100);
   });
 });

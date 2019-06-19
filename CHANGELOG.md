@@ -3,6 +3,7 @@
 ## 5.3.0 (IN PROGRESS)
 
 * The `records` parameter of a REST-resource manifest may now be multi-level as in `'records.value'`. Available from v5.2.2.
+* Refresh resource with interpolated property when the prop changes. Fixes STCON-81.
 
 ## [5.2.1](https://github.com/folio-org/stripes-connect/tree/v5.2.1) (2019-06-07)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.2.0...v5.2.1)

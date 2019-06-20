@@ -129,8 +129,9 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
         if (resource instanceof LocalResource) {
           const same = _.isEqual(data[key], nextProps.resources[key]);
           if (!same) return true;
-        } else if (resource instanceof OkapiResource) {
-          return resource.shouldRefresh(this.props, nextProps);
+        } else if (resource instanceof OkapiResource
+          && resource.shouldRefresh(this.props, nextProps)) {
+          return true;
         }
       }
       return false;

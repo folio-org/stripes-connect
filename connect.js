@@ -19,13 +19,11 @@ const types = {
 
 const wrap = (Wrapped, module, epics, logger, options = {}) => {
   const resources = [];
-  const resourceMap = {};
   const dataKey = options.dataKey;
 
   _.map(Wrapped.manifest, (query, name) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
     resources.push(resource);
-    resourceMap[name] = resource;
     if (query.type === 'okapi') {
       epics.add(...mutationEpics(resource), refreshEpic(resource));
     }
@@ -123,20 +121,14 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       // or any local resource has changed.
       if (nextProps.location !== this.props.location) return true;
 
-      const data = this.props.resources;
-      for (const key of Object.keys(data)) {
-        const resource = resourceMap[key];
-        if (resource instanceof LocalResource) {
-          const same = _.isEqual(data[key], nextProps.resources[key]);
-          if (!same) return true;
-        } else if (resource instanceof OkapiResource
-          && resource.shouldRefresh(this.props, nextProps)) {
+      for (const resource of resources) {
+        if (resource.shouldRefresh(this.props, nextProps)) {
           return true;
         }
       }
+
       return false;
     }
-
 
     render() {
       return (

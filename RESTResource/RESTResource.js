@@ -262,7 +262,7 @@ export default class RESTResource {
         }
       } else if (typeof options.params === 'function') {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
-        options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, this.module, props.dataKey, this.logger).resources, this.logger);
+        options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, this.module, props.dataKey, this.logger).resources, this.logger, props);
       }
 
       // recordsRequired

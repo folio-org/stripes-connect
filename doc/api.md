@@ -379,7 +379,8 @@ When the power and flexibility of text substitution and fallbacks are not
 sufficient for expressing how to build the back-end UI, arbitrary
 JavaScript can be used instead. If the value of a resource's `path` or one
 of its `params` is a function rather than a string, then that function is
-invoked whenever a path is needed. It is passed three parameters:
+invoked whenever a path is needed. It is passed five parameters
+(though most functions will not use them all):
 
 * An object containing the UI URL's query parameters (as accessed by
   `?{name}`).
@@ -389,6 +390,12 @@ invoked whenever a path is needed. It is passed three parameters:
 
 * An object containing the component's resources' data (as accessed by
   `%{name}`).
+
+* The logger object in use by stripes-connect.
+
+* The entire set of props of the component using stripes-connect
+  (which of course contains redundant copies of much of the rest of
+  the information passed in).
 
 The function must return a string to use as the path, or `null`
 if it is unable to do this because a required piece of state is

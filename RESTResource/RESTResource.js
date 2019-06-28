@@ -331,6 +331,15 @@ export default class RESTResource {
     return `${this.dataKey ? `${this.dataKey}#` : ''}${this.crudName}`;
   }
 
+  shouldRefresh(props, nextProps) {
+    const { root: { store } } = props;
+    const state = store.getState();
+    const opts = this.verbOptions('GET', state, props);
+    const nextOpts = this.verbOptions('GET', state, nextProps);
+
+    return opts && nextOpts && opts.path !== nextOpts.path;
+  }
+
   refresh(dispatch, props) {
     const opt = this.optionsTemplate;
     if (opt.accumulate === true

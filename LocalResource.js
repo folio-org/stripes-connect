@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isEqual, snakeCase } from 'lodash';
 
 export default class LocalResource {
   constructor(name, query = {}, module = null, logger, dataKey) {
@@ -34,7 +34,7 @@ export default class LocalResource {
     },
   })
 
-  stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${_.snakeCase(this.module)}_${this.name}`;
+  stateKey = () => `${this.dataKey ? `${this.dataKey}#` : ''}${snakeCase(this.module)}_${this.name}`;
 
   reducer = (state = this.query.initialValue !== undefined ? this.query.initialValue : {}, action) => {
     if (action.meta !== undefined &&
@@ -55,5 +55,10 @@ export default class LocalResource {
     } else {
       return state;
     }
+  }
+
+  shouldRefresh(props, nextProps) {
+    const key = this.name;
+    return !isEqual(props.resources[key], nextProps.resources[key]);
   }
 }

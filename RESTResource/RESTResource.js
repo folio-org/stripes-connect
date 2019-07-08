@@ -337,7 +337,10 @@ export default class RESTResource {
     const opts = this.verbOptions('GET', state, props);
     const nextOpts = this.verbOptions('GET', state, nextProps);
 
-    return opts && nextOpts && opts.path !== nextOpts.path;
+    return (
+      opts && nextOpts &&
+      (opts.path !== nextOpts.path || !_.isEqual(opts.params, nextOpts.params))
+    );
   }
 
   refresh(dispatch, props) {

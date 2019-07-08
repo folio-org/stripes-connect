@@ -183,7 +183,7 @@ export function substitute(original, props, state, module, logger, dataKey) {
   const localProps = mockProps(state, module, props.dataKey || dataKey, logger).resources;
   if (typeof original === 'function') {
     // Call back to resource-specific code
-    result = original(parsedQuery, _.get(props, ['match', 'params']), localProps, logger);
+    result = original(parsedQuery, _.get(props, ['match', 'params']), localProps, logger, props);
   } else if (typeof original === 'string') {
     result = compilePathTemplate(original, parsedQuery, props, localProps);
   } else if (typeof original === 'boolean') {

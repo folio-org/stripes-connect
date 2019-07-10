@@ -17,6 +17,19 @@ const types = {
   rest: RESTResource,
 };
 
+function filterProps(props) {
+  const filtered = {};
+
+  _.forOwn(props, (prop, key) => {
+    if (!_.isFunction(prop) &&
+      !_.includes(['anyTouched', 'mutator', 'connectedSource'], key)) {
+      filtered[key] = prop;
+    }
+  });
+
+  return filtered;
+}
+
 const wrap = (Wrapped, module, epics, logger, options = {}) => {
   const resources = [];
   const dataKey = options.dataKey;
@@ -121,8 +134,13 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       // or any local resource has changed.
       if (nextProps.location !== this.props.location) return true;
 
-      for (const resource of resources) {
-        if (resource.shouldRefresh(this.props, nextProps)) {
+      const cleanProps = filterProps(this.props);
+      const cleanNextProps = filterProps(nextProps);
+
+      if (_.isEqual(cleanProps, cleanNextProps)) return false;
+
+      for (let i = 0, size = resources.length; i < size; ++i) {
+        if (resources[i].shouldRefresh(this.props, nextProps)) {
           return true;
         }
       }

@@ -17,17 +17,11 @@ const types = {
   rest: RESTResource,
 };
 
-function filterProps(props) {
-  const filtered = {};
-
-  _.forOwn(props, (prop, key) => {
-    if (!_.isFunction(prop) &&
-      !_.includes(['anyTouched', 'mutator', 'connectedSource'], key)) {
-      filtered[key] = prop;
-    }
-  });
-
-  return filtered;
+function arePropsEqual(props, prevProps) {
+  return _.isEqualWith(props, prevProps, _.after(2, (p1, p2, key) => {
+    if (_.isFunction(p1) || _.isFunction(p2) ||
+    _.includes(['anyTouched', 'mutator', 'connectedSource'], key)) return true;
+  }));
 }
 
 const wrap = (Wrapped, module, epics, logger, options = {}) => {
@@ -133,11 +127,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       // a refresh? See STRIPES-393. For now, we do this when the UI URL
       // or any local resource has changed.
       if (nextProps.location !== this.props.location) return true;
-
-      const cleanProps = filterProps(this.props);
-      const cleanNextProps = filterProps(nextProps);
-
-      if (_.isEqual(cleanProps, cleanNextProps)) return false;
+      if (arePropsEqual(this.props, nextProps)) return false;
 
       for (let i = 0, size = resources.length; i < size; ++i) {
         if (resources[i].shouldRefresh(this.props, nextProps)) {

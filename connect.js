@@ -17,7 +17,7 @@ const types = {
   rest: RESTResource,
 };
 
-const excludedProps = ['anyTouched', 'mutator', 'connectedSource', 'resources'];
+const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
 
 // Check if props are equal by first filtering out props which are functions
 // or common props introduced by stripes-connect or redux-form

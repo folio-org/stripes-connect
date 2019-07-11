@@ -331,9 +331,7 @@ export default class RESTResource {
     return `${this.dataKey ? `${this.dataKey}#` : ''}${this.crudName}`;
   }
 
-  shouldRefresh(props, nextProps) {
-    const { root: { store } } = props;
-    const state = store.getState();
+  shouldRefresh(props, nextProps, state) {
     const opts = this.verbOptions('GET', state, props);
     const nextOpts = this.verbOptions('GET', state, nextProps);
 

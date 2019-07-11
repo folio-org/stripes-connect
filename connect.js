@@ -17,10 +17,14 @@ const types = {
   rest: RESTResource,
 };
 
+const excludedProps = ['anyTouched', 'mutator', 'connectedSource', 'resources'];
+
+// Check if props are equal by first filtering out props which are functions
+// or common props introduced by stripes-connect or redux-form
 function arePropsEqual(props, prevProps) {
   return _.isEqualWith(props, prevProps, _.after(2, (p1, p2, key) => {
-    if (_.isFunction(p1) || _.isFunction(p2) ||
-    _.includes(['anyTouched', 'mutator', 'connectedSource'], key)) return true;
+    return (_.isFunction(p1) || _.isFunction(p2) ||
+    _.includes(excludedProps, key)) ? true : undefined;
   }));
 }
 
@@ -127,10 +131,16 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       // a refresh? See STRIPES-393. For now, we do this when the UI URL
       // or any local resource has changed.
       if (nextProps.location !== this.props.location) return true;
+
+      // Before checking if resources should be refreshed
+      // check if the props and nextProps actually changed.
       if (arePropsEqual(this.props, nextProps)) return false;
 
+      const { root: { store } } = this.props;
+      const state = store.getState();
+
       for (let i = 0, size = resources.length; i < size; ++i) {
-        if (resources[i].shouldRefresh(this.props, nextProps)) {
+        if (resources[i].shouldRefresh(this.props, nextProps, state)) {
           return true;
         }
       }

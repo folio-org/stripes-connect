@@ -23,7 +23,7 @@ const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
 // or common props introduced by stripes-connect or redux-form
 function arePropsEqual(props, prevProps) {
   return _.isEqualWith(props, prevProps, _.after(2, (p1, p2, key) => {
-    return (_.isFunction(p1) || _.isFunction(p2) ||
+    return (_.isFunction(p1) || _.isFunction(p2) || React.isValidElement(p1) || React.isValidElement(p2) ||
     _.includes(excludedProps, key)) ? true : undefined;
   }));
 }

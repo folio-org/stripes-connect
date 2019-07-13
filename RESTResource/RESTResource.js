@@ -196,10 +196,6 @@ export default class RESTResource {
     return actions;
   }
 
-  getOptionsTemplate(verb) {
-    return Object.assign({}, this.optionsTemplate, this.optionsTemplate[verb]);
-  }
-
   // We should move optionsFromState to OkapiResource and override this there
   verbOptions = (verb, state, props) => {
     const options = _.merge({},

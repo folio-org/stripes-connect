@@ -26,6 +26,41 @@ function extractTotal(json) {
   return null;
 }
 
+// The following fallback syntax is one small part of what Bash
+// implements -- see the "Parameter Expansion" section of its
+// manual. It's the part we need right now, but we should consider
+// implementing all of it. And needless to say, it should apply to all
+// kinds of substitutable.
+//
+function processFallback(s, getPath, props) {
+  let name = s;
+  let type;
+  let val;
+
+  const re = /(.*?):([+-])(.*)/.exec(name);
+  if (re) {
+    name = re[1];
+    type = re[2];
+    val = re[3];
+    // console.log(`'${s}' matched fallback syntax: name='${name}', type='${type}', val='${val}'`);
+  }
+  let res = _.get(props, [].concat(getPath).concat(name), null);
+  if (type === '+') {
+    if (res !== null) {
+      // console.log(`got value for name '${name}': replaced by '${val}'`);
+      res = val;
+    } else {
+      // console.log(`no value for name '${name}': setting empty`);
+      res = '';
+    }
+  }
+  if (res === null && type === '-') {
+    // console.log(`no value for name '${name}': replaced by '${val}'`);
+    res = val;
+  }
+  return res;
+}
+
 // Calculate what the props _would be_ if we went through
 // mapStateToProps. If dataKey is included, then we look only at state
 // pertaining to that data-key.
@@ -107,22 +142,22 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
   const result = template.replace(/([?:$%!]){(.*?)}/g, (match, ns, name) => {
     switch (ns) {
       case '?': {
-        const queryParam = _.get(parsedQuery, name, null);
+        const queryParam = processFallback(name, [], parsedQuery);
         if (queryParam === null) dynamicPartsSatisfied = false;
         return queryParam;
       }
       case ':': {
-        const pathComp = _.get(props, `match.params.${name}`, null);
+        const pathComp = processFallback(name, ['match', 'params'], props);
         if (pathComp === null) dynamicPartsSatisfied = false;
         return pathComp;
       }
       case '%': case '$': {
-        const localState = _.get(localProps, name, null);
+        const localState = processFallback(name.split('.'), [], localProps);
         if (localState === null) dynamicPartsSatisfied = false;
         return localState;
       }
       case '!': {
-        const prop = _.get(props, name, null);
+        const prop = processFallback(name.split('.'), [], props);
         if (prop === null) dynamicPartsSatisfied = false;
         return prop;
       }
@@ -132,7 +167,6 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
       }
     }
   });
-
   return dynamicPartsSatisfied ? result : null;
 }
 

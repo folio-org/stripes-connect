@@ -333,17 +333,14 @@ export default class RESTResource {
 
   // check if the given manifest has a path with
   // the property namespace !{syntax} or if path or params are functions
+  // or if params is an object with values which contain the property namespace
   hasPropNamespace = _.memoize(() => {
-    const optsTmpl = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
+    const { path, params } = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
+    const ns = '!{';
 
-    if (!_.isFunction(optsTmpl.path) &&
-      !_.isFunction(optsTmpl.params) &&
-      optsTmpl.path &&
-      !optsTmpl.path.match('!{')) {
-      return false;
-    }
-
-    return true;
+    return (_.isString(path) && path.match(ns)) ||
+      _.isFunction(path) || _.isFunction(params) ||
+      (_.isObject(params) && !_.isEmpty(_.pickBy(params, param => _.isString(param) && param.match(ns))));
   });
 
   shouldRefresh(props, nextProps, state) {

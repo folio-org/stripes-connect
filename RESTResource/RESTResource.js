@@ -331,7 +331,23 @@ export default class RESTResource {
     return `${this.dataKey ? `${this.dataKey}#` : ''}${this.crudName}`;
   }
 
+  // check if the given manifest has a path with
+  // the property namespace !{syntax} or if path or params are functions
+  // or if params is an object with values which contain the property namespace
+  hasPropNamespace = _.memoize(() => {
+    const { path, params } = _.merge({}, this.optionsTemplate, this.optionsTemplate.GET);
+    const ns = '!{';
+
+    return (_.isString(path) && path.match(ns)) ||
+      _.isFunction(path) || _.isFunction(params) ||
+      (_.isObject(params) && !_.isEmpty(_.pickBy(params, param => _.isString(param) && param.match(ns))));
+  });
+
   shouldRefresh(props, nextProps, state) {
+    if (!this.hasPropNamespace()) {
+      return false;
+    }
+
     const opts = this.verbOptions('GET', state, props);
     const nextOpts = this.verbOptions('GET', state, nextProps);
 

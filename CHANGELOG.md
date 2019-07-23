@@ -1,10 +1,13 @@
 # Change history for stripes-connect
 
-## 5.3.0 (IN PROGRESS)
+## [5.3.0](https://github.com/folio-org/stripes-connect/tree/v5.3.0) (2019-07-22)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.2.1...v5.3.0)
 
-* The `records` parameter of a REST-resource manifest may now be multi-level as in `'records.value'`. Available from v5.2.2.
-* When a params function is invoked, the props of the component using stripes-connect are now passed as a fifth parameter. Available from v5.2.3.
+* The `records` parameter of a REST-resource manifest may now be multi-level as in `'records.value'`.
+* Pass `props` to `path` and `params` functions as a fifth parameter.
 * Refresh resource with interpolated property when the prop changes. Fixes STCON-81.
+* Refresh resource when query params change.
+* Performance improvements following from STCON-81, including FOLIO-2158 and STCON-85.
 
 ## [5.2.1](https://github.com/folio-org/stripes-connect/tree/v5.2.1) (2019-06-07)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.2.0...v5.2.1)

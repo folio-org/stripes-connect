@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## [5.4.0](https://github.com/folio-org/stripes-connect/tree/v5.4.0) (2019-09-09)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.3.0...v5.4.0)
+
+* Add `PRUNE` redux action to allow resetting of stored records. Refs UIIN-687.
+
 ## [5.3.0](https://github.com/folio-org/stripes-connect/tree/v5.3.0) (2019-07-22)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.2.1...v5.3.0)
 

@@ -18,7 +18,7 @@ const types = {
 };
 
 const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
-let _registeredEpics = [];
+const _registeredEpics = [];
 
 // Check if props are equal by first filtering out props which are functions
 // or common props introduced by stripes-connect or redux-form

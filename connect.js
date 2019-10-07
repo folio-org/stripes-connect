@@ -18,7 +18,7 @@ const types = {
 };
 
 const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
-const _registeredEpics = [];
+const _registeredEpics = {};
 
 // Check if props are equal by first filtering out props which are functions
 // or common props introduced by stripes-connect or redux-form
@@ -40,8 +40,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       const key = `${resource.name}${resource.module}`;
       // Only register each module component once since mutator only needs a single reference, otherwise the
       // mutations continue to be added when modules are re-connected causing performance issues.
-      if (!_.includes(_registeredEpics, key)) {
-        _registeredEpics.push(key);
+      if (!_registeredEpics[key]) {
+        _registeredEpics[key] = true;
         epics.add(...mutationEpics(resource));
       }
     }

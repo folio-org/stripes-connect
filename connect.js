@@ -18,6 +18,7 @@ const types = {
 };
 
 const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
+const _registeredEpics = {};
 
 // Check if props are equal by first filtering out props which are functions
 // or common props introduced by stripes-connect or redux-form
@@ -36,7 +37,13 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
     resources.push(resource);
     if (query.type === 'okapi') {
-      epics.add(...mutationEpics(resource), refreshEpic(resource));
+      const key = `${resource.name}${resource.module}`;
+      // Only register each module component once since mutator only needs a single reference, otherwise the
+      // mutations continue to be added when modules are re-connected causing performance issues.
+      if (!_registeredEpics[key]) {
+        _registeredEpics[key] = true;
+        epics.add(...mutationEpics(resource));
+      }
     }
   });
 
@@ -105,6 +112,9 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       this.props.refreshRemote({ ...this.props });
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
+          // Call refresh whenever mounting to ensure that mutated data is updated in the UI.
+          // This is safe to call as many times as needed when re-connecting.
+          epics.add(refreshEpic(resource));
           resource.markVisible();
         }
       });

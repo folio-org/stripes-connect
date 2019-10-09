@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## [5.4.1](https://github.com/folio-org/stripes-connect/tree/v5.4.1) (2019-10-08)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.0...v5.4.1)
+
+* Added cache to registering `mutationEpics` whenever components are re-connected to reduce subscriptions and correct performance issues that occur when submitting forms. Refs UIIN-687.
+
 ## [5.4.0](https://github.com/folio-org/stripes-connect/tree/v5.4.0) (2019-09-09)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.3.0...v5.4.0)
 

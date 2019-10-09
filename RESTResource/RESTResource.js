@@ -351,9 +351,16 @@ export default class RESTResource {
     const opts = this.verbOptions('GET', state, props);
     const nextOpts = this.verbOptions('GET', state, nextProps);
 
+    const fetch = typeof opts.fetch === 'function' ? opts.fetch(props) : opts.fetch;
+    const nextFetch = typeof nextOpts.fetch === 'function' ? nextOpts.fetch(nextProps) : nextOpts.fetch;
+
     return (
       opts && nextOpts &&
-      (opts.path !== nextOpts.path || !_.isEqual(opts.params, nextOpts.params))
+      (
+        opts.path !== nextOpts.path ||
+        !_.isEqual(opts.params, nextOpts.params) ||
+        (!fetch && nextFetch)
+      )
     );
   }
 

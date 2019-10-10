@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 5.4.2 IN PROGRESS
+
+* Add ability to clear registered epics. Part of STRIPES-659.
+
 ## [5.4.1](https://github.com/folio-org/stripes-connect/tree/v5.4.1) (2019-10-08)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.0...v5.4.1)
 

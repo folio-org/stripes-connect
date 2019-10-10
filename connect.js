@@ -228,7 +228,7 @@ export const connectFor = (module, epics, logger) => (Component, options) => con
 
 export { default as ConnectContext, withConnect } from './ConnectContext';
 
-export function clearRegisteredEpics() {
+export function reset() {
   _registeredEpics = {};
 }
 export default connect;

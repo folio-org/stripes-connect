@@ -18,7 +18,7 @@ const types = {
 };
 
 const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
-const _registeredEpics = {};
+let _registeredEpics = {};
 
 // Check if props are equal by first filtering out props which are functions
 // or common props introduced by stripes-connect or redux-form
@@ -228,4 +228,7 @@ export const connectFor = (module, epics, logger) => (Component, options) => con
 
 export { default as ConnectContext, withConnect } from './ConnectContext';
 
+export function reset() {
+  _registeredEpics = {};
+}
 export default connect;

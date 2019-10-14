@@ -46,11 +46,6 @@ export default function (state = initialResourceState, action) {
         ...action.meta,
       });
     }
-    case '@@stripes-connect/PRUNE': {
-      return Object.assign({}, state, {
-        records: [],
-      });
-    }
     case '@@stripes-connect/RESET': {
       return initialResourceState;
     }

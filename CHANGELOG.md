@@ -1,8 +1,11 @@
 # Change history for stripes-connect
 
-## 5.4.2 IN PROGRESS
+## [5.4.2](https://github.com/folio-org/stripes-connect/tree/v5.4.2) (2019-10-15)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.1...v5.4.2)
 
 * Add ability to clear registered epics. Part of STRIPES-659.
+* Validate presence of `opts` before accessing it to avoid NPE. STCON-87.
+* RESTResource: shouldRefresh when `fetch` goes true. STCON-88.
 
 ## [5.4.1](https://github.com/folio-org/stripes-connect/tree/v5.4.1) (2019-10-08)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.0...v5.4.1)

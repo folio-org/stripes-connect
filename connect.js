@@ -6,6 +6,7 @@ import { withConnect } from './ConnectContext';
 
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
+import { initialResourceState } from './RESTResource/reducer';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
 
@@ -179,8 +180,17 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
 
     const resourceData = {};
+
     for (const r of resources) {
-      resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
+      let initState = _.get(state, r.stateKey());
+
+      if (!initState) {
+        initState = (r instanceof OkapiResource)
+          ? initialResourceState
+          : _.get(r, 'query.initialValue', null);
+      }
+
+      resourceData[r.name] = Object.freeze(initState);
     }
 
     const newProps = { dataKey, resources: resourceData };

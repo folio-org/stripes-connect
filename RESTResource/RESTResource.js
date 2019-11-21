@@ -381,6 +381,21 @@ export default class RESTResource {
     this.dispatch(this.fetchAction(this.cachedProps));
   }
 
+  // Check if the given resource should be reset when a connected
+  // component is being unmounted.
+  shouldReset() {
+    const { resourceShouldRefresh } = this.optionsTemplate;
+
+    return (_.isBoolean(resourceShouldRefresh) && resourceShouldRefresh)
+      || (_.isFunction(resourceShouldRefresh) && resourceShouldRefresh());
+  }
+
+  // resets redux store attached to this resource
+  reset() {
+    if (!this.dispatch) return;
+    this.dispatch(this.actions.reset());
+  }
+
   hasMissingPerms(state, perms) {
     const currentPerms = _.get(state, ['okapi', 'currentPerms'], {});
     const reqPerms = _.isArray(perms) ? perms : perms.split(',');

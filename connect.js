@@ -132,6 +132,10 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           resource.markInvisible();
+
+          if (resource.shouldReset()) {
+            resource.reset();
+          }
         }
       });
     }

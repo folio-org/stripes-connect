@@ -14,7 +14,7 @@ const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: 
 
 function extractTotal(json) {
   if (json.resultInfo !== undefined &&
-      json.resultInfo.totalRecords !== undefined) {
+    json.resultInfo.totalRecords !== undefined) {
     return json.resultInfo.totalRecords;
   } else if (json.totalRecords !== undefined) {
     return json.totalRecords;
@@ -194,7 +194,7 @@ export function substitute(original, props, state, module, logger, dataKey) {
 
   logger.log('substitute', `substitute(${
     (typeof original === 'function') ? '<FUNCTION>' : original
-  }) -> ${result}, satisfied=${result !== null}`);
+    }) -> ${result}, satisfied=${result !== null}`);
 
   return result;
 }
@@ -369,7 +369,7 @@ export default class RESTResource {
     if (opt.accumulate === true
       || opt.fetch === false
       || (typeof opt.fetch === 'function'
-          && opt.fetch(props) !== true)
+        && opt.fetch(props) !== true)
     ) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
     this.dispatch = dispatch;
@@ -624,7 +624,7 @@ export default class RESTResource {
 
               if (meta.other) meta.other.totalRecords = total;
               if (reqd && total && total > perPage && reqd > perPage) {
-                dispatch(this.fetchMore(options, total, data, meta));
+                dispatch(this.fetchPage(options, total, data, meta));
               } else {
                 dispatch(this.actions.fetchSuccess(meta, data));
               }
@@ -633,6 +633,46 @@ export default class RESTResource {
         }).catch((reason) => {
           dispatch(this.actions.fetchError({ message: reason.message }));
         });
+    };
+  }
+
+  fetchPage = (options, total, firstData, firstMeta) => {
+    const { headers, records, recordsRequired,
+      perRequest: limit, offsetParam } = options;
+    const reqd = Math.min(recordsRequired, total);
+    return (dispatch) => {
+      //dispatch(this.actions.pagingStart());
+      //dispatch(this.actions.pageStart(firstMeta.url));
+      //for (let offset = limit; offset < reqd; offset += limit) {
+      const newOptions = {};
+      newOptions.params = {};
+      newOptions.params[offsetParam] = reqd;
+      const url = urlFromOptions(_.merge({}, options, newOptions));
+      //dispatch(this.actions.pageStart(url));
+      fetch(url, { headers })
+        .then((response) => {
+          if (response.status >= 400) {
+            dispatch(this.fetchHTTPError(response));
+          } else {
+            response.json().then((json) => {
+              const meta = {
+                url: response.url,
+                headers: response.headers,
+                httpStatus: response.status,
+                other: records ? _.omit(json, records) : {},
+              };
+              if (meta.other) meta.other.totalRecords = extractTotal(json);
+              const data = (records ? json[records] : json);
+              dispatch(this.actions.accFetchSuccess(meta, data));
+            });
+          }
+        }).catch((err) => {
+          dispatch(this.actions.fetchError({
+            message: `Unexpected fetch error ${err}`,
+          }));
+        });
+      //}
+      //dispatch(this.actions.pageSuccess(firstMeta, firstData));
     };
   }
 

@@ -1,8 +1,9 @@
 # Change history for stripes-connect
 
-## 5.4.3 (IN PROGRESS)
+## [5.4.3](https://github.com/folio-org/stripes-connect/tree/v5.4.3) (2019-12-04)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.2...v5.4.3)
 
-* Introduce a way to reset resources with `resourceShouldRefresh` present when component unmounts. Refs UICIRC-365.
+* On unmount, reset resources having `resourceShouldRefresh`. Refs UICIRC-365.
 
 ## [5.4.2](https://github.com/folio-org/stripes-connect/tree/v5.4.2) (2019-10-15)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.1...v5.4.2)

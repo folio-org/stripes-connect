@@ -634,10 +634,10 @@ export default class RESTResource {
               };
 
               if (meta.other) meta.other.totalRecords = total;
-              if (reqd && total && total > perPage && reqd > perPage) {
+              if (reqd && total && total > perPage) {
                 if (options.resultOffset) {
                   dispatch(this.fetchPage(options, total, data, meta));
-                } else {
+                } else if (reqd > perPage) {
                   dispatch(this.fetchMore(options, total, data, meta));
                 }
               } else {

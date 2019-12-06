@@ -275,6 +275,16 @@ export default class RESTResource {
         }
       }
 
+      // resultOffset
+      if (typeof options.resultOffset === 'string' || typeof options.resultOffset === 'function') {
+        const tmplResultOffset = Number.parseInt(substitute(options.resultOffset, props, state, this.module, this.logger, this.dataKey), 10);
+        if (tmplResultOffset > 0) {
+          options.resultOffset = tmplResultOffset;
+        } else {
+          return null;
+        }
+      }
+
       // records
       if (options.records) {
         options.records = substitute(options.records, props, state, this.module, this.logger, this.dataKey);
@@ -577,12 +587,13 @@ export default class RESTResource {
       }
 
       const { headers, records, resourceShouldRefresh } = options;
+      let requestIndex = options.resultOffset || options.recordsRequired
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
         // noop if the URL and recordsRequired didn't change
-        this.logger.log('connect-dup', `'${this.name}' reqd=${options.recordsRequired} (${options.recordsRequired === this.lastReqd ? 'same' : 'different'}) ${url}, (${url === this.lastUrl ? 'same' : 'different'})`);
-        if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
+        this.logger.log('connect-dup', `'${this.name}' reqd=${requestIndex} (${requestIndex === this.lastReqd ? 'same' : 'different'}) ${url}, (${url === this.lastUrl ? 'same' : 'different'})`);
+        if (!props.sync && url === this.lastUrl && requestIndex === this.lastReqd) return null;
       } else {
         // Check if resourceShouldRefresh is a boolean or function
         if (_.isBoolean(resourceShouldRefresh) && !resourceShouldRefresh) return null;
@@ -590,7 +601,7 @@ export default class RESTResource {
         if (_.isFunction(resourceShouldRefresh) && !resourceShouldRefresh()) return null;
       }
       this.lastUrl = url;
-      this.lastReqd = options.recordsRequired;
+      this.lastReqd = requestIndex;
 
       dispatch(this.actions.fetchStart());
       return fetch(url, { headers })
@@ -612,7 +623,7 @@ export default class RESTResource {
                 dispatch(this.actions.fetchError({ message: `no records in '${records}' element` }));
                 return;
               }
-              const reqd = options.recordsRequired;
+              const reqd = requestIndex;
               const perPage = options.perRequest;
               const total = extractTotal(json);
               const meta = {
@@ -624,7 +635,11 @@ export default class RESTResource {
 
               if (meta.other) meta.other.totalRecords = total;
               if (reqd && total && total > perPage && reqd > perPage) {
-                dispatch(this.fetchPage(options, total, data, meta));
+                if (options.resultOffset) {
+                  dispatch(this.fetchPage(options, total, data, meta));
+                } else {
+                  dispatch(this.fetchMore(options, total, data, meta));
+                }
               } else {
                 dispatch(this.actions.fetchSuccess(meta, data));
               }
@@ -637,9 +652,9 @@ export default class RESTResource {
   }
 
   fetchPage = (options, total, firstData, firstMeta) => {
-    const { headers, records, recordsRequired,
+    const { headers, records, resultOffset,
       perRequest: limit, offsetParam } = options;
-    const reqd = Math.min(recordsRequired, total);
+    const reqd = Math.min(resultOffset, total);
     return (dispatch) => {
       //dispatch(this.actions.pagingStart());
       //dispatch(this.actions.pageStart(firstMeta.url));

@@ -278,7 +278,7 @@ export default class RESTResource {
       // resultOffset
       if (typeof options.resultOffset === 'string' || typeof options.resultOffset === 'function') {
         const tmplResultOffset = Number.parseInt(substitute(options.resultOffset, props, state, this.module, this.logger, this.dataKey), 10);
-        if (tmplResultOffset > 0) {
+        if (tmplResultOffset >= 0) {
           options.resultOffset = tmplResultOffset;
         } else {
           return null;
@@ -613,7 +613,7 @@ export default class RESTResource {
       }
 
       const { headers, records, resourceShouldRefresh } = options;
-      let requestIndex = options.resultOffset || options.recordsRequired
+      let requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
@@ -660,10 +660,10 @@ export default class RESTResource {
               };
 
               if (meta.other) meta.other.totalRecords = total;
-              if (reqd && total && total > perPage) {
-                if (options.resultOffset) {
+              if (reqd && total && total > perPage && reqd >= perPage) {
+                if (options.resultOffset >= 0) {
                   dispatch(this.fetchPage(options, total, data, meta));
-                } else if (reqd > perPage) {
+                } else {
                   dispatch(this.fetchMore(options, total, data, meta));
                 }
               } else {

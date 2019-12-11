@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## [5.4.4](https://github.com/folio-org/stripes-connect/tree/v5.4.4) (2019-12-11)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.3...v5.4.4)
+
+* Avoid executing `pageSuccess` during pagination if the `totalRecords` are not present. Refs STSMACOM-259.
+
 ## [5.4.3](https://github.com/folio-org/stripes-connect/tree/v5.4.3) (2019-12-04)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.2...v5.4.3)
 

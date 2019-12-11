@@ -670,7 +670,7 @@ export default class RESTResource {
                   // The totalRecords returned from the backend are sometimes
                   // incorrect and instead of returning the actual number they
                   // return 999999 which causes an extra fetch which in turn
-                  // returnes empty result. This is a workaround for this issue.
+                  // returns an empty result. This is a workaround for this issue.
                   if (totalRecords === 0) {
                     return;
                   }

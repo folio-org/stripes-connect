@@ -661,7 +661,23 @@ export default class RESTResource {
                   httpStatus: response.status,
                   other: records ? _.omit(json, records) : {},
                 };
-                if (meta.other) meta.other.totalRecords = extractTotal(json);
+
+                if (meta.other) {
+                  const totalRecords = extractTotal(json);
+                  // Please see https://issues.folio.org/browse/STSMACOM-259
+                  // for more details.
+
+                  // The totalRecords returned from the backend are sometimes
+                  // incorrect and instead of returning the actual number they
+                  // return 999999 which causes an extra fetch which in turn
+                  // returnes empty result. This is a workaround for this issue.
+                  if (totalRecords === 0) {
+                    return;
+                  }
+
+                  meta.other.totalRecords = totalRecords;
+                }
+
                 const data = (records ? json[records] : json);
                 dispatch(this.actions.pageSuccess(meta, data));
               });

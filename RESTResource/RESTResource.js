@@ -691,11 +691,11 @@ export default class RESTResource {
                 if (meta.other) {
                   const totalRecords = extractTotal(json);
 
-                  // if we receive totalRecords = 0 in the middle of paging,
+                  // if we receive totalRecords === 0 in the middle of paging,
                   // it's because we got an initial bad estimate from okapi
                   // and fell off the end of the result set.
                   //
-                  // additional detals at https://issues.folio.org/browse/STSMACOM-259
+                  // additional details at https://issues.folio.org/browse/STSMACOM-259
                   //
                   // here, we'll dispatch a success action, but with a flag
                   // that allows the reducer to handle that gracefully.

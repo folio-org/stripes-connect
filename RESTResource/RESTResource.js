@@ -633,9 +633,9 @@ export default class RESTResource {
 
               if (meta.other) meta.other.totalRecords = total;
               if (reqd && total && total > perPage && reqd >= perPage) {
-                if (options.resultOffset >= 0) {
-                  dispatch(this.fetchPage(options, total));
-                } else {
+                if (options.resultOffset >= 0) { // fetch one page by offset
+                  dispatch(this.fetchPageByOffset(options, total));
+                } else { // fetch all pages by total count
                   dispatch(this.fetchMore(options, total, data, meta));
                 }
               } else {
@@ -649,7 +649,8 @@ export default class RESTResource {
     };
   }
 
-  fetchPage = (options, total) => {
+  // Fetches a single page by offset adding it to the existing result list in redux
+  fetchPageByOffset = (options, total) => {
     const { headers, records, resultOffset, offsetParam } = options;
     const reqd = Math.min(resultOffset, total);
     return (dispatch) => {
@@ -682,6 +683,8 @@ export default class RESTResource {
     };
   }
 
+  // Fetches all pages until total records requested is reached
+  // overwriting the previously stored result list in redux
   fetchMore = (options, total, firstData, firstMeta) => {
     const { headers, records, recordsRequired,
       perRequest: limit, offsetParam } = options;

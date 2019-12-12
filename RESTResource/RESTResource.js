@@ -192,9 +192,7 @@ export function substitute(original, props, state, module, logger, dataKey) {
     throw new Error(`Invalid type passed to RESTResource.substitute(): ${typeof original} (${original})`);
   }
 
-  logger.log('substitute', `substitute(${
-    (typeof original === 'function') ? '<FUNCTION>' : original
-    }) -> ${result}, satisfied=${result !== null}`);
+  logger.log('substitute', `substitute(${(typeof original === 'function') ? '<FUNCTION>' : original}) -> ${result}, satisfied=${result !== null}`);
 
   return result;
 }
@@ -613,7 +611,7 @@ export default class RESTResource {
       }
 
       const { headers, records, resourceShouldRefresh } = options;
-      let requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
+      const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
@@ -662,7 +660,7 @@ export default class RESTResource {
               if (meta.other) meta.other.totalRecords = total;
               if (reqd && total && total > perPage && reqd >= perPage) {
                 if (options.resultOffset >= 0) {
-                  dispatch(this.fetchPage(options, total, data, meta));
+                  dispatch(this.fetchPage(options, total));
                 } else {
                   dispatch(this.fetchMore(options, total, data, meta));
                 }
@@ -680,19 +678,14 @@ export default class RESTResource {
     };
   }
 
-  fetchPage = (options, total, firstData, firstMeta) => {
-    const { headers, records, resultOffset,
-      perRequest: limit, offsetParam } = options;
+  fetchPage = (options, total) => {
+    const { headers, records, resultOffset, offsetParam } = options;
     const reqd = Math.min(resultOffset, total);
     return (dispatch) => {
-      //dispatch(this.actions.pagingStart());
-      //dispatch(this.actions.pageStart(firstMeta.url));
-      //for (let offset = limit; offset < reqd; offset += limit) {
       const newOptions = {};
       newOptions.params = {};
       newOptions.params[offsetParam] = reqd;
       const url = urlFromOptions(_.merge({}, options, newOptions));
-      //dispatch(this.actions.pageStart(url));
       fetch(url, { headers })
         .then((response) => {
           if (response.status >= 400) {
@@ -715,8 +708,6 @@ export default class RESTResource {
             message: `Unexpected fetch error ${err}`,
           }));
         });
-      //}
-      //dispatch(this.actions.pageSuccess(firstMeta, firstData));
     };
   }
 

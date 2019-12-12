@@ -319,7 +319,7 @@ describe('connect()', () => {
       .getOnce('http://localhost/turnip?limit=5&offset=5&q=dinner',
         { records:[{ 'id':'58e55786065039ceb9acb0e2', 'name':'Lucas' }, { 'id':'58e55786e2106a216fdb5629', 'name':'Kirkland' }, { 'id':'58e55786819013f1e810d28e', 'name':'Clarke' }, { 'id':'58e55786e51f01bc81b11f32', 'name':'Acevedo' }, { 'id':'58e55786791c37697eec2bc2', 'name':'Earnestine' }], total_records:5 },
         { headers: { 'Content-Type': 'application/json' } })
-        .catch(503);
+      .catch(503);
 
     const store = createStore((state) => state,
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },

@@ -4,9 +4,15 @@
 
 * Added support for fetching result list pages individually by offset. See migration path [documentation](MIGRATIONPATHS.md). Refs STCON-57.
 
-## [5.4.3](https://github.com/folio-org/stripes-connect/tree/v5.4.3) (2019-12-04)
+## [5.4.4](https://github.com/folio-org/stripes-connect/tree/v5.4.4) (2019-12-11)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.3...v5.4.4)
 
-* Introduce a way to reset resources with `resourceShouldRefresh` present when component unmounts. Refs UICIRC-365.
+* Elegantly handle unexpected changes to `totalRecords` during pagination. Refs STCON-90, STSMACOM-259.
+
+## [5.4.3](https://github.com/folio-org/stripes-connect/tree/v5.4.3) (2019-12-04)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.2...v5.4.3)
+
+* On unmount, reset resources having `resourceShouldRefresh`. Refs UICIRC-365.
 
 ## [5.4.2](https://github.com/folio-org/stripes-connect/tree/v5.4.2) (2019-10-15)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.1...v5.4.2)

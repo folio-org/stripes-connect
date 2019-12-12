@@ -326,6 +326,32 @@ export default class RESTResource {
             return acc.concat(Object.assign({}, val,
               { isComplete: true, records: action.payload, meta: action.meta }));
           }
+
+          // Handle the situation where we accidentally ask for more pages
+          // than there are in the set, i.e. we query for offset=120 when
+          // there are only 100 records in a set. Why, why would we issue
+          // such a query? It's complicated.
+          //
+          // In short, calculating the size of result sets can be expensive,
+          // so there's a heuristic, but sometimes it's very, very, VERY wrong.
+          // When Okapi thinks the result set will contain > 10k rows, it
+          // returns totalCount=999999999 to indicate "Ah'm just guessin'
+          // because the real number is wicked huge." The problem is that if
+          // we start paging through one of these supposedly-wicked-huge
+          // result sets and fall off the end of it, we'll then get response
+          // with totalCount=0.
+          //
+          // When we receive totalCount=0 in the middle of paging, we dispatch
+          // a success, but with an added meta property the allows us to figure
+          // out what on earth just happened, dropping you here.
+          //
+          // So this is how it is: all we need to do here is set
+          // isComplete=true. The rest of the work has already been done.
+          //
+          if (action.meta.bonkersOkapiCannotCount) {
+            return acc.concat(Object.assign({}, val, { isComplete: true }));
+          }
+
           return acc.concat(val);
         }, []);
         return newState;
@@ -710,7 +736,25 @@ export default class RESTResource {
                   httpStatus: response.status,
                   other: records ? _.omit(json, records) : {},
                 };
-                if (meta.other) meta.other.totalRecords = extractTotal(json);
+
+                if (meta.other) {
+                  const totalRecords = extractTotal(json);
+
+                  // if we receive totalRecords === 0 in the middle of paging,
+                  // it's because we got an initial bad estimate from okapi
+                  // and fell off the end of the result set.
+                  //
+                  // additional details at https://issues.folio.org/browse/STSMACOM-259
+                  //
+                  // here, we'll dispatch a success action, but with a flag
+                  // that allows the reducer to handle that gracefully.
+                  if (totalRecords === 0) {
+                    meta.bonkersOkapiCannotCount = true;
+                  } else {
+                    meta.other.totalRecords = totalRecords;
+                  }
+                }
+
                 const data = (records ? json[records] : json);
                 dispatch(this.actions.pageSuccess(meta, data));
               });

@@ -1,6 +1,10 @@
 # Change history for stripes-connect
 
-## 5.4.3 (IN PROGRESS)
+## 5.5.0 (IN PROGRESS)
+
+* Added support for fetching result list pages individually by offset. See migration path [documentation](MIGRATIONPATHS.md). Refs STCON-57.
+
+## [5.4.3](https://github.com/folio-org/stripes-connect/tree/v5.4.3) (2019-12-04)
 
 * Introduce a way to reset resources with `resourceShouldRefresh` present when component unmounts. Refs UICIRC-365.
 

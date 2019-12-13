@@ -697,11 +697,12 @@ export default class RESTResource {
                 url: response.url,
                 headers: response.headers,
                 httpStatus: response.status,
+                offset: resultOffset,
                 other: records ? _.omit(json, records) : {},
               };
               if (meta.other) meta.other.totalRecords = extractTotal(json);
               const data = (records ? json[records] : json);
-              dispatch(this.actions.accFetchSuccess(meta, data));
+              dispatch(this.actions.offsetFetchSuccess(meta, data));
             });
           }
         }).catch((err) => {

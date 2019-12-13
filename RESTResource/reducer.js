@@ -46,6 +46,19 @@ export default function (state = initialResourceState, action) {
         ...action.meta,
       });
     }
+    case '@@stripes-connect/OFFSET_FETCH_SUCCESS': {
+      let records = [...state.records];
+      if (Array.isArray(action.payload)) records.splice(action.meta.offset, 0, ...action.payload);
+      else records.splice(action.meta.offset, 0, _.clone(action.payload));
+      return Object.assign({}, state, {
+        hasLoaded: true,
+        loadedAt: new Date(),
+        isPending: false,
+        failed: false,
+        records,
+        ...action.meta,
+      });
+    }
     case '@@stripes-connect/RESET': {
       return initialResourceState;
     }

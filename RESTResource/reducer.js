@@ -47,7 +47,7 @@ export default function (state = initialResourceState, action) {
       });
     }
     case '@@stripes-connect/OFFSET_FETCH_SUCCESS': {
-      let records = [...state.records];
+      const records = [...state.records];
       if (Array.isArray(action.payload)) records.splice(action.meta.offset, 0, ...action.payload);
       else records.splice(action.meta.offset, 0, _.clone(action.payload));
       return Object.assign({}, state, {

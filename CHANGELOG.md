@@ -1,7 +1,8 @@
 # Change history for stripes-connect
 
-## 5.5.0 (IN PROGRESS)
+## 5.4.5 IN-PROGRESS
 
+* Reset paging with a successful fetch. Resolves UIU-1405.
 * Added support for fetching result list pages individually by offset. See migration path [documentation](MIGRATIONPATHS.md). Refs STCON-57.
 
 ## [5.4.4](https://github.com/folio-org/stripes-connect/tree/v5.4.4) (2019-12-11)

@@ -653,6 +653,9 @@ export default class RESTResource {
                 dispatch(this.fetchMore(options, total, data, meta));
               } else {
                 dispatch(this.actions.fetchSuccess(meta, data));
+                // restart paging if there is any, otherwise any cached pages will
+                // populate the UI the next time the connected component mounts.
+                dispatch(this.actions.pageStart());
               }
             });
           }

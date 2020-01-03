@@ -12,10 +12,6 @@ require('@babel/register')({
     '@babel/plugin-syntax-import-meta',
     ['@babel/plugin-proposal-class-properties', { loose: true }],
     '@babel/plugin-proposal-json-strings',
-
-    // Others
-    '@babel/plugin-proposal-optional-chaining',
-    'lodash'
   ],
   presets: [
     ['@babel/preset-env'],

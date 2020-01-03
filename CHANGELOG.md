@@ -1,8 +1,9 @@
 # Change history for stripes-connect
 
-## 5.4.5 IN-PROGRESS
+## [5.4.5](https://github.com/folio-org/stripes-connect/tree/v5.4.5) (2020-01-03)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.4...v5.4.5)
 
-* Reset paging with a successful fetch. Resolves UIU-1405.
+* Reset paging with a successful fetch. Resolves UIU-1405 (STCON-91).
 
 ## [5.4.4](https://github.com/folio-org/stripes-connect/tree/v5.4.4) (2019-12-11)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.3...v5.4.4)

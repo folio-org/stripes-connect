@@ -30,6 +30,7 @@ export default connect(MyStripesComponent, 'moduleName');
 * A complete worked example of a connected component for editing patrons
 is explained in
 [A component example: the **PatronEdit** component](https://github.com/folio-org/stripes-core/blob/master/doc/component-example.md).
+* New features and migration paths for modules to opt-in to them are explained in [Migration Paths](MIGRATIONPATHS.md)
 
 ## Additional information
 

@@ -95,6 +95,20 @@ Paged.manifest = { pagedResource: {
   perRequest: 5,
 } };
 
+class PagedOffset extends Component { // eslint-disable-line react/no-multi-comp
+  render() {
+    return <div id="somediv" />;
+  }
+}
+PagedOffset.manifest = { pagedResource: {
+  type: 'okapi',
+  path: 'turnip',
+  params: { q: 'dinner', offset: '5' },
+  records: 'records',
+  offsetParam: 'offset',
+  perRequest: 5,
+} };
+
 class CompWithPerms extends Component { // eslint-disable-line react/no-multi-comp
   render() {
     return <div id="somediv" />;
@@ -295,6 +309,27 @@ describe('connect()', () => {
 
     setTimeout(() => {
       inst.find(Paged).instance().props.resources.pagedResource.records.length.should.equal(14);
+      fetchMock.restore();
+      done();
+    }, 40);
+  });
+
+  it('should only make 1 request for a paged offset resource', (done) => {
+    fetchMock
+      .getOnce('http://localhost/turnip?limit=5&offset=5&q=dinner',
+        { records:[{ 'id':'58e55786065039ceb9acb0e2', 'name':'Lucas' }, { 'id':'58e55786e2106a216fdb5629', 'name':'Kirkland' }, { 'id':'58e55786819013f1e810d28e', 'name':'Clarke' }, { 'id':'58e55786e51f01bc81b11f32', 'name':'Acevedo' }, { 'id':'58e55786791c37697eec2bc2', 'name':'Earnestine' }], total_records:5 },
+        { headers: { 'Content-Type': 'application/json' } })
+      .catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(PagedOffset, 'testoffset', mockedEpics, defaultLogger);
+    const inst = mount(<Root store={store} component={Connected} />);
+
+    setTimeout(() => {
+      inst.find(PagedOffset).instance().props.resources.pagedResource.records.length.should.equal(5);
       fetchMock.restore();
       done();
     }, 40);

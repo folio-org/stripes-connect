@@ -40,6 +40,8 @@ export default function actionCreatorsFor(resource) {
 
     accFetchSuccess: passMetaPayload('ACC_FETCH_SUCCESS'),
 
+    offsetFetchSuccess: passMetaPayload('OFFSET_FETCH_SUCCESS'),
+
     fetchError: passPayload('FETCH_ERROR'),
 
     fetchAbort: passPayload('FETCH_ABORT'),

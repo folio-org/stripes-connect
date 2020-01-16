@@ -18,7 +18,7 @@ export default function (state = initialResourceState, action) {
 
   switch (action.type) {
     case '@@stripes-connect/FETCH_START': {
-      return Object.assign({}, state, { isPending: true });
+      return Object.assign({}, state, { hasLoaded: false, isPending: true });
     }
     case '@@stripes-connect/FETCH_SUCCESS': {
       let records;

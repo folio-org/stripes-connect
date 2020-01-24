@@ -526,17 +526,26 @@ export default class RESTResource {
             dispatch(this.mutationHTTPError(response, 'PUT'));
             throw clonedResponse;
           } else {
-            /* Patrons api will not return JSON
-            response.json().then ( (json) => {
-              if (json[options.pk] && !json.id) json.id = json[options.pk];
-              dispatch(crudActions.updateSuccess(json));
-            });
-            */
-
             const meta = this.getMeta(options);
-            dispatch(this.actions.updateSuccess(meta, clientRecord));
 
-            return clientRecord;
+            // The PUT mutator will return the response from the backend if it is JSON, working
+            // off the assumption that the response is (or at least contains) the updated record.
+            // If the response is not JSON, it will return the client record that was
+            // sent to the backend.
+            // Note that this may be different from what was passed into the PUT (due to the id/pk finessing),
+            // or different from what was actually saved on the backend (due to backend implementations).
+            const contentType = (response.headers && response.headers.get('Content-Type')) || '';
+            if (contentType.startsWith('application/json')) {
+              return response
+                .json()
+                .then(responseRecord => {
+                  dispatch(this.actions.updateSuccess(meta, responseRecord));
+                  return responseRecord;
+                });
+            } else {
+              dispatch(this.actions.updateSuccess(meta, clientRecord));
+              return clientRecord;
+            }
           }
         });
 

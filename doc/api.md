@@ -171,6 +171,13 @@ via limitParam/offsetParam.
 * `shouldRefresh`: An optional function which can be used to indicate if the
 given resource should be refreshed when another resource is mutated.
 
+* `resultOffset`: A number, interpolated string, or function indicating what offset
+  into the results list should be fetched. This is an optional workflow that allows
+  fetching of just the next page rather than re-requesting all pages. Note that this
+  workflow is not supported for infinite-scroll due to the risk of out-of-order pages.
+  For example, a `MultiColumnList` tied to a resource using `resultOffset` should have
+  its `pagingType` prop set to `click` rather than `scroll`.
+
 In addition to these principal pieces of configuration, which apply to
 all operations on the resource, these values can be overridden for
 specific HTTP operations: the entries `GET`, `POST`, `PUT`, `DELETE`

@@ -4,6 +4,7 @@
 
 * Reset paging with a successful fetch. Resolves UIU-1405.
 * Added support for fetching result list pages individually by offset. See migration path [documentation](MIGRATIONPATHS.md). Refs STCON-57.
+* PUT mutator returns the server's response when it is JSON rather than the client record. Refs STCON-92.
 
 ## [5.4.4](https://github.com/folio-org/stripes-connect/tree/v5.4.4) (2019-12-11)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.3...v5.4.4)

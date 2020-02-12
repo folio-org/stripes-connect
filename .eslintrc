@@ -1,4 +1,16 @@
 {
   "extends": "@folio/eslint-config-stripes",
-  "parser": "babel-eslint"
+  "parser": "babel-eslint",
+  "rules": {
+    "prefer-object-spread": "off"
+  },
+  "overrides": [
+    {
+      "files": ["test/**"],
+      "rules": {
+        "max-classes-per-file": "off",
+        "react/prop-types": "off"
+      }
+    }
+  ]
 }

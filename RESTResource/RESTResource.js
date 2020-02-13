@@ -1,4 +1,4 @@
-import 'isomorphic-fetch'; /* global fetch */
+import 'isomorphic-fetch';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';

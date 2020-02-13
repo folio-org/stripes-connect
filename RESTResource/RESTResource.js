@@ -8,10 +8,16 @@ import reducer from './reducer';
 
 const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
 
-// RAML module builder keeps changing where it puts the total
-// record-count, so we have to look in three different places to be
-// safe. *sigh*
-
+/**
+ * extractTotal
+ * Find the current incarnation of "totalRecords" and return it.
+ * RAML module builder keeps changing where it puts the total
+ * record-count, so we have to look in three different places to be
+ * safe. *sigh*
+ *
+ * @param json object
+ * @return int
+ */
 function extractTotal(json) {
   if (json.resultInfo !== undefined &&
     json.resultInfo.totalRecords !== undefined) {
@@ -26,12 +32,26 @@ function extractTotal(json) {
   return null;
 }
 
-// The following fallback syntax is one small part of what Bash
-// implements -- see the "Parameter Expansion" section of its
-// manual. It's the part we need right now, but we should consider
-// implementing all of it. And needless to say, it should apply to all
-// kinds of substitutable.
-//
+/**
+ * processFallback
+ * handle bash-like substitution fallbacks in path interpretation for a
+ * single substring
+ * Substitions of the form
+ *     ?{name:+val}
+ * and
+ *     ?{name:-val}
+ * allow the string "val" to be provided when "name" is or is not provided,
+ * respectively. See the "Parameter Expansion" section of the Bash manual
+ * for more details. This minimal handling is what we need right now, but
+ * we should consider implementing all of it. And needless to say, it
+ * should apply to all kinds of substitutable.
+ *
+ * @param s string value to inspect for interpolation
+ * @param getPath array
+ * @param props object props containing substitutable values
+ *
+ * @return string
+ */
 function processFallback(s, getPath, props) {
   let name = s;
   let type;
@@ -61,12 +81,15 @@ function processFallback(s, getPath, props) {
   return res;
 }
 
-// Calculate what the props _would be_ if we went through
-// mapStateToProps. If dataKey is included, then we look only at state
-// pertaining to that data-key.
-//
-// If we restructure the state into a per-module hierarchy we
-// won't need to go through this dance STRIPES-238
+/**
+ * mockProps
+ * Calculate what the props _would be_ if we went through
+ * mapStateToProps. If dataKey is included, then we look only at state
+ * pertaining to that data-key.
+ *
+ * If we restructure the state into a per-module hierarchy we
+ * won't need to go through this dance STRIPES-238
+ */
 function mockProps(state, module, dataKey, logger) {
   const mock = { resources: {} };
   logger.log('mock', 'mockProps with state', state);
@@ -101,8 +124,17 @@ function mockProps(state, module, dataKey, logger) {
   return mock;
 }
 
-// returns null if templated values are incomplete
-// if pk is provided append to path if not present
+/**
+ * urlFromOptions
+ * Construct a URL path given its constituent parts. Returns null if the
+ * values for path or params are incomplete. If the pk is provided and
+ * not already present in the URL, append it.
+ *
+ * @param options object of the shape { path, params, [staticFallback]}
+ * @param [pk] string a UUID presumably corresponding to a primary key
+ *
+ * @return string
+ */
 function urlFromOptions(options, pk) {
   const o = Object.assign({}, options);
   if (o.path === null) return null;
@@ -131,11 +163,21 @@ function urlFromOptions(options, pk) {
   return path;
 }
 
-// Process string template with ?{syntax}. Namespaces so far:
-// ? - query parameters in current url
-// : - path components as defined by react-router
-// $ - resources
-// ! - properties
+/**
+ * compilePathTemplate
+ * Process string template with ?{syntax}. Namespaces so far:
+ *   ? - query parameters in current url
+ *   : - path components as defined by react-router
+ *   % - resources ($ is deprecated in favor of %)
+ *   ! - properties
+ *
+ * @param template string
+ * @param parsedQuery object querystring's key-value pairs as an object
+ * @param props object props passed into original component
+ * @param localProps object local resources
+ *
+ * @return string
+ */
 export function compilePathTemplate(template, parsedQuery, props, localProps) {
   let dynamicPartsSatisfied = true;
 
@@ -170,13 +212,24 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
   return dynamicPartsSatisfied ? result : null;
 }
 
-
-// This now takes so many arguments that it really ought to be a
-// method of RESTResource rather than a standalone function that is
-// passed various parts of the RESTResource object. But since it's
-// exported as a function, I don't want to mess with it until I know
-// what uses it.
-//
+/**
+ * substitute
+ * This now takes so many arguments that it really ought to be a
+ * method of RESTResource rather than a standalone function that is
+ * passed various parts of the RESTResource object. But since it's
+ * exported as a function, I don't want to mess with it until I know
+ * what uses it.
+ *
+ * @param original string
+ * @param props object
+ * @param state object
+ * @param module string name of the module the resource is affiliated with
+ * @param logger object a logger
+ * @param dataKey string unique key to disambiguate this resource from another
+ * which otherwise has the same attributes
+ *
+ * @return string
+ */
 export function substitute(original, props, state, module, logger, dataKey) {
   const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
   let result;

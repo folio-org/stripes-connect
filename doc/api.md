@@ -2,7 +2,7 @@
 
 Index Data, 2016-2017.
 
-<!-- ../../okapi/doc/md2toc -l 2 api.md -->
+<!-- md2toc -l 2 api.md -->
 * [Introduction](#introduction)
     * [Note](#note)
 * [The Connection Manifest](#the-connection-manifest)
@@ -16,8 +16,9 @@ Index Data, 2016-2017.
         * [Overview](#overview)
         * [Text substitution](#text-substitution)
         * [Fallbacks](#fallbacks)
+        * [Error handling](#error-handling)
         * [Example path](#example-path)
-        * [Functional paths](#functional-paths)
+        * [Functional paths and parameters](#functional-paths-and-parameters)
 * [Connecting the component](#connecting-the-component)
 * [Using the connected component](#using-the-connected-component)
 * [Appendices: for developers](#appendices-for-developers)

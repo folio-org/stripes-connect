@@ -519,6 +519,13 @@ obvious way by the POST, PUT and PATCH operations. For DELETE, the
 record need only contain the `id` field, so that it suffices to call
 `mutator.tenants.DELETE({ id: 43 })`.
 
+The POST, PUT and DELETE mutators optionally take a second `options` parameter.
+Currently the only option available is `silent`. The silent option can be used
+to indicate that the given mutation should not cause refresh on any corresponding
+resources. This is particually helpful when running multiple mutations in a batch
+mode when only the last mutation should actually cause the refresh to happen.
+Example usage: `mutator.tenants.DELETE({ id: 43 }, { silent: true })`.
+
 For the GET mutator method, i.e. when passing `accumulate: true` in the
 manifest, provide an updated `params` argument rather than an updated record, e.g.
 

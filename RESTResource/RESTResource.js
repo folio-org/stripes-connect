@@ -267,9 +267,9 @@ export default class RESTResource {
 
   getMutator(dispatch, props) {
     const actions = {
-      DELETE: record => dispatch(this.deleteAction(record, props)),
-      PUT: record => dispatch(this.updateAction(record, props)),
-      POST: record => dispatch(this.createAction(record, props)),
+      DELETE: (record, opts) => dispatch(this.deleteAction(record, props, opts)),
+      PUT: (record, opts) => dispatch(this.updateAction(record, props, opts)),
+      POST: (record, opts) => dispatch(this.createAction(record, props, opts)),
     };
 
     if (this.optionsTemplate.accumulate) {
@@ -490,13 +490,14 @@ export default class RESTResource {
   }
 
   getMeta(options) {
-    const { path } = options;
+    const { path, silent } = options;
     return {
       path,
+      silent,
     };
   }
 
-  createAction = (record, props) => (dispatch, getState) => {
+  createAction = (record, props) => (dispatch, getState, opts) => {
     const options = this.verbOptions('POST', getState(), { clientGeneratePk: true, ...props });
     const { pk, clientGeneratePk, headers } = options;
     const url = urlFromOptions(options);
@@ -525,7 +526,7 @@ export default class RESTResource {
         throw clonedResponse;
       } else {
         const contentType = response.headers.get('Content-Type');
-        const meta = this.getMeta(options);
+        const meta = this.getMeta({ ...options, ...opts });
 
         if (contentType && contentType.startsWith('application/json')) {
           return response.json().then((json) => {
@@ -559,7 +560,7 @@ export default class RESTResource {
     return beforeCatch;
   }
 
-  updateAction = (record, props) => {
+  updateAction = (record, props, opts) => {
     const clientRecord = { ...record };
     return (dispatch, getState) => {
       const options = this.verbOptions('PUT', getState(), props);
@@ -579,7 +580,7 @@ export default class RESTResource {
             dispatch(this.mutationHTTPError(response, 'PUT'));
             throw clonedResponse;
           } else {
-            const meta = this.getMeta(options);
+            const meta = this.getMeta({ ...options, ...opts });
 
             // The PUT mutator will return the response from the backend if it is JSON, working
             // off the assumption that the response is (or at least contains) the updated record.
@@ -612,7 +613,7 @@ export default class RESTResource {
     };
   }
 
-  deleteAction = (record, props) => (dispatch, getState) => {
+  deleteAction = (record, props, opts) => (dispatch, getState) => {
     const options = this.verbOptions('DELETE', getState(), props);
     if (options === null) return null; // needs dynamic parts that aren't available
     const { pk, headers } = options;
@@ -631,7 +632,7 @@ export default class RESTResource {
           dispatch(this.mutationHTTPError(response, 'DELETE'));
           throw clonedResponse;
         } else {
-          const meta = this.getMeta(options);
+          const meta = this.getMeta({ ...options, ...opts });
           dispatch(this.actions.deleteSuccess(meta, clientRecord));
         }
       });

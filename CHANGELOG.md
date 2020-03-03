@@ -1,11 +1,12 @@
 # Change history for stripes-connect
 
-## 5.4.5 IN-PROGRESS
+## [5.5.0](https://github.com/folio-org/stripes-connect/tree/v5.5.0) (2020-03-03)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.4...v5.5.0)
 
 * Reset paging with a successful fetch. Resolves UIU-1405.
 * Added support for fetching result list pages individually by offset. See migration path [documentation](MIGRATIONPATHS.md). Refs STCON-57.
 * PUT mutator returns the server's response when it is JSON rather than the client record. Refs STCON-92.
-* Introduce silent option to POST, PUT and DELETE mutators. Refs UIU-1295.
+* Introduce `silent` option to POST, PUT and DELETE mutators. Refs UIU-1295.
 
 ## [5.4.4](https://github.com/folio-org/stripes-connect/tree/v5.4.4) (2019-12-11)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.3...v5.4.4)

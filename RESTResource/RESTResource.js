@@ -497,7 +497,7 @@ export default class RESTResource {
     };
   }
 
-  createAction = (record, props) => (dispatch, getState, opts) => {
+  createAction = (record, props, opts) => (dispatch, getState) => {
     const options = this.verbOptions('POST', getState(), { clientGeneratePk: true, ...props });
     const { pk, clientGeneratePk, headers } = options;
     const url = urlFromOptions(options);

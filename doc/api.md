@@ -170,7 +170,10 @@ via limitParam/offsetParam.
   of permissions required for the given resource to be fetched.
 
 * `shouldRefresh`: An optional function which can be used to indicate if the
-given resource should be refreshed when another resource is mutated.
+given resource should be refreshed when another resource is mutated. The function is passed
+the `resource` itself and the refresh `action`. The `action` contains the standard `type`, `meta`,
+etc fields. The `action.meta` additionally contains an `originatingActionType` string
+that contains the action type that resulted in this refresh request. Eg, `@@stripes-connect/DELETE_SUCCESS`.
 
 * `resultOffset`: A number, interpolated string, or function indicating what offset
   into the results list should be fetched. This is an optional workflow that allows

@@ -14,7 +14,7 @@ const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: 
 
 function extractTotal(json) {
   if (json.resultInfo !== undefined &&
-      json.resultInfo.totalRecords !== undefined) {
+    json.resultInfo.totalRecords !== undefined) {
     return json.resultInfo.totalRecords;
   } else if (json.totalRecords !== undefined) {
     return json.totalRecords;
@@ -192,9 +192,7 @@ export function substitute(original, props, state, module, logger, dataKey) {
     throw new Error(`Invalid type passed to RESTResource.substitute(): ${typeof original} (${original})`);
   }
 
-  logger.log('substitute', `substitute(${
-    (typeof original === 'function') ? '<FUNCTION>' : original
-  }) -> ${result}, satisfied=${result !== null}`);
+  logger.log('substitute', `substitute(${(typeof original === 'function') ? '<FUNCTION>' : original}) -> ${result}, satisfied=${result !== null}`);
 
   return result;
 }
@@ -270,6 +268,16 @@ export default class RESTResource {
         const tmplReqd = Number.parseInt(substitute(options.recordsRequired, props, state, this.module, this.logger, this.dataKey), 10);
         if (tmplReqd > 0) {
           options.recordsRequired = tmplReqd;
+        } else {
+          return null;
+        }
+      }
+
+      // resultOffset
+      if (typeof options.resultOffset === 'string' || typeof options.resultOffset === 'function') {
+        const tmplResultOffset = Number.parseInt(substitute(options.resultOffset, props, state, this.module, this.logger, this.dataKey), 10);
+        if (tmplResultOffset >= 0) {
+          options.resultOffset = tmplResultOffset;
         } else {
           return null;
         }
@@ -395,7 +403,7 @@ export default class RESTResource {
     if (opt.accumulate === true
       || opt.fetch === false
       || (typeof opt.fetch === 'function'
-          && opt.fetch(props) !== true)
+        && opt.fetch(props) !== true)
     ) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
     this.dispatch = dispatch;
@@ -603,12 +611,13 @@ export default class RESTResource {
       }
 
       const { headers, records, resourceShouldRefresh } = options;
+      const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
         // noop if the URL and recordsRequired didn't change
-        this.logger.log('connect-dup', `'${this.name}' reqd=${options.recordsRequired} (${options.recordsRequired === this.lastReqd ? 'same' : 'different'}) ${url}, (${url === this.lastUrl ? 'same' : 'different'})`);
-        if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
+        this.logger.log('connect-dup', `'${this.name}' reqd=${requestIndex} (${requestIndex === this.lastReqd ? 'same' : 'different'}) ${url}, (${url === this.lastUrl ? 'same' : 'different'})`);
+        if (!props.sync && url === this.lastUrl && requestIndex === this.lastReqd) return null;
       } else {
         // Check if resourceShouldRefresh is a boolean or function
         if (_.isBoolean(resourceShouldRefresh) && !resourceShouldRefresh) return null;
@@ -616,7 +625,7 @@ export default class RESTResource {
         if (_.isFunction(resourceShouldRefresh) && !resourceShouldRefresh()) return null;
       }
       this.lastUrl = url;
-      this.lastReqd = options.recordsRequired;
+      this.lastReqd = requestIndex;
 
       dispatch(this.actions.fetchStart());
       return fetch(url, { headers })
@@ -638,7 +647,7 @@ export default class RESTResource {
                 dispatch(this.actions.fetchError({ message: `no records in '${records}' element` }));
                 return;
               }
-              const reqd = options.recordsRequired;
+              const reqd = requestIndex;
               const perPage = options.perRequest;
               const total = extractTotal(json);
               const meta = {
@@ -649,8 +658,12 @@ export default class RESTResource {
               };
 
               if (meta.other) meta.other.totalRecords = total;
-              if (reqd && total && total > perPage && reqd > perPage) {
-                dispatch(this.fetchMore(options, total, data, meta));
+              if (reqd && total && total > perPage && reqd >= perPage) {
+                if (options.resultOffset >= 0) { // fetch one page by offset
+                  dispatch(this.fetchPageByOffset(options, total));
+                } else { // fetch all pages by total count
+                  dispatch(this.fetchMore(options, total, data, meta));
+                }
               } else {
                 dispatch(this.actions.fetchSuccess(meta, data));
                 // restart paging if there is any, otherwise any cached pages will
@@ -665,6 +678,43 @@ export default class RESTResource {
     };
   }
 
+  // Fetches a single page by offset adding it to the existing result list in redux
+  fetchPageByOffset = (options, total) => {
+    const { headers, records, resultOffset, offsetParam } = options;
+    const reqd = Math.min(resultOffset, total);
+    return (dispatch) => {
+      const newOptions = {};
+      newOptions.params = {};
+      newOptions.params[offsetParam] = reqd;
+      const url = urlFromOptions(_.merge({}, options, newOptions));
+      fetch(url, { headers })
+        .then((response) => {
+          if (response.status >= 400) {
+            dispatch(this.fetchHTTPError(response));
+          } else {
+            response.json().then((json) => {
+              const meta = {
+                url: response.url,
+                headers: response.headers,
+                httpStatus: response.status,
+                offset: resultOffset,
+                other: records ? _.omit(json, records) : {},
+              };
+              if (meta.other) meta.other.totalRecords = extractTotal(json);
+              const data = (records ? json[records] : json);
+              dispatch(this.actions.offsetFetchSuccess(meta, data));
+            });
+          }
+        }).catch((err) => {
+          dispatch(this.actions.fetchError({
+            message: `Unexpected fetch error ${err}`,
+          }));
+        });
+    };
+  }
+
+  // Fetches all pages until total records requested is reached
+  // overwriting the previously stored result list in redux
   fetchMore = (options, total, firstData, firstMeta) => {
     const { headers, records, recordsRequired,
       perRequest: limit, offsetParam } = options;

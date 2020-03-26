@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 5.6.0 IN PROGRESS
+
+* Added `originatingActionType` to `REFRESH` action `meta` objects.
+
 ## [5.5.0](https://github.com/folio-org/stripes-connect/tree/v5.5.0) (2020-03-03)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.4...v5.5.0)
 

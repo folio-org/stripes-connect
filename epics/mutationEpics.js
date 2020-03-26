@@ -15,7 +15,13 @@ export default function mutationEpics(resource) {
       path = path && path.replace(/[\/].*$/g, '');  // eslint-disable-line no-useless-escape
 
       const name = resource.name;
-      const meta = Object.assign({}, action.meta, { path, name });
+      const meta = {
+        ...action.meta,
+        originatingActionType: action.type,
+        path,
+        name,
+      };
+
       return { ...action, meta, type: 'REFRESH' };
     }));
 }

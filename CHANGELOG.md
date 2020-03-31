@@ -1,6 +1,7 @@
 # Change history for stripes-connect
 
-## 5.5.1 (IN PROGRESS)
+## [5.5.1](https://github.com/folio-org/stripes-connect/tree/v5.5.1) (2020-03-31)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.5.0...v5.5.1)
 
 * Correctly receive `opts` in `createAction`. Refs UIU-1295.
 

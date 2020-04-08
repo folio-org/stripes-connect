@@ -1,6 +1,6 @@
 # The Stripes Connect API
 
-Index Data, 2016-2017.
+&copy; Index Data, 2016-2020.
 
 <!-- md2toc -l 2 api.md -->
 * [Introduction](#introduction)
@@ -17,6 +17,8 @@ Index Data, 2016-2017.
         * [Text substitution](#text-substitution)
         * [Fallbacks](#fallbacks)
         * [Error handling](#error-handling)
+            * [Catching rejected promises](#catching-rejected-promises)
+            * [Detecting failed mutations](#detecting-failed-mutations)
         * [Example path](#example-path)
         * [Functional paths and parameters](#functional-paths-and-parameters)
 * [Connecting the component](#connecting-the-component)
@@ -342,19 +344,45 @@ empty string, according as `%{name}` is or is not defined.
 
 #### Error handling
 
-Normally, errors will be caught and processed by Stripes Connect.
-Currently, errors are being reported in an `alert()` via Stripes
-Core to ensure that they are noticed during development. However,
-this means that `catch` calls like
-`mutator.values.DELETE(...).then(...).catch(...)` will never be
-executed.
+HTTP errors are caught and processed by Stripes Connect, leaving information in its internal state. By default, these errors are then reported in an `alert()` via a Redux observer in Stripes Core, to ensure that they are noticed during development. Since errors at this low level are unusual events in production code, the use of an alert-box is often also also suitable in production, so often no explicit error-handling is necessary.
 
-If you wish to be responsible for and handle your own errors
-for a particular resource, add a `throwErrors: false` property
-to that resource's object in the manifest.
+But applications can instead elect to be responsible for their own error-handling. To disable the alert-box for a particular resource, add a `throwErrors: false` property to that resource's object in the manifest.
 
-Note that the errors will still be listed in `failedMutations`,
-this just turns off the current error handling in Stripes Core.
+When doing this, there are two ways to catch the errors for handling or reporting.
+
+##### Catching rejected promises
+
+Mutators return promises which can be interrogated using `.then` and `.catch` as usual. Consider [the following code (from the Course Reserves module)](https://github.com/folio-org/ui-courses/blob/5f9a5b05d8bc890e04a5b437540eedcf5140eb15/src/components/ViewCourse/sections/AddReserve.js#L45-L54): a new reserve is created by a POST to the `reserves` resource, which has `throwErrors: false`. Whether the operation succeeds or fails, the user is notified via a suitable callout:
+
+```
+this.props.mutator.reserves.POST({ courseListingId, copiedItem: { barcode } })
+  .then(addedRecord => {
+    this.showCallout('success', `Added item "${addedRecord.copiedItem.title}"`);
+  })
+  .catch(exception => {
+    exception.text().then(text => {
+      this.showCallout('error', `Failed to add item ${barcode}: ${text}`);
+    });
+  });
+```
+
+##### Detecting failed mutations
+
+Alternatively, application code can inspect the resource' `failedMutations` to notice when something has gone wrong. The usual approach is to notice when a _new_ failed mutation has appeared and report that. One way to do this is using the `componentDidUpdate` lifecycle method to compare the `failedMutations` of the previous and present properties:
+
+```
+componentDidUpdate(prevProps) {
+  const { failedMutations } = this.props.resources.reserves;
+  const prev = prevProps.resources.reserves.failedMutations;
+  if (failedMutations.length > prev.length) {
+    console.log('componentDidUpdate: new failure mutations:', failedMutations.slice(prev.length));
+  }
+}
+```
+
+Either of these approaches can be used, as best suits the architecture
+of the specific application.
+
 
 #### Example path
 

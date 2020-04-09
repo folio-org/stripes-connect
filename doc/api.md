@@ -20,6 +20,7 @@
         * [Functional paths and parameters](#functional-paths-and-parameters)
 * [Connecting the component](#connecting-the-component)
 * [Using the connected component](#using-the-connected-component)
+    * [Mutators](#mutators)
     * [Error handling](#error-handling)
         * [Catching rejected promises](#catching-rejected-promises)
         * [Detecting failed mutations](#detecting-failed-mutations)
@@ -491,9 +492,15 @@ the wrapped component:
   changes to its resources. See below.
 
 
+
+### Mutators
+
 The `mutator` is an object whose properties are named after the
 resources in the manifest. The corresponding values are themselves
 objects -- one per resource.
+
+
+#### REST and Okapi resources
 
 Each resource's mutator object has keys that are HTTP methods: the
 corresponding values are methods that perform the relevant CRUD
@@ -522,6 +529,14 @@ manifest, provide an updated `params` argument rather than an updated record, e.
     mutator.users.GET({ params: { query } })
       .then(records => { ... });
 
+
+#### Local resources
+
+Local resources provide a mutator object with two functions, `update` and
+`replace`. The `replace` mutator will replace the current value of the local
+resource with a new one. `update` only works on object values and will do a
+shallow merge of properties from the new object onto the old one eg. following
+the semantics of `Object.assign({}, oldValue, newValue)`.
 
 
 ### Error handling

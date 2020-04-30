@@ -218,6 +218,10 @@ defaultLogger.log = (cat, ...args) => {
 
 export const connect = (Component, module, epics, loggerArg, options) => {
   const logger = loggerArg || defaultLogger;
+  if (typeof Component === 'undefined') {
+    throw Error(`connect() called on an undefined component from ${module}`);
+  }
+
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
     return Component;

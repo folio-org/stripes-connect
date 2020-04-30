@@ -219,7 +219,9 @@ defaultLogger.log = (cat, ...args) => {
 export const connect = (Component, module, epics, loggerArg, options) => {
   const logger = loggerArg || defaultLogger;
   if (typeof Component === 'undefined') {
-    throw Error(`connect() called on an undefined component from ${module}`);
+    throw Error(`connect() called on an undefined component from ${module}.
+This generally tends to be the case when you imported a component from the wrong place, so triple-check your paths and whether something is a named or default export!
+Also, the component file may have failed to parse correctly. Check the browser console logs to see if this may be the case.`);
   }
 
   if (typeof Component.manifest === 'undefined') {

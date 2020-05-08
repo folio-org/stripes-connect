@@ -109,7 +109,7 @@ function mockProps(state, module, dataKey, logger) {
     logger.log('mock', `   considering rawKey ${rawKey}`);
     if (!rawKey) {
       logger.log('mock', '    skipping');
-    } else {
+    } else if (module) {
       const re = new RegExp(`^${_.snakeCase(module)}.(.*)`);
       const res = re.exec(rawKey);
       if (Array.isArray(res) && res.length > 1) {
@@ -118,6 +118,8 @@ function mockProps(state, module, dataKey, logger) {
       } else {
         logger.log('mock', `    cannot pick apart key '${rawKey}'`);
       }
+    } else {
+      mock.resources[rawKey] = state[rawKey];
     }
   });
   logger.log('mock', 'mockProps returning', mock);

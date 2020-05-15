@@ -30,10 +30,10 @@ function arePropsEqual(props, prevProps) {
 }
 
 const wrap = (Wrapped, module, epics, logger, options = {}) => {
-  const resources = [];
+  let resources = [];
   const dataKey = options.dataKey;
 
-  _.map(Wrapped.manifest, (query, name) => {
+  _.forOwn(Wrapped.manifest, (query, name) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
     resources.push(resource);
     if (query.type === 'okapi') {
@@ -138,6 +138,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           }
         }
       });
+      resources = [];
     }
 
     componentShouldRefreshRemote(nextProps) {

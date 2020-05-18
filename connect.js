@@ -35,7 +35,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
   const dataKey = options.dataKey;
   const { manifest } = Wrapped;
 
-  _.map(manifest, (query, name) => {
+  _.forOwn(manifest, (query, name) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
     resourceRegistry.register(module, resource);
     if (query.type === 'okapi') {

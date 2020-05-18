@@ -8,6 +8,7 @@ import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
+import ResourceRegistry from './ResourceRegistry';
 
 /* eslint-env browser */
 const defaultType = 'local';
@@ -19,6 +20,7 @@ const types = {
 
 const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
 let _registeredEpics = {};
+const resourceRegistry = new ResourceRegistry();
 
 // Check if props are equal by first filtering out props which are functions
 // or common props introduced by stripes-connect or redux-form
@@ -30,12 +32,12 @@ function arePropsEqual(props, prevProps) {
 }
 
 const wrap = (Wrapped, module, epics, logger, options = {}) => {
-  const resources = [];
   const dataKey = options.dataKey;
+  const { manifest } = Wrapped;
 
-  _.map(Wrapped.manifest, (query, name) => {
+  _.map(manifest, (query, name) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
-    resources.push(resource);
+    resourceRegistry.register(module, resource);
     if (query.type === 'okapi') {
       const key = `${resource.name}${resource.module}`;
       // Only register each module component once since mutator only needs a single reference, otherwise the
@@ -68,6 +70,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     constructor(props) {
       super(props);
       const context = props.root;
+      const resources = resourceRegistry.getResources(module, manifest);
+
       this.logger = logger;
       Wrapper.logger = logger;
       logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
@@ -110,7 +114,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     componentDidMount() {
       // this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
       this.props.refreshRemote({ ...this.props });
-      resources.forEach((resource) => {
+      resourceRegistry.getResources(module, manifest).forEach((resource) => {
         if (resource instanceof OkapiResource) {
           // Call refresh whenever mounting to ensure that mutated data is updated in the UI.
           // This is safe to call as many times as needed when re-connecting.
@@ -130,7 +134,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
     componentWillUnmount() {
       this._subscribers.forEach((unsubscribe) => unsubscribe());
-      resources.forEach((resource) => {
+      resourceRegistry.getResources(module, manifest).forEach((resource) => {
         if (resource instanceof OkapiResource) {
           resource.markInvisible();
 
@@ -153,6 +157,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
       const { root: { store } } = this.props;
       const state = store.getState();
+      const resources = resourceRegistry.getResources(module, manifest);
 
       for (let i = 0, size = resources.length; i < size; ++i) {
         if (resources[i].shouldRefresh(this.props, nextProps, state)) {
@@ -176,9 +181,11 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
   };
 
   Wrapper.mapState = (state) => {
+    const resources = resourceRegistry.getResources(module, manifest);
+    const resourceData = {};
+
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
 
-    const resourceData = {};
     for (const r of resources) {
       resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
     }
@@ -191,6 +198,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
   Wrapper.mapDispatch = (dispatch, ownProps) => {
     const res = {};
+    const resources = resourceRegistry.getResources(module, manifest);
+
     res.mutator = {};
     for (const r of resources) {
       res.mutator[r.name] = r.getMutator(dispatch, ownProps);
@@ -241,5 +250,6 @@ export { default as ConnectContext, withConnect } from './ConnectContext';
 
 export function reset() {
   _registeredEpics = {};
+  resourceRegistry.clear();
 }
 export default connect;

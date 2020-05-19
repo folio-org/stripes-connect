@@ -1,8 +1,14 @@
 # Change history for stripes-connect
 
-## 5.6.0 IN PROGRESS
+## [5.6.0](https://github.com/folio-org/stripes-connect/tree/v5.6.0) (2020-05-19)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.5.0...v5.6.0)
 
+This lets us better scope the shouldRefresh for our resources.
+
+* Better `shouldRefresh` scoping on resources allows, e.g. to avoid it after `DELETE` requests.
 * Added `originatingActionType` to `REFRESH` action `meta` objects.
+* Improved documentation for error handling and local resource mutation.
+* Throw when `connect` receives an undefined component because, duh, that ain't right.
 * Restart paging correctly. STCON-102.
 
 ## [5.5.0](https://github.com/folio-org/stripes-connect/tree/v5.5.0) (2020-03-03)

@@ -120,7 +120,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       });
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line react/no-deprecated
+    // eslint-disable-next-line camelcase, react/no-deprecated
+    UNSAFE_componentWillReceiveProps(nextProps) {
       // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
       if (this.componentShouldRefreshRemote(nextProps)) {
         this.props.refreshRemote({ ...nextProps });

@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 5.7.0 (IN PROGRESS)
+
+* Use `UNSAFE_componentWillReceiveProps` for a quieter console. Refs STCON-70.
+
 ## [5.6.0](https://github.com/folio-org/stripes-connect/tree/v5.6.0) (2020-05-19)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.5.0...v5.6.0)
 

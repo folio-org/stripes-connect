@@ -34,10 +34,11 @@ function arePropsEqual(props, prevProps) {
 const wrap = (Wrapped, module, epics, logger, options = {}) => {
   const dataKey = options.dataKey;
   const { manifest } = Wrapped;
+  const resources = [];
 
   _.forOwn(manifest, (query, name) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
-    resourceRegistry.register(module, resource);
+    resources.push(resource);
     if (query.type === 'okapi') {
       const key = `${resource.name}${resource.module}`;
       // Only register each module component once since mutator only needs a single reference, otherwise the
@@ -48,6 +49,8 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       }
     }
   });
+
+  resourceRegistry.add(resources);
 
   class Wrapper extends React.Component {
     static propTypes = {
@@ -70,7 +73,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     constructor(props) {
       super(props);
       const context = props.root;
-      const resources = resourceRegistry.getResources(module, manifest);
 
       this.logger = logger;
       Wrapper.logger = logger;
@@ -114,7 +116,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     componentDidMount() {
       // this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
       this.props.refreshRemote({ ...this.props });
-      resourceRegistry.getResources(module, manifest).forEach((resource) => {
+      resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           // Call refresh whenever mounting to ensure that mutated data is updated in the UI.
           // This is safe to call as many times as needed when re-connecting.
@@ -134,7 +136,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
     componentWillUnmount() {
       this._subscribers.forEach((unsubscribe) => unsubscribe());
-      resourceRegistry.getResources(module, manifest).forEach((resource) => {
+      resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           resource.markInvisible();
 
@@ -157,7 +159,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
       const { root: { store } } = this.props;
       const state = store.getState();
-      const resources = resourceRegistry.getResources(module, manifest);
 
       for (let i = 0, size = resources.length; i < size; ++i) {
         if (resources[i].shouldRefresh(this.props, nextProps, state)) {
@@ -181,7 +182,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
   };
 
   Wrapper.mapState = (state) => {
-    const resources = resourceRegistry.getResources(module, manifest);
     const resourceData = {};
 
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
@@ -198,8 +198,6 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
 
   Wrapper.mapDispatch = (dispatch, ownProps) => {
     const res = {};
-    const resources = resourceRegistry.getResources(module, manifest);
-
     res.mutator = {};
     for (const r of resources) {
       res.mutator[r.name] = r.getMutator(dispatch, ownProps);

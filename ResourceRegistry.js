@@ -1,29 +1,17 @@
-import forOwn from 'lodash/forOwn';
-
 export default class ResourceRegistry {
   constructor() {
-    this.registry = {};
+    this.list = [];
   }
 
-  register(module, resource) {
-    if (!this.registry[module]) {
-      this.registry[module] = {};
-    }
-
-    this.registry[module][resource.name] = resource;
-  }
-
-  getResources(module, manifest) {
-    const resources = [];
-
-    forOwn(manifest, (_, name) => {
-      resources.push(this.registry[module][name]);
-    });
-
-    return resources;
+  add(array) {
+    this.list.push(array);
   }
 
   clear() {
-    this.registry = {};
+    for (let i = 0, l = this.list.length; i < l; i++) {
+      this.list[i].splice(0, this.list[i].length);
+      this.list[i] = null;
+    }
+    this.list = [];
   }
 }

@@ -1,3 +1,4 @@
+import AbortController from 'abort-controller';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
@@ -262,6 +263,7 @@ export default class RESTResource {
     this.actions = actionCreatorsFor(this);
     this.pagedFetchSuccess = this.actions.fetchSuccess;
     this.reducer = reducer.bind(this);
+    this.abortControllers = {};
   }
 
   getMutator(dispatch, props) {
@@ -269,6 +271,7 @@ export default class RESTResource {
       DELETE: (record, opts) => dispatch(this.deleteAction(record, props, opts)),
       PUT: (record, opts) => dispatch(this.updateAction(record, props, opts)),
       POST: (record, opts) => dispatch(this.createAction(record, props, opts)),
+      cancel: () => this.cancelRequests(),
     };
 
     if (this.optionsTemplate.accumulate) {
@@ -482,6 +485,11 @@ export default class RESTResource {
     this.dispatch(this.actions.reset());
   }
 
+  cancelRequests() {
+    Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
+    this.abortControllers = {};
+  }
+
   hasMissingPerms(state, perms) {
     const currentPerms = _.get(state, ['okapi', 'currentPerms'], {});
     const reqPerms = _.isArray(perms) ? perms : perms.split(',');
@@ -568,6 +576,7 @@ export default class RESTResource {
       if (url === null) return null;
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(this.actions.updateStart(clientRecord));
+
       const beforeCatch = fetch(url, {
         method: 'PUT',
         headers,
@@ -690,7 +699,12 @@ export default class RESTResource {
       this.lastReqd = requestIndex;
 
       dispatch(this.actions.fetchStart());
-      return fetch(url, { headers })
+
+      const ctrl = new AbortController();
+      const { signal } = ctrl;
+      this.abortControllers.fetch = ctrl;
+
+      return fetch(url, { headers, signal })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));
@@ -734,9 +748,7 @@ export default class RESTResource {
               }
             });
           }
-        }).catch((reason) => {
-          dispatch(this.actions.fetchError({ message: reason.message }));
-        });
+        }).catch((reason) => this.fetchAbortOrError(reason, dispatch));
     };
   }
 
@@ -749,7 +761,11 @@ export default class RESTResource {
       newOptions.params = {};
       newOptions.params[offsetParam] = reqd;
       const url = urlFromOptions(_.merge({}, options, newOptions));
-      fetch(url, { headers })
+      const ctrl = new AbortController();
+      const { signal } = ctrl;
+      this.abortControllers.fetchPageByOffset = ctrl;
+
+      fetch(url, { headers, signal })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));
@@ -767,11 +783,7 @@ export default class RESTResource {
               dispatch(this.actions.offsetFetchSuccess(meta, data));
             });
           }
-        }).catch((err) => {
-          dispatch(this.actions.fetchError({
-            message: `Unexpected fetch error ${err}`,
-          }));
-        });
+        }).catch((reason) => this.fetchAbortOrError(reason, dispatch));
     };
   }
 
@@ -790,7 +802,12 @@ export default class RESTResource {
         newOptions.params[offsetParam] = offset;
         const url = urlFromOptions(_.merge({}, options, newOptions));
         dispatch(this.actions.pageStart(url));
-        fetch(url, { headers })
+
+        const ctrl = new AbortController();
+        const { signal } = ctrl;
+        this.abortControllers[`fetchMore${offset}`] = ctrl;
+
+        fetch(url, { headers, signal })
           .then((response) => {
             if (response.status >= 400) {
               dispatch(this.fetchHTTPError(response));
@@ -825,11 +842,7 @@ export default class RESTResource {
                 dispatch(this.actions.pageSuccess(meta, data));
               });
             }
-          }).catch((err) => {
-            dispatch(this.actions.fetchError({
-              message: `Unexpected fetch error ${err}`,
-            }));
-          });
+          }).catch((reason) => this.fetchAbortOrError(reason, dispatch));
       }
       dispatch(this.actions.pageSuccess(firstMeta, firstData));
     };
@@ -848,7 +861,11 @@ export default class RESTResource {
       const { headers, records } = options;
       dispatch(this.actions.fetchStart());
 
-      const beforeCatch = fetch(url, { headers })
+      const ctrl = new AbortController();
+      const { signal } = ctrl;
+      this.abortControllers.accFetch = ctrl;
+
+      const beforeCatch = fetch(url, { headers, signal })
         .then(response => response.text()
           .then((text) => {
             if (response.status >= 400) {
@@ -877,12 +894,20 @@ export default class RESTResource {
             return data;
           }));
 
-      beforeCatch.catch((reason) => {
-        dispatch(this.actions.fetchError({ message: reason.message }));
-      });
+      beforeCatch.catch((reason) => this.fetchAbortOrError(reason, dispatch));
 
       return beforeCatch;
     };
+  }
+
+  fetchAbortOrError = (reason, dispatch) => {
+    const { name, message } = reason;
+
+    if (name === 'AbortError') {
+      dispatch(this.actions.fetchAbort({ message }));
+    } else {
+      dispatch(this.actions.fetchError({ message }));
+    }
   }
 
   fetchHTTPError = res => dispatch => res.text().then((text) => {

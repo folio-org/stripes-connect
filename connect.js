@@ -138,6 +138,10 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           if (resource.shouldReset()) {
             resource.reset();
           }
+
+          if (!resource.isVisible()) {
+            resource.cancelRequests();
+          }
         }
       });
     }

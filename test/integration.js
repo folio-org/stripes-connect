@@ -298,6 +298,7 @@ describe('connect()', () => {
 
     setTimeout(() => {
       inst.find(Remote).instance().props.resources.remoteResource.records[0].someprop.should.equal('someval');
+      inst.find(Remote).instance().props.resources.remoteResource.successfulMutations[0].record.someprop.should.equal('newer');
       fetchMock.restore();
       done();
     }, 10);

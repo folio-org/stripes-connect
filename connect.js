@@ -185,9 +185,11 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       let initState = _.get(state, r.stateKey());
 
       if (!initState) {
-        initState = (r instanceof OkapiResource)
-          ? initialResourceState
-          : r?.query?.initialValue ?? {};
+        if (r instanceof OkapiResource) {
+          initState = initialResourceState;
+        } else {
+          initState = r?.query?.initialValue !== undefined ? r.query.initialValue : {};
+        }
       }
 
       resourceData[r.name] = Object.freeze(initState);

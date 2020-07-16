@@ -6,6 +6,7 @@ import { withConnect } from './ConnectContext';
 
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
+import { initialResourceState } from './RESTResource/reducer';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
 
@@ -179,10 +180,20 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
 
     const resourceData = {};
-    for (const r of resources) {
-      resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
-    }
 
+    for (const r of resources) {
+      let initState = _.get(state, r.stateKey());
+
+      if (!initState) {
+        if (r instanceof OkapiResource) {
+          initState = initialResourceState;
+        } else {
+          initState = r?.query?.initialValue !== undefined ? r.query.initialValue : {};
+        }
+      }
+
+      resourceData[r.name] = Object.freeze(initState);
+    }
     const newProps = { dataKey, resources: resourceData };
     // TODO Generalise this into a pass-through option on connectFor
     if (typeof state.okapi === 'object') newProps.okapi = state.okapi;

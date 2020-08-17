@@ -519,7 +519,7 @@ export default class RESTResource {
     }).then((response) => {
       if (response.status >= 400) {
         const clonedResponse = response.clone();
-        dispatch(this.mutationHTTPError(response, 'POST'));
+        dispatch(this.mutationHTTPError(response, 'POST', this.getActionMeta(options.POST)));
         // fetch responses are single-use so we use the one above and throw a different
         // one for catch() to play with
         throw clonedResponse;
@@ -549,10 +549,10 @@ export default class RESTResource {
         // single-use promise for getting them message body available for external
         // catch()
         if (!reason.status && !reason.headers) {
-          dispatch(this.actions.mutationError({ message: reason.message }, 'POST'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'POST', this.getActionMeta(options.POST)));
         }
       } else {
-        dispatch(this.actions.mutationError({ message: reason }, 'POST'));
+        dispatch(this.actions.mutationError({ message: reason }, 'POST', this.getActionMeta(options.POST)));
       }
     });
 
@@ -576,7 +576,7 @@ export default class RESTResource {
         .then((response) => {
           if (response.status >= 400) {
             const clonedResponse = response.clone();
-            dispatch(this.mutationHTTPError(response, 'PUT'));
+            dispatch(this.mutationHTTPError(response, 'PUT', this.getActionMeta(options.PUT)));
             throw clonedResponse;
           } else {
             const meta = this.getMeta({ ...options, ...opts });
@@ -604,7 +604,7 @@ export default class RESTResource {
 
       beforeCatch.catch((reason) => {
         if (typeof reason === 'object' && !reason.status && !reason.headers) {
-          dispatch(this.actions.mutationError({ message: reason.message }, 'PUT'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'PUT', this.getActionMeta(options.PUT)));
         }
       });
 
@@ -628,7 +628,7 @@ export default class RESTResource {
       .then((response) => {
         if (response.status >= 400) {
           const clonedResponse = response.clone();
-          dispatch(this.mutationHTTPError(response, 'DELETE'));
+          dispatch(this.mutationHTTPError(response, 'DELETE', this.getActionMeta(options.DELETE)));
           throw clonedResponse;
         } else {
           const meta = this.getMeta({ ...options, ...opts });
@@ -638,7 +638,7 @@ export default class RESTResource {
 
     beforeCatch.catch((reason) => {
       if (typeof reason === 'object' && !reason.status && !reason.headers) {
-        dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
+        dispatch(this.actions.mutationError({ message: reason.message }, 'DELETE', this.getActionMeta(options.DELETE)));
       }
     });
 
@@ -892,10 +892,14 @@ export default class RESTResource {
     }));
   });
 
-  mutationHTTPError = (res, mutator) => dispatch => res.text().then((text) => {
+  mutationHTTPError = (res, mutator, meta) => dispatch => res.text().then((text) => {
     dispatch(this.actions.mutationError({
       message: text || res.statusText,
       httpStatus: res.status,
-    }, mutator));
+    }, mutator, meta));
   });
+
+  getActionMeta = actionOptions => {
+    return _.pick(actionOptions, 'throwErrors');
+  }
 }

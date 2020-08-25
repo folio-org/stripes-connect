@@ -5,6 +5,7 @@ import { connect as reduxConnect } from 'react-redux';
 import { withConnect } from './ConnectContext';
 
 import OkapiResource from './OkapiResource';
+import OkapiLookupResource from './OkapiLookupResource';
 import RESTResource from './RESTResource';
 import { initialResourceState } from './RESTResource/reducer';
 import LocalResource from './LocalResource';
@@ -16,6 +17,7 @@ const types = {
   local: LocalResource,
   okapi: OkapiResource,
   rest: RESTResource,
+  lookup: OkapiLookupResource,
 };
 
 const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];

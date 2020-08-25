@@ -1,7 +1,9 @@
 # Change history for stripes-connect
 
 ## 6.0.0 (IN PROGRESS)
-Allow mutators to configure `throwErrors` option. STCON-112.
+
+* Allow mutators to configure `throwErrors` option. STCON-112.
+* Provide `OkapiLookupResource`, automatically providing a limit clause on lookup queries.
 
 ## [5.6.1](https://github.com/folio-org/stripes-connect/tree/v5.6.1) (2020-06-08)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.6.0...v5.6.1)

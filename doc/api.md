@@ -169,6 +169,9 @@ via limitParam/offsetParam.
   resource, which allows it to be used in code that expects to receive a
   promise. Default: `false`.
 
+* `abortable`: A boolean which can be used to control if the given pending resource
+  should be aborted during component unmount. Default `true`.
+
 * `permissionsRequired`: A string (or an array of strings) indicating the list
   of permissions required for the given resource to be fetched.
 

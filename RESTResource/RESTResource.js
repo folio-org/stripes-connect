@@ -6,7 +6,7 @@ import queryString from 'query-string';
 import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
 
-const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
+const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true, abortable: true };
 
 /**
  * extractTotal
@@ -486,8 +486,10 @@ export default class RESTResource {
   }
 
   cancelRequests() {
-    Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
-    this.abortControllers = {};
+    if (this.optionsTemplate.abortable) {
+      Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
+      this.abortControllers = {};
+    }
   }
 
   hasMissingPerms(state, perms) {

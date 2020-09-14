@@ -748,7 +748,7 @@ export default class RESTResource {
               }
             });
           }
-        }).catch((reason) => this.fetchAbortOrError(reason, dispatch));
+        }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
     };
   }
 
@@ -783,7 +783,7 @@ export default class RESTResource {
               dispatch(this.actions.offsetFetchSuccess(meta, data));
             });
           }
-        }).catch((reason) => this.fetchAbortOrError(reason, dispatch));
+        }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
     };
   }
 
@@ -842,7 +842,7 @@ export default class RESTResource {
                 dispatch(this.actions.pageSuccess(meta, data));
               });
             }
-          }).catch((reason) => this.fetchAbortOrError(reason, dispatch));
+          }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
       }
       dispatch(this.actions.pageSuccess(firstMeta, firstData));
     };
@@ -894,13 +894,13 @@ export default class RESTResource {
             return data;
           }));
 
-      beforeCatch.catch((reason) => this.fetchAbortOrError(reason, dispatch));
+      beforeCatch.catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
 
       return beforeCatch;
     };
   }
 
-  fetchAbortOrError = (reason, dispatch) => {
+  handleFetchOrAbortError = (reason, dispatch) => {
     const { name, message } = reason;
 
     if (name === 'AbortError') {

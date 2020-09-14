@@ -1,4 +1,5 @@
 import 'jsdom-global/register';
+import AbortController from 'abort-controller';
 import chai from 'chai';
 import { describe, it } from 'mocha';
 import Enzyme, { mount } from 'enzyme';
@@ -14,6 +15,7 @@ import ConnectContext from '../ConnectContext';
 
 import { connect } from '../connect';
 
+global.window.AbortController = AbortController;
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -87,7 +89,7 @@ Accumulated.manifest = {
     type: 'okapi',
     path: 'accumulated',
     accumulate: true,
-    abortOnUnmount: true,
+    abortable: true,
   },
 };
 
@@ -96,7 +98,7 @@ Unmounted.manifest = {
   unmounted: {
     type: 'okapi',
     path: 'unmounted',
-    abortOnUnmount: true,
+    abortable: true,
   },
 };
 

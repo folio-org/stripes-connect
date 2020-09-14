@@ -1,4 +1,3 @@
-import AbortController from 'abort-controller';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
@@ -6,7 +5,7 @@ import queryString from 'query-string';
 import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
 
-const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true, abortOnUnmount: false };
+const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true, abortable: false };
 
 /**
  * extractTotal
@@ -485,12 +484,12 @@ export default class RESTResource {
     this.dispatch(this.actions.reset());
   }
 
-  addAbortController(key) {
-    if (!this.optionsTemplate.abortOnUnmount) {
+  addAbortController(key, options) {
+    if (!options.abortable) {
       return null;
     }
 
-    const ctrl = new AbortController();
+    const ctrl = new window.AbortController();
     const { signal } = ctrl;
 
     this.abortControllers[key] = ctrl;
@@ -499,10 +498,8 @@ export default class RESTResource {
   }
 
   cancelRequests() {
-    if (this.optionsTemplate.abortOnUnmount) {
-      Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
-      this.abortControllers = {};
-    }
+    Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
+    this.abortControllers = {};
   }
 
   hasMissingPerms(state, perms) {
@@ -535,7 +532,7 @@ export default class RESTResource {
       remoteRecord[pk] = clientGeneratedId;
     }
 
-    const signal = this.addAbortController('create');
+    const signal = this.addAbortController('create', options);
 
     // Send remote record
     const beforeCatch = fetch(url, {
@@ -597,7 +594,7 @@ export default class RESTResource {
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(this.actions.updateStart(clientRecord));
 
-      const signal = this.addAbortController('update');
+      const signal = this.addAbortController('update', options);
 
       const beforeCatch = fetch(url, {
         method: 'PUT',
@@ -654,7 +651,7 @@ export default class RESTResource {
     if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
     dispatch(this.actions.deleteStart(clientRecord));
 
-    const signal = this.addAbortController('remove');
+    const signal = this.addAbortController('remove', options);
 
     const beforeCatch = fetch(url, {
       method: 'DELETE',
@@ -727,7 +724,7 @@ export default class RESTResource {
 
       dispatch(this.actions.fetchStart());
 
-      const signal = this.addAbortController('fetch');
+      const signal = this.addAbortController('fetch', options);
 
       return fetch(url, { headers, signal })
         .then((response) => {
@@ -787,7 +784,7 @@ export default class RESTResource {
       newOptions.params[offsetParam] = reqd;
       const url = urlFromOptions(_.merge({}, options, newOptions));
 
-      const signal = this.addAbortController('fetchPageByOffset');
+      const signal = this.addAbortController('fetchPageByOffset', options);
 
       fetch(url, { headers, signal })
         .then((response) => {
@@ -827,7 +824,7 @@ export default class RESTResource {
         const url = urlFromOptions(_.merge({}, options, newOptions));
         dispatch(this.actions.pageStart(url));
 
-        const signal = this.addAbortController(`fetchMore${offset}`);
+        const signal = this.addAbortController(`fetchMore${offset}`, options);
 
         fetch(url, { headers, signal })
           .then((response) => {
@@ -883,7 +880,7 @@ export default class RESTResource {
       const { headers, records } = options;
       dispatch(this.actions.fetchStart());
 
-      const signal = this.addAbortController('accFetch');
+      const signal = this.addAbortController('accFetch', options);
 
       const beforeCatch = fetch(url, { headers, signal })
         .then(response => response.text()

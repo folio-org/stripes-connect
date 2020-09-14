@@ -5,7 +5,14 @@ import queryString from 'query-string';
 import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
 
-const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true, abortable: false };
+const defaultDefaults = {
+  pk: 'id',
+  clientGeneratePk: true,
+  fetch: true,
+  clear: true,
+  abortable: false,
+  abortOnUnmount: false,
+};
 
 /**
  * extractTotal
@@ -485,7 +492,7 @@ export default class RESTResource {
   }
 
   addAbortController(key, options) {
-    if (!options.abortable) {
+    if (!options.abortable && !options.abortOnUnmount) {
       return null;
     }
 
@@ -495,6 +502,14 @@ export default class RESTResource {
     this.abortControllers[key] = ctrl;
 
     return signal;
+  }
+
+  cancelRequestsOnUnmout() {
+    const { abortOnUnmount } = this.optionsTemplate;
+
+    if (abortOnUnmount) {
+      this.cancelRequests();
+    }
   }
 
   cancelRequests() {

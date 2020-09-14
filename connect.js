@@ -140,7 +140,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           }
 
           if (!resource.isVisible()) {
-            resource.cancelRequests();
+            resource.cancelRequestsOnUnmout();
           }
         }
       });

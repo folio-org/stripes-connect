@@ -98,7 +98,7 @@ Unmounted.manifest = {
   unmounted: {
     type: 'okapi',
     path: 'unmounted',
-    abortable: true,
+    abortOnUnmount: true,
   },
 };
 

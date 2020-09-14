@@ -87,6 +87,7 @@ Accumulated.manifest = {
     type: 'okapi',
     path: 'accumulated',
     accumulate: true,
+    abortOnUnmount: true,
   },
 };
 
@@ -95,6 +96,7 @@ Unmounted.manifest = {
   unmounted: {
     type: 'okapi',
     path: 'unmounted',
+    abortOnUnmount: true,
   },
 };
 

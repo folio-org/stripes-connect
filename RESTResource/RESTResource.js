@@ -6,7 +6,7 @@ import queryString from 'query-string';
 import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
 
-const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true, abortable: true };
+const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true, abortOnUnmount: false };
 
 /**
  * extractTotal
@@ -485,8 +485,21 @@ export default class RESTResource {
     this.dispatch(this.actions.reset());
   }
 
+  addAbortController(key) {
+    if (!this.optionsTemplate.abortOnUnmount) {
+      return null;
+    }
+
+    const ctrl = new AbortController();
+    const { signal } = ctrl;
+
+    this.abortControllers[key] = ctrl;
+
+    return signal;
+  }
+
   cancelRequests() {
-    if (this.optionsTemplate.abortable) {
+    if (this.optionsTemplate.abortOnUnmount) {
       Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
       this.abortControllers = {};
     }
@@ -521,10 +534,14 @@ export default class RESTResource {
     if (clientGeneratePk) {
       remoteRecord[pk] = clientGeneratedId;
     }
+
+    const signal = this.addAbortController('create');
+
     // Send remote record
     const beforeCatch = fetch(url, {
       method: 'POST',
       headers,
+      signal,
       body: JSON.stringify(remoteRecord),
     }).then((response) => {
       if (response.status >= 400) {
@@ -571,6 +588,7 @@ export default class RESTResource {
 
   updateAction = (record, props, opts) => {
     const clientRecord = { ...record };
+
     return (dispatch, getState) => {
       const options = this.verbOptions('PUT', getState(), props);
       const { pk, headers } = options;
@@ -579,9 +597,12 @@ export default class RESTResource {
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(this.actions.updateStart(clientRecord));
 
+      const signal = this.addAbortController('update');
+
       const beforeCatch = fetch(url, {
         method: 'PUT',
         headers,
+        signal,
         body: JSON.stringify(record),
       })
         .then((response) => {
@@ -632,9 +653,13 @@ export default class RESTResource {
     const clientRecord = { ...record };
     if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
     dispatch(this.actions.deleteStart(clientRecord));
+
+    const signal = this.addAbortController('remove');
+
     const beforeCatch = fetch(url, {
       method: 'DELETE',
       headers,
+      signal,
     })
       .then((response) => {
         if (response.status >= 400) {
@@ -702,9 +727,7 @@ export default class RESTResource {
 
       dispatch(this.actions.fetchStart());
 
-      const ctrl = new AbortController();
-      const { signal } = ctrl;
-      this.abortControllers.fetch = ctrl;
+      const signal = this.addAbortController('fetch');
 
       return fetch(url, { headers, signal })
         .then((response) => {
@@ -763,9 +786,8 @@ export default class RESTResource {
       newOptions.params = {};
       newOptions.params[offsetParam] = reqd;
       const url = urlFromOptions(_.merge({}, options, newOptions));
-      const ctrl = new AbortController();
-      const { signal } = ctrl;
-      this.abortControllers.fetchPageByOffset = ctrl;
+
+      const signal = this.addAbortController('fetchPageByOffset');
 
       fetch(url, { headers, signal })
         .then((response) => {
@@ -805,9 +827,7 @@ export default class RESTResource {
         const url = urlFromOptions(_.merge({}, options, newOptions));
         dispatch(this.actions.pageStart(url));
 
-        const ctrl = new AbortController();
-        const { signal } = ctrl;
-        this.abortControllers[`fetchMore${offset}`] = ctrl;
+        const signal = this.addAbortController(`fetchMore${offset}`);
 
         fetch(url, { headers, signal })
           .then((response) => {
@@ -863,9 +883,7 @@ export default class RESTResource {
       const { headers, records } = options;
       dispatch(this.actions.fetchStart());
 
-      const ctrl = new AbortController();
-      const { signal } = ctrl;
-      this.abortControllers.accFetch = ctrl;
+      const signal = this.addAbortController('accFetch');
 
       const beforeCatch = fetch(url, { headers, signal })
         .then(response => response.text()

@@ -1,7 +1,12 @@
 # Change history for stripes-connect
 
-## 6.0.0 (IN PROGRESS)
-Allow mutators to configure `throwErrors` option. STCON-112.
+## [6.0.0](https://github.com/folio-org/stripes-connect/tree/v6.0.0) (2020-10-06)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.6.1...v6.0.0)
+
+* Init resources correctly so their state is immediately available for inspection.
+* Add ability to cancel pending requests. Revs STCON-104.
+* Remove unnecessary use of isomorphic-fetch
+* Allow mutators to configure `throwErrors` option. STCON-112.
 
 ## [5.6.1](https://github.com/folio-org/stripes-connect/tree/v5.6.1) (2020-06-08)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.6.0...v5.6.1)

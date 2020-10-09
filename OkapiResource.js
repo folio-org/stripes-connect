@@ -5,6 +5,8 @@ const defaults = {
   clientGeneratePk: true,
   fetch: true,
   clear: true,
+  abortable: false,
+  abortOnUnmount: false,
   limitParam: 'limit',
   offsetParam: 'offset',
   headers: {

@@ -6,6 +6,7 @@ import { withConnect } from './ConnectContext';
 
 import OkapiResource from './OkapiResource';
 import RESTResource from './RESTResource';
+import { initialResourceState } from './RESTResource/reducer';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
 
@@ -18,6 +19,7 @@ const types = {
 };
 
 const excludedProps = ['anyTouched', 'mutator', 'connectedSource'];
+let _registeredEpics = {};
 
 // Check if props are equal by first filtering out props which are functions
 // or common props introduced by stripes-connect or redux-form
@@ -36,7 +38,13 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     const resource = new types[query.type || defaultType](name, query, module, logger, query.dataKey || dataKey);
     resources.push(resource);
     if (query.type === 'okapi') {
-      epics.add(...mutationEpics(resource), refreshEpic(resource));
+      const key = `${resource.name}${resource.module}`;
+      // Only register each module component once since mutator only needs a single reference, otherwise the
+      // mutations continue to be added when modules are re-connected causing performance issues.
+      if (!_registeredEpics[key]) {
+        _registeredEpics[key] = true;
+        epics.add(...mutationEpics(resource));
+      }
     }
   });
 
@@ -105,12 +113,16 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       this.props.refreshRemote({ ...this.props });
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
+          // Call refresh whenever mounting to ensure that mutated data is updated in the UI.
+          // This is safe to call as many times as needed when re-connecting.
+          epics.add(refreshEpic(resource));
           resource.markVisible();
         }
       });
     }
 
-    componentWillReceiveProps(nextProps) { // eslint-disable-line react/no-deprecated
+    // eslint-disable-next-line camelcase, react/no-deprecated
+    UNSAFE_componentWillReceiveProps(nextProps) {
       // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
       if (this.componentShouldRefreshRemote(nextProps)) {
         this.props.refreshRemote({ ...nextProps });
@@ -122,6 +134,14 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           resource.markInvisible();
+
+          if (resource.shouldReset()) {
+            resource.reset();
+          }
+
+          if (!resource.isVisible()) {
+            resource.cancelRequestsOnUnmout();
+          }
         }
       });
     }
@@ -164,10 +184,20 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     logger.log('connect-lifecycle', `mapState for <${Wrapped.name}>, resources =`, resources);
 
     const resourceData = {};
-    for (const r of resources) {
-      resourceData[r.name] = Object.freeze(_.get(state, [`${r.stateKey()}`], null));
-    }
 
+    for (const r of resources) {
+      let initState = _.get(state, r.stateKey());
+
+      if (!initState) {
+        if (r instanceof OkapiResource) {
+          initState = initialResourceState;
+        } else {
+          initState = r?.query?.initialValue !== undefined ? r.query.initialValue : {};
+        }
+      }
+
+      resourceData[r.name] = Object.freeze(initState);
+    }
     const newProps = { dataKey, resources: resourceData };
     // TODO Generalise this into a pass-through option on connectFor
     if (typeof state.okapi === 'object') newProps.okapi = state.okapi;
@@ -204,6 +234,12 @@ defaultLogger.log = (cat, ...args) => {
 
 export const connect = (Component, module, epics, loggerArg, options) => {
   const logger = loggerArg || defaultLogger;
+  if (typeof Component === 'undefined') {
+    throw Error(`connect() called on an undefined component from ${module}.
+This generally tends to be the case when you imported a component from the wrong place, so triple-check your paths and whether something is a named or default export!
+Also, the component file may have failed to parse correctly. Check the browser console logs to see if this may be the case.`);
+  }
+
   if (typeof Component.manifest === 'undefined') {
     logger.log('connect-no', `not connecting <${Component.name}> for '${module}': no manifest`);
     return Component;
@@ -218,4 +254,7 @@ export const connectFor = (module, epics, logger) => (Component, options) => con
 
 export { default as ConnectContext, withConnect } from './ConnectContext';
 
+export function reset() {
+  _registeredEpics = {};
+}
 export default connect;

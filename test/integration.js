@@ -1,4 +1,5 @@
 import 'jsdom-global/register';
+import AbortController from 'abort-controller';
 import chai from 'chai';
 import { describe, it } from 'mocha';
 import Enzyme, { mount } from 'enzyme';
@@ -14,6 +15,7 @@ import ConnectContext from '../ConnectContext';
 
 import { connect } from '../connect';
 
+global.window.AbortController = AbortController;
 
 Enzyme.configure({ adapter: new Adapter() });
 
@@ -36,11 +38,11 @@ class Root extends Component {
   }
 
   render() {
-    const { component:ToTest } = this.props;
+    const { component: ToTest, hideConnected } = this.props;
     return (
       <Provider store={this.props.store}>
         <ConnectContext.Provider value={{ addReducer: this.addReducer, addEpic: this.addEpic, store: this.props.store }}>
-          <ToTest fooProp="foo" {...this.props} />
+          {!hideConnected && <ToTest fooProp="foo" {...this.props} />}
         </ConnectContext.Provider>
       </Provider>
     );
@@ -81,6 +83,26 @@ Remote.manifest = { remoteResource: {
   path: 'turnip',
 } };
 
+const Accumulated = () => (<div id="somediv" />);
+Accumulated.manifest = {
+  accumulated: {
+    type: 'okapi',
+    path: 'accumulated',
+    accumulate: true,
+    abortable: true,
+  },
+};
+
+const Unmounted = () => (<div id="somediv" />);
+Unmounted.manifest = {
+  unmounted: {
+    type: 'okapi',
+    path: 'unmounted',
+    abortOnUnmount: true,
+  },
+};
+
+
 class Paged extends Component { // eslint-disable-line react/no-multi-comp
   render() {
     return <div id="somediv" />;
@@ -92,6 +114,20 @@ Paged.manifest = { pagedResource: {
   params: { q: 'dinner' },
   records: 'records',
   recordsRequired: 20,
+  perRequest: 5,
+} };
+
+class PagedOffset extends Component { // eslint-disable-line react/no-multi-comp
+  render() {
+    return <div id="somediv" />;
+  }
+}
+PagedOffset.manifest = { pagedResource: {
+  type: 'okapi',
+  path: 'turnip',
+  params: { q: 'dinner', offset: '5' },
+  records: 'records',
+  offsetParam: 'offset',
   perRequest: 5,
 } };
 
@@ -234,15 +270,15 @@ describe('connect()', () => {
         [{ id: 1, someprop: 'someval' }],
         { headers: { 'Content-Type': 'application/json' } })
       .put('http://localhost/turnip/1',
-        { id: 1, someprop: 'someval' },
-        { headers: { 'Content-Type': 'application/json' } })
+        { id: 1, someprop: 'new' },
+        { status: 200, headers: { 'Content-Type': 'application/json' } })
       .post('http://localhost/turnip',
-        { id: 1, someprop: 'someval' },
+        { id: 1, someprop: 'newer' },
         { headers: { 'Content-Type': 'application/json' } })
       .delete('http://localhost/turnip/1',
         { id: 1, someprop: 'someval' },
         { headers: { 'Content-Type': 'application/json' } })
-      .catch(503);
+      .catch({ status: 503 });
 
     const store = createStore((state) => state,
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
@@ -251,7 +287,7 @@ describe('connect()', () => {
     const Connected = connect(Remote, 'test', mockedEpics, defaultLogger);
     const inst = mount(<Root store={store} component={Connected} />);
 
-    inst.find(Remote).props().mutator.remoteResource.PUT({ id:1, someprop:'new' })
+    inst.find(Remote).props().mutator.remoteResource.PUT({ id: 1, someprop: 'new' })
       .then(res => res.someprop.should.equal('new'));
     fetchMock.lastCall()[1].body.should.equal('{"id":1,"someprop":"new"}');
     fetchMock.lastCall()[1].headers['X-Okapi-Tenant'].should.equal('tenantid');
@@ -300,6 +336,27 @@ describe('connect()', () => {
     }, 40);
   });
 
+  it('should only make 1 request for a paged offset resource', (done) => {
+    fetchMock
+      .getOnce('http://localhost/turnip?limit=5&offset=5&q=dinner',
+        { records:[{ 'id':'58e55786065039ceb9acb0e2', 'name':'Lucas' }, { 'id':'58e55786e2106a216fdb5629', 'name':'Kirkland' }, { 'id':'58e55786819013f1e810d28e', 'name':'Clarke' }, { 'id':'58e55786e51f01bc81b11f32', 'name':'Acevedo' }, { 'id':'58e55786791c37697eec2bc2', 'name':'Earnestine' }], total_records:5 },
+        { headers: { 'Content-Type': 'application/json' } })
+      .catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(PagedOffset, 'testoffset', mockedEpics, defaultLogger);
+    const inst = mount(<Root store={store} component={Connected} />);
+
+    setTimeout(() => {
+      inst.find(PagedOffset).instance().props.resources.pagedResource.records.length.should.equal(5);
+      fetchMock.restore();
+      done();
+    }, 40);
+  });
+
   it('should run manifest functions', (done) => {
     fetchMock
       .get('http://localhost/turnip?q=dinner',
@@ -326,10 +383,10 @@ describe('connect()', () => {
   it('should fail appropriately', (done) => {
     fetchMock
       .get('http://localhost/turnep',
-        { status: 404 })
+        { status: 404, body: 'forbidden' })
       .post('http://localhost/turnep',
         { status: 403, body: 'You are forbidden because reasons.' })
-      .catch(503);
+      .catch({ status: 503 });
 
     const store = createStore((state) => state,
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
@@ -339,8 +396,10 @@ describe('connect()', () => {
     const inst = mount(<Root store={store} component={Connected} />);
     inst.find(ErrorProne).props().mutator.errorProne.POST({ id:1, someprop:'new' })
       .catch(err => err.text().then(msg => msg.should.equal('You are forbidden because reasons.')));
+
     setTimeout(() => {
       const res = inst.find(ErrorProne).instance().props.resources.errorProne;
+
       res.isPending.should.equal(false);
       res.failed.httpStatus.should.equal(404);
       res.failedMutations[0].message.should.equal('You are forbidden because reasons.');
@@ -498,5 +557,52 @@ describe('connect()', () => {
       res.records[0].someprop.should.equal('otherval');
       done();
     }, 100);
+  });
+
+  it('should cancel request when connected component unmounts', (done) => {
+    fetchMock
+      .get('http://localhost/unmounted',
+        [{ id: 1 }],
+        { delay: 1000,
+          headers: { 'Content-Type': 'application/json' } });
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Unmounted, 'test', mockedEpics, defaultLogger);
+    const inst = mount(<Root id={1} store={store} component={Connected} />);
+    inst.setProps({ hideConnected: true });
+
+    setTimeout(() => {
+      const state = store.getState();
+      state.test_unmounted.hasLoaded.should.equal(false);
+      state.test_unmounted.isPending.should.equal(false);
+      done();
+    }, 100);
+  });
+
+  it('should cancel all requests when the cancel is executed manually', (done) => {
+    fetchMock
+      .get('http://localhost/accumulated',
+        [{ id: 1, someprop: 'someval' }],
+        { delay: 1000, headers: { 'Content-Type': 'application/json' } });
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Accumulated, 'test', mockedEpics, defaultLogger);
+    const inst = mount(<Root store={store} component={Connected} />);
+
+    inst.find(Accumulated).props().mutator.accumulated.GET();
+    inst.find(Accumulated).props().mutator.accumulated.cancel();
+
+    setTimeout(() => {
+      const state = store.getState();
+      state.test_accumulated.hasLoaded.should.equal(false);
+      state.test_accumulated.isPending.should.equal(false);
+      done();
+    }, 10);
   });
 });

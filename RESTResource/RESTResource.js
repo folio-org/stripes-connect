@@ -1,4 +1,3 @@
-import 'isomorphic-fetch'; /* global fetch */
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
@@ -6,15 +5,28 @@ import queryString from 'query-string';
 import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
 
-const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
+const defaultDefaults = {
+  pk: 'id',
+  clientGeneratePk: true,
+  fetch: true,
+  clear: true,
+  abortable: false,
+  abortOnUnmount: false,
+};
 
-// RAML module builder keeps changing where it puts the total
-// record-count, so we have to look in three different places to be
-// safe. *sigh*
-
+/**
+ * extractTotal
+ * Find the current incarnation of "totalRecords" and return it.
+ * RAML module builder keeps changing where it puts the total
+ * record-count, so we have to look in three different places to be
+ * safe. *sigh*
+ *
+ * @param json object
+ * @return int
+ */
 function extractTotal(json) {
   if (json.resultInfo !== undefined &&
-      json.resultInfo.totalRecords !== undefined) {
+    json.resultInfo.totalRecords !== undefined) {
     return json.resultInfo.totalRecords;
   } else if (json.totalRecords !== undefined) {
     return json.totalRecords;
@@ -26,12 +38,26 @@ function extractTotal(json) {
   return null;
 }
 
-// The following fallback syntax is one small part of what Bash
-// implements -- see the "Parameter Expansion" section of its
-// manual. It's the part we need right now, but we should consider
-// implementing all of it. And needless to say, it should apply to all
-// kinds of substitutable.
-//
+/**
+ * processFallback
+ * handle bash-like substitution fallbacks in path interpretation for a
+ * single substring
+ * Substitions of the form
+ *     ?{name:+val}
+ * and
+ *     ?{name:-val}
+ * allow the string "val" to be provided when "name" is or is not provided,
+ * respectively. See the "Parameter Expansion" section of the Bash manual
+ * for more details. This minimal handling is what we need right now, but
+ * we should consider implementing all of it. And needless to say, it
+ * should apply to all kinds of substitutable.
+ *
+ * @param s string value to inspect for interpolation
+ * @param getPath array
+ * @param props object props containing substitutable values
+ *
+ * @return string
+ */
 function processFallback(s, getPath, props) {
   let name = s;
   let type;
@@ -61,12 +87,15 @@ function processFallback(s, getPath, props) {
   return res;
 }
 
-// Calculate what the props _would be_ if we went through
-// mapStateToProps. If dataKey is included, then we look only at state
-// pertaining to that data-key.
-//
-// If we restructure the state into a per-module hierarchy we
-// won't need to go through this dance STRIPES-238
+/**
+ * mockProps
+ * Calculate what the props _would be_ if we went through
+ * mapStateToProps. If dataKey is included, then we look only at state
+ * pertaining to that data-key.
+ *
+ * If we restructure the state into a per-module hierarchy we
+ * won't need to go through this dance STRIPES-238
+ */
 function mockProps(state, module, dataKey, logger) {
   const mock = { resources: {} };
   logger.log('mock', 'mockProps with state', state);
@@ -101,8 +130,17 @@ function mockProps(state, module, dataKey, logger) {
   return mock;
 }
 
-// returns null if templated values are incomplete
-// if pk is provided append to path if not present
+/**
+ * urlFromOptions
+ * Construct a URL path given its constituent parts. Returns null if the
+ * values for path or params are incomplete. If the pk is provided and
+ * not already present in the URL, append it.
+ *
+ * @param options object of the shape { path, params, [staticFallback]}
+ * @param [pk] string a UUID presumably corresponding to a primary key
+ *
+ * @return string
+ */
 function urlFromOptions(options, pk) {
   const o = Object.assign({}, options);
   if (o.path === null) return null;
@@ -131,11 +169,21 @@ function urlFromOptions(options, pk) {
   return path;
 }
 
-// Process string template with ?{syntax}. Namespaces so far:
-// ? - query parameters in current url
-// : - path components as defined by react-router
-// $ - resources
-// ! - properties
+/**
+ * compilePathTemplate
+ * Process string template with ?{syntax}. Namespaces so far:
+ *   ? - query parameters in current url
+ *   : - path components as defined by react-router
+ *   % - resources ($ is deprecated in favor of %)
+ *   ! - properties
+ *
+ * @param template string
+ * @param parsedQuery object querystring's key-value pairs as an object
+ * @param props object props passed into original component
+ * @param localProps object local resources
+ *
+ * @return string
+ */
 export function compilePathTemplate(template, parsedQuery, props, localProps) {
   let dynamicPartsSatisfied = true;
 
@@ -170,13 +218,24 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
   return dynamicPartsSatisfied ? result : null;
 }
 
-
-// This now takes so many arguments that it really ought to be a
-// method of RESTResource rather than a standalone function that is
-// passed various parts of the RESTResource object. But since it's
-// exported as a function, I don't want to mess with it until I know
-// what uses it.
-//
+/**
+ * substitute
+ * This now takes so many arguments that it really ought to be a
+ * method of RESTResource rather than a standalone function that is
+ * passed various parts of the RESTResource object. But since it's
+ * exported as a function, I don't want to mess with it until I know
+ * what uses it.
+ *
+ * @param original string
+ * @param props object
+ * @param state object
+ * @param module string name of the module the resource is affiliated with
+ * @param logger object a logger
+ * @param dataKey string unique key to disambiguate this resource from another
+ * which otherwise has the same attributes
+ *
+ * @return string
+ */
 export function substitute(original, props, state, module, logger, dataKey) {
   const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
   let result;
@@ -192,9 +251,7 @@ export function substitute(original, props, state, module, logger, dataKey) {
     throw new Error(`Invalid type passed to RESTResource.substitute(): ${typeof original} (${original})`);
   }
 
-  logger.log('substitute', `substitute(${
-    (typeof original === 'function') ? '<FUNCTION>' : original
-  }) -> ${result}, satisfied=${result !== null}`);
+  logger.log('substitute', `substitute(${(typeof original === 'function') ? '<FUNCTION>' : original}) -> ${result}, satisfied=${result !== null}`);
 
   return result;
 }
@@ -212,13 +269,15 @@ export default class RESTResource {
     this.actions = actionCreatorsFor(this);
     this.pagedFetchSuccess = this.actions.fetchSuccess;
     this.reducer = reducer.bind(this);
+    this.abortControllers = {};
   }
 
   getMutator(dispatch, props) {
     const actions = {
-      DELETE: record => dispatch(this.deleteAction(record, props)),
-      PUT: record => dispatch(this.updateAction(record, props)),
-      POST: record => dispatch(this.createAction(record, props)),
+      DELETE: (record, opts) => dispatch(this.deleteAction(record, props, opts)),
+      PUT: (record, opts) => dispatch(this.updateAction(record, props, opts)),
+      POST: (record, opts) => dispatch(this.createAction(record, props, opts)),
+      cancel: () => this.cancelRequests(),
     };
 
     if (this.optionsTemplate.accumulate) {
@@ -275,6 +334,16 @@ export default class RESTResource {
         }
       }
 
+      // resultOffset
+      if (typeof options.resultOffset === 'string' || typeof options.resultOffset === 'function') {
+        const tmplResultOffset = Number.parseInt(substitute(options.resultOffset, props, state, this.module, this.logger, this.dataKey), 10);
+        if (tmplResultOffset >= 0) {
+          options.resultOffset = tmplResultOffset;
+        } else {
+          return null;
+        }
+      }
+
       // records
       if (options.records) {
         options.records = substitute(options.records, props, state, this.module, this.logger, this.dataKey);
@@ -318,6 +387,32 @@ export default class RESTResource {
             return acc.concat(Object.assign({}, val,
               { isComplete: true, records: action.payload, meta: action.meta }));
           }
+
+          // Handle the situation where we accidentally ask for more pages
+          // than there are in the set, i.e. we query for offset=120 when
+          // there are only 100 records in a set. Why, why would we issue
+          // such a query? It's complicated.
+          //
+          // In short, calculating the size of result sets can be expensive,
+          // so there's a heuristic, but sometimes it's very, very, VERY wrong.
+          // When Okapi thinks the result set will contain > 10k rows, it
+          // returns totalCount=999999999 to indicate "Ah'm just guessin'
+          // because the real number is wicked huge." The problem is that if
+          // we start paging through one of these supposedly-wicked-huge
+          // result sets and fall off the end of it, we'll then get response
+          // with totalCount=0.
+          //
+          // When we receive totalCount=0 in the middle of paging, we dispatch
+          // a success, but with an added meta property the allows us to figure
+          // out what on earth just happened, dropping you here.
+          //
+          // So this is how it is: all we need to do here is set
+          // isComplete=true. The rest of the work has already been done.
+          //
+          if (action.meta.bonkersOkapiCannotCount) {
+            return acc.concat(Object.assign({}, val, { isComplete: true }));
+          }
+
           return acc.concat(val);
         }, []);
         return newState;
@@ -351,9 +446,16 @@ export default class RESTResource {
     const opts = this.verbOptions('GET', state, props);
     const nextOpts = this.verbOptions('GET', state, nextProps);
 
+    const fetch = opts && (typeof opts.fetch === 'function' ? opts.fetch(props) : opts.fetch);
+    const nextFetch = nextOpts && (typeof nextOpts.fetch === 'function' ? nextOpts.fetch(nextProps) : nextOpts.fetch);
+
     return (
       opts && nextOpts &&
-      (opts.path !== nextOpts.path || !_.isEqual(opts.params, nextOpts.params))
+      (
+        opts.path !== nextOpts.path ||
+        !_.isEqual(opts.params, nextOpts.params) ||
+        (!fetch && nextFetch)
+      )
     );
   }
 
@@ -362,7 +464,7 @@ export default class RESTResource {
     if (opt.accumulate === true
       || opt.fetch === false
       || (typeof opt.fetch === 'function'
-          && opt.fetch(props) !== true)
+        && opt.fetch(props) !== true)
     ) return;
     if (props.dataKey === this.dataKey) dispatch(this.fetchAction(props));
     this.dispatch = dispatch;
@@ -374,6 +476,47 @@ export default class RESTResource {
     this.dispatch(this.fetchAction(this.cachedProps));
   }
 
+  // Check if the given resource should be reset when a connected
+  // component is being unmounted.
+  shouldReset() {
+    const { resourceShouldRefresh } = this.optionsTemplate;
+
+    return (_.isBoolean(resourceShouldRefresh) && resourceShouldRefresh)
+      || (_.isFunction(resourceShouldRefresh) && resourceShouldRefresh());
+  }
+
+  // resets redux store attached to this resource
+  reset() {
+    if (!this.dispatch) return;
+    this.dispatch(this.actions.reset());
+  }
+
+  addAbortController(key, options) {
+    if (!options.abortable && !options.abortOnUnmount) {
+      return null;
+    }
+
+    const ctrl = new window.AbortController();
+    const { signal } = ctrl;
+
+    this.abortControllers[key] = ctrl;
+
+    return signal;
+  }
+
+  cancelRequestsOnUnmout() {
+    const { abortOnUnmount } = this.optionsTemplate;
+
+    if (abortOnUnmount) {
+      this.cancelRequests();
+    }
+  }
+
+  cancelRequests() {
+    Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
+    this.abortControllers = {};
+  }
+
   hasMissingPerms(state, perms) {
     const currentPerms = _.get(state, ['okapi', 'currentPerms'], {});
     const reqPerms = _.isArray(perms) ? perms : perms.split(',');
@@ -381,13 +524,14 @@ export default class RESTResource {
   }
 
   getMeta(options) {
-    const { path } = options;
+    const { path, silent } = options;
     return {
       path,
+      silent,
     };
   }
 
-  createAction = (record, props) => (dispatch, getState) => {
+  createAction = (record, props, opts) => (dispatch, getState) => {
     const options = this.verbOptions('POST', getState(), { clientGeneratePk: true, ...props });
     const { pk, clientGeneratePk, headers } = options;
     const url = urlFromOptions(options);
@@ -402,21 +546,25 @@ export default class RESTResource {
     if (clientGeneratePk) {
       remoteRecord[pk] = clientGeneratedId;
     }
+
+    const signal = this.addAbortController('create', options);
+
     // Send remote record
     const beforeCatch = fetch(url, {
       method: 'POST',
       headers,
+      signal,
       body: JSON.stringify(remoteRecord),
     }).then((response) => {
       if (response.status >= 400) {
         const clonedResponse = response.clone();
-        dispatch(this.mutationHTTPError(response, 'POST'));
+        dispatch(this.mutationHTTPError(response, 'POST', this.getActionMeta(options.POST)));
         // fetch responses are single-use so we use the one above and throw a different
         // one for catch() to play with
         throw clonedResponse;
       } else {
         const contentType = response.headers.get('Content-Type');
-        const meta = this.getMeta(options);
+        const meta = this.getMeta({ ...options, ...opts });
 
         if (contentType && contentType.startsWith('application/json')) {
           return response.json().then((json) => {
@@ -440,18 +588,19 @@ export default class RESTResource {
         // single-use promise for getting them message body available for external
         // catch()
         if (!reason.status && !reason.headers) {
-          dispatch(this.actions.mutationError({ message: reason.message }, 'POST'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'POST', this.getActionMeta(options.POST)));
         }
       } else {
-        dispatch(this.actions.mutationError({ message: reason }, 'POST'));
+        dispatch(this.actions.mutationError({ message: reason }, 'POST', this.getActionMeta(options.POST)));
       }
     });
 
     return beforeCatch;
   }
 
-  updateAction = (record, props) => {
+  updateAction = (record, props, opts) => {
     const clientRecord = { ...record };
+
     return (dispatch, getState) => {
       const options = this.verbOptions('PUT', getState(), props);
       const { pk, headers } = options;
@@ -459,34 +608,47 @@ export default class RESTResource {
       if (url === null) return null;
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(this.actions.updateStart(clientRecord));
+
+      const signal = this.addAbortController('update', options);
+
       const beforeCatch = fetch(url, {
         method: 'PUT',
         headers,
+        signal,
         body: JSON.stringify(record),
       })
         .then((response) => {
           if (response.status >= 400) {
             const clonedResponse = response.clone();
-            dispatch(this.mutationHTTPError(response, 'PUT'));
+            dispatch(this.mutationHTTPError(response, 'PUT', this.getActionMeta(options.PUT)));
             throw clonedResponse;
           } else {
-            /* Patrons api will not return JSON
-            response.json().then ( (json) => {
-              if (json[options.pk] && !json.id) json.id = json[options.pk];
-              dispatch(crudActions.updateSuccess(json));
-            });
-            */
+            const meta = this.getMeta({ ...options, ...opts });
 
-            const meta = this.getMeta(options);
-            dispatch(this.actions.updateSuccess(meta, clientRecord));
-
-            return clientRecord;
+            // The PUT mutator will return the response from the backend if it is JSON, working
+            // off the assumption that the response is (or at least contains) the updated record.
+            // If the response is not JSON, it will return the client record that was
+            // sent to the backend.
+            // Note that this may be different from what was passed into the PUT (due to the id/pk finessing),
+            // or different from what was actually saved on the backend (due to backend implementations).
+            const contentType = (response.headers && response.headers.get('Content-Type')) || '';
+            if (contentType.startsWith('application/json')) {
+              return response
+                .json()
+                .then(responseRecord => {
+                  dispatch(this.actions.updateSuccess(meta, responseRecord));
+                  return responseRecord;
+                });
+            } else {
+              dispatch(this.actions.updateSuccess(meta, clientRecord));
+              return clientRecord;
+            }
           }
         });
 
       beforeCatch.catch((reason) => {
         if (typeof reason === 'object' && !reason.status && !reason.headers) {
-          dispatch(this.actions.mutationError({ message: reason.message }, 'PUT'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'PUT', this.getActionMeta(options.PUT)));
         }
       });
 
@@ -494,7 +656,7 @@ export default class RESTResource {
     };
   }
 
-  deleteAction = (record, props) => (dispatch, getState) => {
+  deleteAction = (record, props, opts) => (dispatch, getState) => {
     const options = this.verbOptions('DELETE', getState(), props);
     if (options === null) return null; // needs dynamic parts that aren't available
     const { pk, headers } = options;
@@ -503,24 +665,28 @@ export default class RESTResource {
     const clientRecord = { ...record };
     if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
     dispatch(this.actions.deleteStart(clientRecord));
+
+    const signal = this.addAbortController('remove', options);
+
     const beforeCatch = fetch(url, {
       method: 'DELETE',
       headers,
+      signal,
     })
       .then((response) => {
         if (response.status >= 400) {
           const clonedResponse = response.clone();
-          dispatch(this.mutationHTTPError(response, 'DELETE'));
+          dispatch(this.mutationHTTPError(response, 'DELETE', this.getActionMeta(options.DELETE)));
           throw clonedResponse;
         } else {
-          const meta = this.getMeta(options);
+          const meta = this.getMeta({ ...options, ...opts });
           dispatch(this.actions.deleteSuccess(meta, clientRecord));
         }
       });
 
     beforeCatch.catch((reason) => {
       if (typeof reason === 'object' && !reason.status && !reason.headers) {
-        dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
+        dispatch(this.actions.mutationError({ message: reason.message }, 'DELETE', this.getActionMeta(options.DELETE)));
       }
     });
 
@@ -555,12 +721,13 @@ export default class RESTResource {
       }
 
       const { headers, records, resourceShouldRefresh } = options;
+      const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
         // noop if the URL and recordsRequired didn't change
-        this.logger.log('connect-dup', `'${this.name}' reqd=${options.recordsRequired} (${options.recordsRequired === this.lastReqd ? 'same' : 'different'}) ${url}, (${url === this.lastUrl ? 'same' : 'different'})`);
-        if (!props.sync && url === this.lastUrl && options.recordsRequired === this.lastReqd) return null;
+        this.logger.log('connect-dup', `'${this.name}' reqd=${requestIndex} (${requestIndex === this.lastReqd ? 'same' : 'different'}) ${url}, (${url === this.lastUrl ? 'same' : 'different'})`);
+        if (!props.sync && url === this.lastUrl && requestIndex === this.lastReqd) return null;
       } else {
         // Check if resourceShouldRefresh is a boolean or function
         if (_.isBoolean(resourceShouldRefresh) && !resourceShouldRefresh) return null;
@@ -568,10 +735,13 @@ export default class RESTResource {
         if (_.isFunction(resourceShouldRefresh) && !resourceShouldRefresh()) return null;
       }
       this.lastUrl = url;
-      this.lastReqd = options.recordsRequired;
+      this.lastReqd = requestIndex;
 
       dispatch(this.actions.fetchStart());
-      return fetch(url, { headers })
+
+      const signal = this.addAbortController('fetch', options);
+
+      return fetch(url, { headers, signal })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));
@@ -590,7 +760,7 @@ export default class RESTResource {
                 dispatch(this.actions.fetchError({ message: `no records in '${records}' element` }));
                 return;
               }
-              const reqd = options.recordsRequired;
+              const reqd = requestIndex;
               const perPage = options.perRequest;
               const total = extractTotal(json);
               const meta = {
@@ -601,19 +771,60 @@ export default class RESTResource {
               };
 
               if (meta.other) meta.other.totalRecords = total;
-              if (reqd && total && total > perPage && reqd > perPage) {
-                dispatch(this.fetchMore(options, total, data, meta));
+              if (reqd && total && total > perPage && reqd >= perPage) {
+                if (options.resultOffset >= 0) { // fetch one page by offset
+                  dispatch(this.fetchPageByOffset(options, total));
+                } else { // fetch all pages by total count
+                  dispatch(this.fetchMore(options, total, data, meta));
+                }
               } else {
                 dispatch(this.actions.fetchSuccess(meta, data));
+                // restart paging if there is any, otherwise any cached pages will
+                // populate the UI the next time the connected component mounts.
+                dispatch(this.actions.pagingStart());
               }
             });
           }
-        }).catch((reason) => {
-          dispatch(this.actions.fetchError({ message: reason.message }));
-        });
+        }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
     };
   }
 
+  // Fetches a single page by offset adding it to the existing result list in redux
+  fetchPageByOffset = (options, total) => {
+    const { headers, records, resultOffset, offsetParam } = options;
+    const reqd = Math.min(resultOffset, total);
+    return (dispatch) => {
+      const newOptions = {};
+      newOptions.params = {};
+      newOptions.params[offsetParam] = reqd;
+      const url = urlFromOptions(_.merge({}, options, newOptions));
+
+      const signal = this.addAbortController('fetchPageByOffset', options);
+
+      fetch(url, { headers, signal })
+        .then((response) => {
+          if (response.status >= 400) {
+            dispatch(this.fetchHTTPError(response));
+          } else {
+            response.json().then((json) => {
+              const meta = {
+                url: response.url,
+                headers: response.headers,
+                httpStatus: response.status,
+                offset: resultOffset,
+                other: records ? _.omit(json, records) : {},
+              };
+              if (meta.other) meta.other.totalRecords = extractTotal(json);
+              const data = (records ? json[records] : json);
+              dispatch(this.actions.offsetFetchSuccess(meta, data));
+            });
+          }
+        }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
+    };
+  }
+
+  // Fetches all pages until total records requested is reached
+  // overwriting the previously stored result list in redux
   fetchMore = (options, total, firstData, firstMeta) => {
     const { headers, records, recordsRequired,
       perRequest: limit, offsetParam } = options;
@@ -627,7 +838,10 @@ export default class RESTResource {
         newOptions.params[offsetParam] = offset;
         const url = urlFromOptions(_.merge({}, options, newOptions));
         dispatch(this.actions.pageStart(url));
-        fetch(url, { headers })
+
+        const signal = this.addAbortController(`fetchMore${offset}`, options);
+
+        fetch(url, { headers, signal })
           .then((response) => {
             if (response.status >= 400) {
               dispatch(this.fetchHTTPError(response));
@@ -639,16 +853,30 @@ export default class RESTResource {
                   httpStatus: response.status,
                   other: records ? _.omit(json, records) : {},
                 };
-                if (meta.other) meta.other.totalRecords = extractTotal(json);
+
+                if (meta.other) {
+                  const totalRecords = extractTotal(json);
+
+                  // if we receive totalRecords === 0 in the middle of paging,
+                  // it's because we got an initial bad estimate from okapi
+                  // and fell off the end of the result set.
+                  //
+                  // additional details at https://issues.folio.org/browse/STSMACOM-259
+                  //
+                  // here, we'll dispatch a success action, but with a flag
+                  // that allows the reducer to handle that gracefully.
+                  if (totalRecords === 0) {
+                    meta.bonkersOkapiCannotCount = true;
+                  } else {
+                    meta.other.totalRecords = totalRecords;
+                  }
+                }
+
                 const data = (records ? json[records] : json);
                 dispatch(this.actions.pageSuccess(meta, data));
               });
             }
-          }).catch((err) => {
-            dispatch(this.actions.fetchError({
-              message: `Unexpected fetch error ${err}`,
-            }));
-          });
+          }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
       }
       dispatch(this.actions.pageSuccess(firstMeta, firstData));
     };
@@ -667,7 +895,9 @@ export default class RESTResource {
       const { headers, records } = options;
       dispatch(this.actions.fetchStart());
 
-      const beforeCatch = fetch(url, { headers })
+      const signal = this.addAbortController('accFetch', options);
+
+      const beforeCatch = fetch(url, { headers, signal })
         .then(response => response.text()
           .then((text) => {
             if (response.status >= 400) {
@@ -696,12 +926,20 @@ export default class RESTResource {
             return data;
           }));
 
-      beforeCatch.catch((reason) => {
-        dispatch(this.actions.fetchError({ message: reason.message }));
-      });
+      beforeCatch.catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
 
       return beforeCatch;
     };
+  }
+
+  handleFetchOrAbortError = (reason, dispatch) => {
+    const { name, message } = reason;
+
+    if (name === 'AbortError') {
+      dispatch(this.actions.fetchAbort({ message }));
+    } else {
+      dispatch(this.actions.fetchError({ message }));
+    }
   }
 
   fetchHTTPError = res => dispatch => res.text().then((text) => {
@@ -711,10 +949,14 @@ export default class RESTResource {
     }));
   });
 
-  mutationHTTPError = (res, mutator) => dispatch => res.text().then((text) => {
+  mutationHTTPError = (res, mutator, meta) => dispatch => res.text().then((text) => {
     dispatch(this.actions.mutationError({
       message: text || res.statusText,
       httpStatus: res.status,
-    }, mutator));
+    }, mutator, meta));
   });
+
+  getActionMeta = actionOptions => {
+    return _.pick(actionOptions, 'throwErrors');
+  }
 }

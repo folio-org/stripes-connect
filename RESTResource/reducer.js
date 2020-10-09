@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-const initialResourceState = {
+export const initialResourceState = {
   hasLoaded: false,
   isPending: false,
   failed: false,
@@ -37,6 +37,19 @@ export default function (state = initialResourceState, action) {
       let records;
       if (Array.isArray(action.payload)) records = [...state.records, ...action.payload];
       else records = [...state.records, _.clone(action.payload)];
+      return Object.assign({}, state, {
+        hasLoaded: true,
+        loadedAt: new Date(),
+        isPending: false,
+        failed: false,
+        records,
+        ...action.meta,
+      });
+    }
+    case '@@stripes-connect/OFFSET_FETCH_SUCCESS': {
+      const records = [...state.records];
+      if (Array.isArray(action.payload)) records.splice(action.meta.offset, 0, ...action.payload);
+      else records.splice(action.meta.offset, 0, _.clone(action.payload));
       return Object.assign({}, state, {
         hasLoaded: true,
         loadedAt: new Date(),

@@ -28,10 +28,10 @@ export default function actionCreatorsFor(resource) {
 
     deleteSuccess: passMetaPayload('DELETE_SUCCESS'),
 
-    mutationError: (err, mutator) => ({
+    mutationError: (err, mutator, meta) => ({
       type: '@@stripes-connect/MUTATION_ERROR',
       payload: { type: mutator, ...err },
-      meta: commonMeta,
+      meta: Object.assign({}, commonMeta, meta),
     }),
 
     fetchStart: passPayload('FETCH_START'),
@@ -39,6 +39,8 @@ export default function actionCreatorsFor(resource) {
     fetchSuccess: passMetaPayload('FETCH_SUCCESS'),
 
     accFetchSuccess: passMetaPayload('ACC_FETCH_SUCCESS'),
+
+    offsetFetchSuccess: passMetaPayload('OFFSET_FETCH_SUCCESS'),
 
     fetchError: passPayload('FETCH_ERROR'),
 

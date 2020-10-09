@@ -1,5 +1,67 @@
 # Change history for stripes-connect
 
+## 6.1.0 IN PROGRESS
+
+## [6.0.0](https://github.com/folio-org/stripes-connect/tree/v6.0.0) (2020-10-06)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.6.1...v6.0.0)
+
+* Init resources correctly so their state is immediately available for inspection.
+* Add ability to cancel pending requests. Revs STCON-104.
+* Remove unnecessary use of isomorphic-fetch
+* Allow mutators to configure `throwErrors` option. STCON-112.
+
+## [5.6.1](https://github.com/folio-org/stripes-connect/tree/v5.6.1) (2020-06-08)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.6.0...v5.6.1)
+
+* Use `UNSAFE_componentWillReceiveProps` for a quieter console. Refs STCON-70.
+
+## [5.6.0](https://github.com/folio-org/stripes-connect/tree/v5.6.0) (2020-05-19)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.5.0...v5.6.0)
+
+This lets us better scope the shouldRefresh for our resources.
+
+* Better `shouldRefresh` scoping on resources allows, e.g. to avoid it after `DELETE` requests.
+* Added `originatingActionType` to `REFRESH` action `meta` objects.
+* Improved documentation for error handling and local resource mutation.
+* Throw when `connect` receives an undefined component because, duh, that ain't right.
+* Restart paging correctly. STCON-102.
+
+## [5.5.0](https://github.com/folio-org/stripes-connect/tree/v5.5.0) (2020-03-03)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.4...v5.5.0)
+
+* Reset paging with a successful fetch. Resolves UIU-1405.
+* Added support for fetching result list pages individually by offset. See migration path [documentation](MIGRATIONPATHS.md). Refs STCON-57.
+* PUT mutator returns the server's response when it is JSON rather than the client record. Refs STCON-92.
+* Introduce `silent` option to POST, PUT and DELETE mutators. Refs UIU-1295.
+* Improve documentation of error-handling. Refs STCON-99.
+
+## [5.4.4](https://github.com/folio-org/stripes-connect/tree/v5.4.4) (2019-12-11)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.3...v5.4.4)
+
+* Elegantly handle unexpected changes to `totalRecords` during pagination. Refs STCON-90, STSMACOM-259.
+
+## [5.4.3](https://github.com/folio-org/stripes-connect/tree/v5.4.3) (2019-12-04)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.2...v5.4.3)
+
+* On unmount, reset resources having `resourceShouldRefresh`. Refs UICIRC-365.
+
+## [5.4.2](https://github.com/folio-org/stripes-connect/tree/v5.4.2) (2019-10-15)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.1...v5.4.2)
+
+* Add ability to clear registered epics. Part of STRIPES-659.
+* Validate presence of `opts` before accessing it to avoid NPE. STCON-87.
+* RESTResource: shouldRefresh when `fetch` goes true. STCON-88.
+
+## [5.4.1](https://github.com/folio-org/stripes-connect/tree/v5.4.1) (2019-10-08)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.4.0...v5.4.1)
+
+* Added cache to registering `mutationEpics` whenever components are re-connected to reduce subscriptions and correct performance issues that occur when submitting forms. Refs UIIN-687.
+
+## [5.4.0](https://github.com/folio-org/stripes-connect/tree/v5.4.0) (2019-09-09)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.3.0...v5.4.0)
+
+* Add `PRUNE` redux action to allow resetting of stored records. Refs UIIN-687.
+
 ## [5.3.0](https://github.com/folio-org/stripes-connect/tree/v5.3.0) (2019-07-22)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.2.1...v5.3.0)
 

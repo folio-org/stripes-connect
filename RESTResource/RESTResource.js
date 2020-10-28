@@ -354,7 +354,7 @@ export default class RESTResource {
       }
     }
 
-    if (options.perRequest && options.limitParam && verb === 'GET') {
+    if (options.params !== null && options.perRequest && options.limitParam && verb === 'GET') {
       options.params = _.merge({}, options.params, { [options.limitParam]: options.perRequest });
     }
 

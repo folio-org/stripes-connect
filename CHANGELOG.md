@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 6.0.1 IN PROGRESS
+
+* Added additional check to not trigger a fetch when params is null, refs STCON-115
+
 ## [6.0.0](https://github.com/folio-org/stripes-connect/tree/v6.0.0) (2020-10-06)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v5.6.1...v6.0.0)
 

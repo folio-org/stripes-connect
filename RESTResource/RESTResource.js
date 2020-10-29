@@ -354,6 +354,10 @@ export default class RESTResource {
       }
     }
 
+    /* if params is not null and perRequest is passed as an option, then add the limit param and trigger a fetch.
+       If params is returned as null, then do not add the limit param and prevent a fetch.
+       NOTE: If params is undefined (default case when params option is not passed to the resource via the manifest),
+       the limit param is added and triggers a fetch like it should. */
     if (options.params !== null && options.perRequest && options.limitParam && verb === 'GET') {
       options.params = _.merge({}, options.params, { [options.limitParam]: options.perRequest });
     }

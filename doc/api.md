@@ -238,7 +238,7 @@ the manifest must specify this.
 
 (It is conventional to freeze manifests -- making them immutable -- to
 document and enforce the fact that they do not change once
-created. See [Thinking in Stripes](thinking-in-stripes.md).)
+created. See [Thinking in Stripes](https://github.com/folio-org/stripes/blob/master/doc/dev-guide.md#thinking-in-stripes).)
 
 
 ### Path interpretation

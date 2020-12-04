@@ -359,6 +359,9 @@ export default class RESTResource {
        NOTE: If params is undefined (default case when params option is not passed to the resource via the manifest),
        the limit param is added and triggers a fetch like it should. */
     if (options.params !== null && options.perRequest && options.limitParam && verb === 'GET') {
+      if (typeof options.perRequest === 'string' || typeof options.perRequest === 'function') {
+        options.perRequest = substitute(options.perRequest, props, state, this.module, this.logger, this.dataKey);
+      }
       options.params = _.merge({}, options.params, { [options.limitParam]: options.perRequest });
     }
 

@@ -360,7 +360,12 @@ export default class RESTResource {
        the limit param is added and triggers a fetch like it should. */
     if (options.params !== null && options.perRequest && options.limitParam && verb === 'GET') {
       if (typeof options.perRequest === 'string' || typeof options.perRequest === 'function') {
-        options.perRequest = substitute(options.perRequest, props, state, this.module, this.logger, this.dataKey);
+        const perRequest = Number.parseInt(substitute(options.perRequest, props, state, this.module, this.logger, this.dataKey), 10);
+        if (perRequest >= 0) {
+          options.perRequest = perRequest;
+        } else {
+          return options;
+        }
       }
       options.params = _.merge({}, options.params, { [options.limitParam]: options.perRequest });
     }

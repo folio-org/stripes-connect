@@ -738,7 +738,7 @@ export default class RESTResource {
       // If the offset in the current request matches the resultOffset
       // of the previous request just skip it.
       // https://issues.folio.org/browse/STCON-118
-      if (state[key].offset && state[key].offset === requestIndex) {
+      if (state?.[key]?.offset && state[key].offset === requestIndex) {
         return null;
       }
 

@@ -734,11 +734,12 @@ export default class RESTResource {
 
       const { headers, records, resourceShouldRefresh } = options;
       const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
+      const { url: cachedUrl, offset } = state?.[key] ?? {};
 
       // If the offset in the current request matches the resultOffset
       // of the previous request just skip it.
       // https://issues.folio.org/browse/STCON-118
-      if (state?.[key]?.offset && state[key].offset === requestIndex) {
+      if (offset && offset === requestIndex && url === cachedUrl) {
         return null;
       }
 

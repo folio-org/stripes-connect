@@ -734,6 +734,7 @@ export default class RESTResource {
 
       const { headers, records, resourceShouldRefresh } = options;
       const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
+
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
@@ -805,15 +806,27 @@ export default class RESTResource {
   fetchPageByOffset = (options, total) => {
     const { headers, records, resultOffset, offsetParam } = options;
     const reqd = Math.min(resultOffset, total);
-    return (dispatch) => {
+    const key = this.stateKey();
+
+    return (dispatch, getState) => {
+      const state = getState();
       const newOptions = {};
       newOptions.params = {};
       newOptions.params[offsetParam] = reqd;
       const url = urlFromOptions(_.merge({}, options, newOptions));
+      const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
+      const { url: offsetUrl, offset } = state?.[key] ?? {};
+
+      // If the offset in the current request matches the resultOffset
+      // of the previous request just skip it fetching
+      // https://issues.folio.org/browse/STCON-118
+      if (offset && offset === requestIndex && url === offsetUrl) {
+        return null;
+      }
 
       const signal = this.addAbortController('fetchPageByOffset', options);
 
-      fetch(url, { headers, signal })
+      return fetch(url, { headers, signal })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));

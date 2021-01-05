@@ -54,8 +54,8 @@
     "lodash": "^4.17.11",
     "prop-types": "^15.5.10",
     "query-string": "^5.0.0",
-    "react-redux": "^5.0.2",
-    "redux": "^3.6.0",
+    "react-redux": "^7.2.0",
+    "redux": "^4.0.0",
     "uuid": "^3.0.1"
   },
   "peerDependencies": {

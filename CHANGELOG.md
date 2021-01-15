@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## 6.1.0 IN PROGRESS
+## 7.0.0 IN PROGRESS
 
 * Added additional check to not trigger a fetch when params is null, refs STCON-115
 * Perform substitutions on perRequest option, refs STCON-117

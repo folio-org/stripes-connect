@@ -3,7 +3,7 @@ import AbortController from 'abort-controller';
 import chai from 'chai';
 import { describe, it } from 'mocha';
 import Enzyme, { mount } from 'enzyme';
-import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
+import Adapter from 'enzyme-adapter-react-16';
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';

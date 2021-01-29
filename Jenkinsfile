@@ -4,4 +4,5 @@ buildNPM {
   runLint = 'yes'
   runTest = 'yes'
   runSonarqube = true
+  sonarScanDirs = '.'
 }

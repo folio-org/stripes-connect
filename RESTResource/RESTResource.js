@@ -323,6 +323,22 @@ export default class RESTResource {
         const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
         options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, this.module, props.dataKey, this.logger).resources, this.logger, props);
       }
+      
+      // headers
+      if (typeof options.headers === 'object')
+        options.headers = _.mapValues(
+          options.headers,
+          param => substitute(param, props, state, this.module, this.logger, this.dataKey)
+        );
+        for (const key of Object.keys(options.headers)) {
+          if (options.headers[key] === null) {
+            return null;
+          }
+        }
+      } else if (typeof options.headers === 'function') {
+        const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
+        options.headers = options.headers(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, this.module, props.dataKey, this.logger).resources, this.logger, props);
+      }
 
       // recordsRequired
       if (typeof options.recordsRequired === 'string' || typeof options.recordsRequired === 'function') {

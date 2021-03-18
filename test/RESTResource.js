@@ -20,6 +20,7 @@ const props = {
   location: {
     search: '?q=water',
   },
+  headerVal: 'my_header_val'
 };
 const module = 'somemodule';
 
@@ -41,6 +42,11 @@ describe('RESTResource', () => {
     it('replaces query parameters', () => {
       substitute('/whatever/?{q}/anyways', ...args)
         .should.equal('/whatever/water/anyways');
+    });
+
+    it('replaces header values', () => {
+      substitute('!{headerVal}', ...args)
+        .should.equal('my_header_val');
     });
 
     it('replaces resources', () => {

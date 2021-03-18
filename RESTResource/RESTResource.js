@@ -324,6 +324,17 @@ export default class RESTResource {
         options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, this.module, props.dataKey, this.logger).resources, this.logger, props);
       }
 
+      // headers
+      if (typeof options.headers === 'object') {
+        options.headers = _.mapValues(
+          options.headers,
+          header => substitute(header, props, state, this.module, this.logger, this.dataKey)
+        );
+      } else if (typeof options.headers === 'function') {
+        const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
+        options.headers = options.headers(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, this.module, props.dataKey, this.logger).resources, this.logger, props);
+      }
+
       // recordsRequired
       if (typeof options.recordsRequired === 'string' || typeof options.recordsRequired === 'function') {
         const tmplReqd = Number.parseInt(substitute(options.recordsRequired, props, state, this.module, this.logger, this.dataKey), 10);

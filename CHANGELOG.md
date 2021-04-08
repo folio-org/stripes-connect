@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## (IN PROGRESS)
+
+* Added the ability for elements of a manifest 'headers' property to be interpreted, and also to be a function in addition to an object. Refs STCON-121
+
 ## [6.1.0](https://github.com/folio-org/stripes-connect/tree/v6.1.0) (2021-02-25)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.0.0...v6.1.0)
 

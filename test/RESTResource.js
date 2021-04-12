@@ -22,7 +22,9 @@ const props = {
   },
   holding: {
     id: '1234'
-  }
+  },
+  propVal: 'my_prop_value'
+
 };
 const module = 'somemodule';
 
@@ -51,6 +53,11 @@ describe('RESTResource', () => {
         .should.equal('somestring');
       substitute('${nested.bird}', ...args) // eslint-disable-line no-template-curly-in-string
         .should.equal('innerstring');
+    });
+
+    it('performs prop substitution', () => {
+      substitute('!{propVal}', ...args) // eslint-disable-line no-template-curly-in-string
+        .should.equal('my_prop_value');
     });
 
     it('handles multiple', () => {

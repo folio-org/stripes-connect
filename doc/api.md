@@ -381,10 +381,10 @@ generated path when no sorting parameter is provided in the UI URL.
 
 When the power and flexibility of text substitution and fallbacks are not
 sufficient for expressing how to build the back-end UI, arbitrary
-JavaScript can be used instead. If the value of a resource's `path`,
-or one of its `params` or `headers` is a function rather than a string, then
-that function is invoked whenever a path is needed. It is passed five
-parameters (though most functions will not use them all):
+JavaScript can be used instead. If the value of a resource's `path` or one
+of its `params` is a function rather than a string, then that function is
+invoked whenever a path is needed. It is passed five parameters
+(though most functions will not use them all):
 
 * An object containing the UI URL's query parameters (as accessed by
   `?{name}`).
@@ -418,10 +418,9 @@ So the function would usually be defined along these lines:
           }
         });
 
-Similarly, the entire `params` and `headers` objects can be replaced by a
-function that takes the above arguments and returns, instead of a string,
-an object to map to the parameters to be sent with requests. Or null if
-it lacks necessary information.
+Similarly, the entire `params` object can be replaced by a function that takes
+the above arguments and returns, instead of a string, an object to map to the
+parameters to be sent with requests. Or null if it lacks necessary information.
 
 
 

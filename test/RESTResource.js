@@ -1,7 +1,7 @@
 import { should, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { substitute } from '../RESTResource/RESTResource';
+import { substitute, buildOption } from '../RESTResource/RESTResource';
 
 should();
 
@@ -20,6 +20,11 @@ const props = {
   location: {
     search: '?q=water',
   },
+  holding: {
+    id: '1234'
+  },
+  propVal: 'my_prop_value'
+
 };
 const module = 'somemodule';
 
@@ -50,6 +55,11 @@ describe('RESTResource', () => {
         .should.equal('innerstring');
     });
 
+    it('performs prop substitution', () => {
+      substitute('!{propVal}', ...args) // eslint-disable-line no-template-curly-in-string
+        .should.equal('my_prop_value');
+    });
+
     it('handles multiple', () => {
       substitute('/?{q}/${top}/:{id}', ...args) // eslint-disable-line no-template-curly-in-string
         .should.equal('/water/somestring/42');
@@ -65,6 +75,24 @@ describe('RESTResource', () => {
         .to.equal(null);
       expect(substitute(() => undefined, ...args))
         .to.equal(undefined);
+    });
+  });
+
+  describe('buildOption()', () => {
+    it('builds an option derived from a manifest object', () => {
+      buildOption({ query: 'holdingsRecordId==!{holding.id}' }, ...args)
+        .should.eql({ query: 'holdingsRecordId==1234' });
+    });
+    it('builds an option derived from a manifest callback', () => {
+      const callback = (parsedQuery, params, resources, logger, cbProps) => ({ // eslint-disable-line no-unused-vars
+        parsedQuery,
+        params
+      });
+      buildOption(callback, ...args)
+        .should.eql({
+          parsedQuery: { q: 'water' },
+          params: { id: '42' }
+        });
     });
   });
 });

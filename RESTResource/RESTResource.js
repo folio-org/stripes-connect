@@ -275,13 +275,15 @@ export function substitute(original, props, state, module, logger, dataKey) {
 export function buildOption(option, props, state, module, logger, dataKey) {
   let toReturn;
   if (typeof option === 'object') {
-    // If any of the option properties have null values, we can't go any further
-    const someParamIsNull = Object.values(option).some(value => value === null);
-    if (someParamIsNull) return null;
     toReturn = _.mapValues(
       option,
       param => substitute(param, props, state, module, logger, dataKey)
     );
+    // If any of the option properties have null values, we can't go any further
+    const someParamIsNull = Object.values(toReturn).some(value => value === null);
+    if (someParamIsNull) {
+      toReturn = null;
+    }
   } else if (typeof option === 'function') {
     const parsedQuery = queryString.parse(props.location?.search);
     toReturn = option(parsedQuery, props.match?.params, mockProps(state, module, dataKey, logger).resources, logger, props);
@@ -341,10 +343,11 @@ export default class RESTResource {
         }
       }
 
-      // params
+      // Build params
       options.params = buildOption(options.params, props, state, this.module, this.logger, this.dataKey);
+      if (options.params === null) return null;
 
-      // headers
+      // Build headers
       options.headers = buildOption(options.headers, props, state, this.module, this.logger, this.dataKey);
 
       // recordsRequired
@@ -734,7 +737,6 @@ export default class RESTResource {
     return (dispatch, getState) => {
       const state = getState();
       const options = this.verbOptions('GET', state, props);
-
       if (options === null) {
         dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing query?' }));
         this.lastUrl = null;

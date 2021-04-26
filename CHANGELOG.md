@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## (IN PROGRESS)
+## 6.2.0 (IN PROGRESS)
 
 * Added the ability for elements of a manifest 'headers' property to be interpreted, and also to be a function in addition to an object. Refs STCON-121
 

@@ -169,6 +169,12 @@ via limitParam/offsetParam.
   resource, which allows it to be used in code that expects to receive a
   promise. Default: `false`.
 
+* `abortable`: A boolean indicating whether given resource can be
+  aborted manually by calling `resource.cancel()`. Default `false`.
+
+* `abortOnUnmount`: A boolean which can be used to control if the given pending
+  resource should be aborted during component unmount. Default `false`.
+
 * `permissionsRequired`: A string (or an array of strings) indicating the list
   of permissions required for the given resource to be fetched.
 
@@ -232,7 +238,7 @@ the manifest must specify this.
 
 (It is conventional to freeze manifests -- making them immutable -- to
 document and enforce the fact that they do not change once
-created. See [Thinking in Stripes](thinking-in-stripes.md).)
+created. See [Thinking in Stripes](https://github.com/folio-org/stripes/blob/master/doc/dev-guide.md#thinking-in-stripes).)
 
 
 ### Path interpretation
@@ -375,10 +381,10 @@ generated path when no sorting parameter is provided in the UI URL.
 
 When the power and flexibility of text substitution and fallbacks are not
 sufficient for expressing how to build the back-end UI, arbitrary
-JavaScript can be used instead. If the value of a resource's `path` or one
-of its `params` is a function rather than a string, then that function is
-invoked whenever a path is needed. It is passed five parameters
-(though most functions will not use them all):
+JavaScript can be used instead. If the value of a resource's `path`,
+or one of its `params` or `headers` is a function rather than a string, then
+that function is invoked whenever a path is needed. It is passed five
+parameters (though most functions will not use them all):
 
 * An object containing the UI URL's query parameters (as accessed by
   `?{name}`).
@@ -412,9 +418,10 @@ So the function would usually be defined along these lines:
           }
         });
 
-Similarly, the entire `params` object can be replaced by a function that takes
-the above arguments and returns, instead of a string, an object to map to the
-parameters to be sent with requests. Or null if it lacks necessary information.
+Similarly, the entire `params` and `headers` objects can be replaced by a
+function that takes the above arguments and returns, instead of a string,
+an object to map to the parameters to be sent with requests. Or null if
+it lacks necessary information.
 
 
 

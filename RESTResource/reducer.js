@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-const initialResourceState = {
+export const initialResourceState = {
   hasLoaded: false,
   isPending: false,
   failed: false,

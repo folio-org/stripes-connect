@@ -1,4 +1,3 @@
-import 'isomorphic-fetch';
 import _ from 'lodash';
 import uuid from 'uuid';
 import queryString from 'query-string';
@@ -6,7 +5,14 @@ import queryString from 'query-string';
 import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
 
-const defaultDefaults = { pk: 'id', clientGeneratePk: true, fetch: true, clear: true };
+const defaultDefaults = {
+  pk: 'id',
+  clientGeneratePk: true,
+  fetch: true,
+  clear: true,
+  abortable: false,
+  abortOnUnmount: false,
+};
 
 /**
  * extractTotal
@@ -250,6 +256,41 @@ export function substitute(original, props, state, module, logger, dataKey) {
   return result;
 }
 
+/**
+ * buildOption
+ * Some manifest options properties may be an object or a function, determine which
+ * the passed property is and act accordingly
+ *
+ * @param option object or function
+ * @param props object
+ * @param state object
+ * @param module string name of the module the resource is affiliated with
+ * @param logger object a logger
+ * @param dataKey string unique key to disambiguate this resource from another
+ * which otherwise has the same attributes
+ *
+ * @return object
+ */
+
+export function buildOption(option, props, state, module, logger, dataKey) {
+  let toReturn;
+  if (typeof option === 'object') {
+    toReturn = _.mapValues(
+      option,
+      param => substitute(param, props, state, module, logger, dataKey)
+    );
+    // If any of the option properties have null values, we can't go any further
+    const someParamIsNull = Object.values(toReturn).some(value => value === null);
+    if (someParamIsNull) {
+      toReturn = null;
+    }
+  } else if (typeof option === 'function') {
+    const parsedQuery = queryString.parse(props.location?.search);
+    toReturn = option(parsedQuery, props.match?.params, mockProps(state, module, dataKey, logger).resources, logger, props);
+  }
+  return toReturn;
+}
+
 export default class RESTResource {
   constructor(name, query = {}, module = null, logger, dataKey, defaults = defaultDefaults) {
     this.name = name;
@@ -263,6 +304,7 @@ export default class RESTResource {
     this.actions = actionCreatorsFor(this);
     this.pagedFetchSuccess = this.actions.fetchSuccess;
     this.reducer = reducer.bind(this);
+    this.abortControllers = {};
   }
 
   getMutator(dispatch, props) {
@@ -270,6 +312,7 @@ export default class RESTResource {
       DELETE: (record, opts) => dispatch(this.deleteAction(record, props, opts)),
       PUT: (record, opts) => dispatch(this.updateAction(record, props, opts)),
       POST: (record, opts) => dispatch(this.createAction(record, props, opts)),
+      cancel: () => this.cancelRequests(),
     };
 
     if (this.optionsTemplate.accumulate) {
@@ -300,21 +343,12 @@ export default class RESTResource {
         }
       }
 
-      // params
-      if (typeof options.params === 'object') {
-        options.params = _.mapValues(
-          options.params,
-          param => substitute(param, props, state, this.module, this.logger, this.dataKey)
-        );
-        for (const key of Object.keys(options.params)) {
-          if (options.params[key] === null) {
-            return null;
-          }
-        }
-      } else if (typeof options.params === 'function') {
-        const parsedQuery = queryString.parse(_.get(props, ['location', 'search']));
-        options.params = options.params(parsedQuery, _.get(props, ['match', 'params']), mockProps(state, this.module, props.dataKey, this.logger).resources, this.logger, props);
-      }
+      // Build params
+      options.params = buildOption(options.params, props, state, this.module, this.logger, this.dataKey);
+      if (options.params === null) return null;
+
+      // Build headers
+      options.headers = buildOption(options.headers, props, state, this.module, this.logger, this.dataKey);
 
       // recordsRequired
       if (typeof options.recordsRequired === 'string' || typeof options.recordsRequired === 'function') {
@@ -346,7 +380,19 @@ export default class RESTResource {
       }
     }
 
-    if (options.perRequest && options.limitParam && verb === 'GET') {
+    /* if params is not null and perRequest is passed as an option, then add the limit param and trigger a fetch.
+       If params is returned as null, then do not add the limit param and prevent a fetch.
+       NOTE: If params is undefined (default case when params option is not passed to the resource via the manifest),
+       the limit param is added and triggers a fetch like it should. */
+    if (options.params !== null && options.perRequest && options.limitParam && verb === 'GET') {
+      if (typeof options.perRequest === 'string' || typeof options.perRequest === 'function') {
+        const perRequest = Number.parseInt(substitute(options.perRequest, props, state, this.module, this.logger, this.dataKey), 10);
+        if (perRequest >= 0) {
+          options.perRequest = perRequest;
+        } else {
+          return options;
+        }
+      }
       options.params = _.merge({}, options.params, { [options.limitParam]: options.perRequest });
     }
 
@@ -483,6 +529,32 @@ export default class RESTResource {
     this.dispatch(this.actions.reset());
   }
 
+  addAbortController(key, options) {
+    if (!options.abortable && !options.abortOnUnmount) {
+      return null;
+    }
+
+    const ctrl = new window.AbortController();
+    const { signal } = ctrl;
+
+    this.abortControllers[key] = ctrl;
+
+    return signal;
+  }
+
+  cancelRequestsOnUnmout() {
+    const { abortOnUnmount } = this.optionsTemplate;
+
+    if (abortOnUnmount) {
+      this.cancelRequests();
+    }
+  }
+
+  cancelRequests() {
+    Object.values(this.abortControllers).forEach(ctrl => ctrl.abort());
+    this.abortControllers = {};
+  }
+
   hasMissingPerms(state, perms) {
     const currentPerms = _.get(state, ['okapi', 'currentPerms'], {});
     const reqPerms = _.isArray(perms) ? perms : perms.split(',');
@@ -512,15 +584,19 @@ export default class RESTResource {
     if (clientGeneratePk) {
       remoteRecord[pk] = clientGeneratedId;
     }
+
+    const signal = this.addAbortController('create', options);
+
     // Send remote record
     const beforeCatch = fetch(url, {
       method: 'POST',
       headers,
+      signal,
       body: JSON.stringify(remoteRecord),
     }).then((response) => {
       if (response.status >= 400) {
         const clonedResponse = response.clone();
-        dispatch(this.mutationHTTPError(response, 'POST'));
+        dispatch(this.mutationHTTPError(response, 'POST', this.getActionMeta(options.POST)));
         // fetch responses are single-use so we use the one above and throw a different
         // one for catch() to play with
         throw clonedResponse;
@@ -550,10 +626,10 @@ export default class RESTResource {
         // single-use promise for getting them message body available for external
         // catch()
         if (!reason.status && !reason.headers) {
-          dispatch(this.actions.mutationError({ message: reason.message }, 'POST'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'POST', this.getActionMeta(options.POST)));
         }
       } else {
-        dispatch(this.actions.mutationError({ message: reason }, 'POST'));
+        dispatch(this.actions.mutationError({ message: reason }, 'POST', this.getActionMeta(options.POST)));
       }
     });
 
@@ -562,6 +638,7 @@ export default class RESTResource {
 
   updateAction = (record, props, opts) => {
     const clientRecord = { ...record };
+
     return (dispatch, getState) => {
       const options = this.verbOptions('PUT', getState(), props);
       const { pk, headers } = options;
@@ -569,15 +646,19 @@ export default class RESTResource {
       if (url === null) return null;
       if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
       dispatch(this.actions.updateStart(clientRecord));
+
+      const signal = this.addAbortController('update', options);
+
       const beforeCatch = fetch(url, {
         method: 'PUT',
         headers,
+        signal,
         body: JSON.stringify(record),
       })
         .then((response) => {
           if (response.status >= 400) {
             const clonedResponse = response.clone();
-            dispatch(this.mutationHTTPError(response, 'PUT'));
+            dispatch(this.mutationHTTPError(response, 'PUT', this.getActionMeta(options.PUT)));
             throw clonedResponse;
           } else {
             const meta = this.getMeta({ ...options, ...opts });
@@ -605,7 +686,7 @@ export default class RESTResource {
 
       beforeCatch.catch((reason) => {
         if (typeof reason === 'object' && !reason.status && !reason.headers) {
-          dispatch(this.actions.mutationError({ message: reason.message }, 'PUT'));
+          dispatch(this.actions.mutationError({ message: reason.message }, 'PUT', this.getActionMeta(options.PUT)));
         }
       });
 
@@ -622,14 +703,18 @@ export default class RESTResource {
     const clientRecord = { ...record };
     if (clientRecord[pk] && !clientRecord.id) clientRecord.id = clientRecord[pk];
     dispatch(this.actions.deleteStart(clientRecord));
+
+    const signal = this.addAbortController('remove', options);
+
     const beforeCatch = fetch(url, {
       method: 'DELETE',
       headers,
+      signal,
     })
       .then((response) => {
         if (response.status >= 400) {
           const clonedResponse = response.clone();
-          dispatch(this.mutationHTTPError(response, 'DELETE'));
+          dispatch(this.mutationHTTPError(response, 'DELETE', this.getActionMeta(options.DELETE)));
           throw clonedResponse;
         } else {
           const meta = this.getMeta({ ...options, ...opts });
@@ -639,7 +724,7 @@ export default class RESTResource {
 
     beforeCatch.catch((reason) => {
       if (typeof reason === 'object' && !reason.status && !reason.headers) {
-        dispatch(this.mutationError({ message: reason.message }, 'DELETE'));
+        dispatch(this.actions.mutationError({ message: reason.message }, 'DELETE', this.getActionMeta(options.DELETE)));
       }
     });
 
@@ -652,7 +737,6 @@ export default class RESTResource {
     return (dispatch, getState) => {
       const state = getState();
       const options = this.verbOptions('GET', state, props);
-
       if (options === null) {
         dispatch(this.actions.fetchAbort({ message: 'cannot satisfy request: missing query?' }));
         this.lastUrl = null;
@@ -675,6 +759,7 @@ export default class RESTResource {
 
       const { headers, records, resourceShouldRefresh } = options;
       const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
+
       // Check for existence of resourceShouldRefresh
       if (_.isUndefined(resourceShouldRefresh)) {
         // Maintain backward compatability if undefined maintin code
@@ -691,7 +776,10 @@ export default class RESTResource {
       this.lastReqd = requestIndex;
 
       dispatch(this.actions.fetchStart());
-      return fetch(url, { headers })
+
+      const signal = this.addAbortController('fetch', options);
+
+      return fetch(url, { headers, signal })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));
@@ -735,9 +823,7 @@ export default class RESTResource {
               }
             });
           }
-        }).catch((reason) => {
-          dispatch(this.actions.fetchError({ message: reason.message }));
-        });
+        }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
     };
   }
 
@@ -745,12 +831,27 @@ export default class RESTResource {
   fetchPageByOffset = (options, total) => {
     const { headers, records, resultOffset, offsetParam } = options;
     const reqd = Math.min(resultOffset, total);
-    return (dispatch) => {
+    const key = this.stateKey();
+
+    return (dispatch, getState) => {
+      const state = getState();
       const newOptions = {};
       newOptions.params = {};
       newOptions.params[offsetParam] = reqd;
       const url = urlFromOptions(_.merge({}, options, newOptions));
-      fetch(url, { headers })
+      const requestIndex = options.resultOffset >= 0 ? options.resultOffset : options.recordsRequired;
+      const { url: offsetUrl, offset } = state?.[key] ?? {};
+
+      // If the offset in the current request matches the resultOffset
+      // of the previous request just skip it fetching
+      // https://issues.folio.org/browse/STCON-118
+      if (offset && offset === requestIndex && url === offsetUrl) {
+        return null;
+      }
+
+      const signal = this.addAbortController('fetchPageByOffset', options);
+
+      return fetch(url, { headers, signal })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));
@@ -768,11 +869,7 @@ export default class RESTResource {
               dispatch(this.actions.offsetFetchSuccess(meta, data));
             });
           }
-        }).catch((err) => {
-          dispatch(this.actions.fetchError({
-            message: `Unexpected fetch error ${err}`,
-          }));
-        });
+        }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
     };
   }
 
@@ -791,7 +888,10 @@ export default class RESTResource {
         newOptions.params[offsetParam] = offset;
         const url = urlFromOptions(_.merge({}, options, newOptions));
         dispatch(this.actions.pageStart(url));
-        fetch(url, { headers })
+
+        const signal = this.addAbortController(`fetchMore${offset}`, options);
+
+        fetch(url, { headers, signal })
           .then((response) => {
             if (response.status >= 400) {
               dispatch(this.fetchHTTPError(response));
@@ -826,11 +926,7 @@ export default class RESTResource {
                 dispatch(this.actions.pageSuccess(meta, data));
               });
             }
-          }).catch((err) => {
-            dispatch(this.actions.fetchError({
-              message: `Unexpected fetch error ${err}`,
-            }));
-          });
+          }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
       }
       dispatch(this.actions.pageSuccess(firstMeta, firstData));
     };
@@ -849,7 +945,9 @@ export default class RESTResource {
       const { headers, records } = options;
       dispatch(this.actions.fetchStart());
 
-      const beforeCatch = fetch(url, { headers })
+      const signal = this.addAbortController('accFetch', options);
+
+      const beforeCatch = fetch(url, { headers, signal })
         .then(response => response.text()
           .then((text) => {
             if (response.status >= 400) {
@@ -878,12 +976,20 @@ export default class RESTResource {
             return data;
           }));
 
-      beforeCatch.catch((reason) => {
-        dispatch(this.actions.fetchError({ message: reason.message }));
-      });
+      beforeCatch.catch((reason) => this.handleFetchOrAbortError(reason, dispatch));
 
       return beforeCatch;
     };
+  }
+
+  handleFetchOrAbortError = (reason, dispatch) => {
+    const { name, message } = reason;
+
+    if (name === 'AbortError') {
+      dispatch(this.actions.fetchAbort({ message }));
+    } else {
+      dispatch(this.actions.fetchError({ message }));
+    }
   }
 
   fetchHTTPError = res => dispatch => res.text().then((text) => {
@@ -893,10 +999,14 @@ export default class RESTResource {
     }));
   });
 
-  mutationHTTPError = (res, mutator) => dispatch => res.text().then((text) => {
+  mutationHTTPError = (res, mutator, meta) => dispatch => res.text().then((text) => {
     dispatch(this.actions.mutationError({
       message: text || res.statusText,
       httpStatus: res.status,
-    }, mutator));
+    }, mutator, meta));
   });
+
+  getActionMeta = actionOptions => {
+    return _.pick(actionOptions, 'throwErrors');
+  }
 }

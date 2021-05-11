@@ -48,10 +48,10 @@ export default function (state = initialResourceState, action) {
     }
     case '@@stripes-connect/OFFSET_FETCH_SUCCESS': {
       const records = [...state.records];
-      // Extend length of array to offset, so if skipping ahead, array is padded with 'undefined' entries.
-      records[action.meta.offset] = null;
-      if (Array.isArray(action.payload)) records.splice(action.meta.offset, 1, ...action.payload);
-      else records.splice(action.meta.offset, 1, _.clone(action.payload));
+
+      let tempArray = new Array(action.meta.offset);
+      if (Array.isArray(action.payload)) tempArray.splice(action.meta.offset, 0, ...action.payload);
+      else tempArray.splice(action.meta.offset, 0, _.clone(action.payload));
       return Object.assign({}, state, {
         hasLoaded: true,
         loadedAt: new Date(),

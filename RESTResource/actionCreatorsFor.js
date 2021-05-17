@@ -42,6 +42,8 @@ export default function actionCreatorsFor(resource) {
 
     offsetFetchSuccess: passMetaPayload('OFFSET_FETCH_SUCCESS'),
 
+    offsetFetchSparseSliceSuccess: passMetaPayload('OFFSET_FETCH_SPARSE_SLICE_SUCCESS'),
+
     fetchError: passPayload('FETCH_ERROR'),
 
     fetchAbort: passPayload('FETCH_ABORT'),

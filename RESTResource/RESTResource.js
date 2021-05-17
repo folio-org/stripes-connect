@@ -829,7 +829,7 @@ export default class RESTResource {
 
   // Fetches a single page by offset adding it to the existing result list in redux
   fetchPageByOffset = (options, total) => {
-    const { headers, records, resultOffset, offsetParam } = options;
+    const { headers, records, resultOffset, offsetParam, outputFormat } = options;
     const reqd = Math.min(resultOffset, total);
     const key = this.stateKey();
 
@@ -866,7 +866,11 @@ export default class RESTResource {
               };
               if (meta.other) meta.other.totalRecords = extractTotal(json);
               const data = (records ? json[records] : json);
-              dispatch(this.actions.offsetFetchSuccess(meta, data));
+              if (!options.accumulate) {
+                dispatch(this.actions.offsetFetchSparseSliceSuccess(meta, data));
+              } else {
+                dispatch(this.actions.offsetFetchSuccess(meta, data));
+              }
             });
           }
         }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));

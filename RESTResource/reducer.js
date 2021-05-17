@@ -48,16 +48,37 @@ export default function (state = initialResourceState, action) {
     }
     case '@@stripes-connect/OFFSET_FETCH_SUCCESS': {
       const records = [...state.records];
-
-      let tempArray = new Array(action.meta.offset);
-      if (Array.isArray(action.payload)) tempArray.splice(action.meta.offset, 0, ...action.payload);
-      else tempArray.splice(action.meta.offset, 0, _.clone(action.payload));
+      if (Array.isArray(action.payload)) records.splice(action.meta.offset, 0, ...action.payload);
+      else records.splice(action.meta.offset, 0, _.clone(action.payload));
       return Object.assign({}, state, {
         hasLoaded: true,
         loadedAt: new Date(),
         isPending: false,
         failed: false,
         records,
+        ...action.meta,
+      });
+    }
+    case '@@stripes-connect/OFFSET_FETCH_SPARSE_SLICE_SUCCESS': {
+      let tempArray;
+      if (Array.isArray(action.payload)) {
+        let dataLength = action.meta.offset;
+        let remove = 0;
+        if (action.meta.offset < state.records.length) {
+          dataLength = state.records.length;
+          remove = action.payload.length;
+        }
+        tempArray = new Array(dataLength);
+        tempArray.splice(action.meta.offset, remove, ...action.payload);
+      } else {
+        tempArray.splice(action.meta.offset, 0, _.clone(action.payload));
+      }
+      return Object.assign({}, state, {
+        hasLoaded: true,
+        loadedAt: new Date(),
+        isPending: false,
+        failed: false,
+        records: tempArray,
         ...action.meta,
       });
     }

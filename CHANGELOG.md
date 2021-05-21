@@ -3,7 +3,7 @@
 ## 6.2.0 (IN PROGRESS)
 
 * Added the ability for elements of a manifest 'headers' property to be interpreted, and also to be a function in addition to an object. Refs STCON-121
-* Upgrade RxJS to v6. Refs STRIPES-723.
+* Upgrade RxJS to v6. Refs STCON-124.
 
 ## [6.1.0](https://github.com/folio-org/stripes-connect/tree/v6.1.0) (2021-02-25)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.0.0...v6.1.0)

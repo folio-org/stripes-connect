@@ -46,7 +46,7 @@ function optionsFromState(options, state) {
       root: state.okapi.url,
       headers: {
         'X-Okapi-Tenant': state.okapi.tenant,
-        'Accept-Language': state.okapi.locale,
+        'Accept-Language': state.okapi.locale ?? 'en',
       },
     };
     if (state.okapi.token) okapiOptions.headers['X-Okapi-Token'] = state.okapi.token;

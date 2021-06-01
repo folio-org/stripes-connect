@@ -59,6 +59,33 @@ export default function (state = initialResourceState, action) {
         ...action.meta,
       });
     }
+    case '@@stripes-connect/OFFSET_FETCH_SPARSE_SLICE_SUCCESS': {
+      let tempArray = [];
+      let remove = 0;
+
+      if (Array.isArray(action.payload)) {
+        let dataLength = action.meta.offset;
+
+        if (action.meta.offset < state.records.length) {
+          dataLength = state.records.length;
+          remove = action.payload.length;
+        }
+
+        tempArray = new Array(dataLength);
+        tempArray.splice(action.meta.offset, remove, ...action.payload);
+      } else {
+        tempArray.splice(action.meta.offset, remove, _.clone(action.payload));
+      }
+
+      return Object.assign({}, state, {
+        hasLoaded: true,
+        loadedAt: new Date(),
+        isPending: false,
+        failed: false,
+        records: tempArray,
+        ...action.meta,
+      });
+    }
     case '@@stripes-connect/RESET': {
       return initialResourceState;
     }

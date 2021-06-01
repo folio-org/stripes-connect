@@ -131,6 +131,24 @@ PagedOffset.manifest = { pagedResource: {
   perRequest: 5,
 } };
 
+class Sparsed extends Component {
+  render() {
+    return <div id="somediv" />;
+  }
+}
+Sparsed.manifest = {
+  sparsedResource: {
+    type: 'okapi',
+    path: 'turnip',
+    params: { q: 'dinner', offset: '5' },
+    records: 'records',
+    offsetParam: 'offset',
+    perRequest: 5,
+    resultOffset: 5,
+    resultDensity: 'sparse',
+  },
+};
+
 class CompWithPerms extends Component { // eslint-disable-line react/no-multi-comp
   render() {
     return <div id="somediv" />;
@@ -604,5 +622,40 @@ describe('connect()', () => {
       state.test_accumulated.isPending.should.equal(false);
       done();
     }, 10);
+  });
+
+  it('should build sparsed array', (done) => {
+    fetchMock
+      .get('http://localhost/turnip?limit=5&offset=5&q=dinner',
+        {
+          records: [
+            { 'id':'58e55786065039ceb9acb0e2', 'name':'Lucas' },
+            { 'id':'58e55786e2106a216fdb5629', 'name':'Kirkland' },
+            { 'id':'58e55786819013f1e810d28e', 'name':'Clarke' },
+          ],
+          total_records: 10
+        },
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }).catch(503);
+
+    const store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    const Connected = connect(Sparsed, 'sparsed', mockedEpics, defaultLogger);
+    const inst = mount(<Root store={store} component={Connected} />);
+
+    setTimeout(() => {
+      const { records } = inst.find(Sparsed).instance().props.resources.sparsedResource;
+
+      for (let i = 0; i < 5; i++) {
+        (typeof records[i]).should.equal('undefined');
+      }
+
+      records.length.should.equal(8);
+      fetchMock.restore();
+      done();
+    }, 40);
   });
 });

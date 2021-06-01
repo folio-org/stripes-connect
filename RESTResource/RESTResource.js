@@ -4,6 +4,7 @@ import queryString from 'query-string';
 
 import actionCreatorsFor from './actionCreatorsFor';
 import reducer from './reducer';
+import { resultDensities } from '../constants';
 
 const defaultDefaults = {
   pk: 'id',
@@ -12,6 +13,7 @@ const defaultDefaults = {
   clear: true,
   abortable: false,
   abortOnUnmount: false,
+  resultDensity: resultDensities.DENSE,
 };
 
 /**
@@ -866,7 +868,12 @@ export default class RESTResource {
               };
               if (meta.other) meta.other.totalRecords = extractTotal(json);
               const data = (records ? json[records] : json);
-              dispatch(this.actions.offsetFetchSuccess(meta, data));
+
+              if (options.resultDensity === resultDensities.SPARSE) {
+                dispatch(this.actions.offsetFetchSparseSliceSuccess(meta, data));
+              } else {
+                dispatch(this.actions.offsetFetchSuccess(meta, data));
+              }
             });
           }
         }).catch((reason) => this.handleFetchOrAbortError(reason, dispatch));

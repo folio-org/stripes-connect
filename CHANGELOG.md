@@ -1,9 +1,11 @@
 # Change history for stripes-connect
 
-## 6.2.0 (IN PROGRESS)
+## [6.2.0](https://github.com/folio-org/stripes-connect/tree/v6.2.0) (2021-06-08)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.1.0...v6.2.0)
 
 * Added the ability for elements of a manifest 'headers' property to be interpreted, and also to be a function in addition to an object. Refs STCON-121
 * Provide tenant's locale in `Accept-Language` HTTP header of `OkapiResource` requests. Refs STCON-127.
+* Introduce `resultDensity` option for pagination component. Refs STCON-123.
 
 ## [6.1.0](https://github.com/folio-org/stripes-connect/tree/v6.1.0) (2021-02-25)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.0.0...v6.1.0)

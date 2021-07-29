@@ -380,7 +380,7 @@ generated path when no sorting parameter is provided in the UI URL.
 #### Functional paths and parameters
 
 When the power and flexibility of text substitution and fallbacks are not
-sufficient for expressing how to build the back-end UI, arbitrary
+sufficient for expressing how to build the back-end URL, arbitrary
 JavaScript can be used instead. If the value of a resource's `path`,
 or one of its `params` or `headers` is a function rather than a string, then
 that function is invoked whenever a path is needed. It is passed five

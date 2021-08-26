@@ -126,8 +126,13 @@ jobs:
           path: yarn.lock
           retention-days: 5
 
-      - name: Fetch branches for SonarCloud
+      - name: Fetch branches for SonarCloud for default branch 'master'
+        if: ${{ github.ref == 'refs/heads/master' }}
         run: git fetch --no-tags ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} +refs/heads/master:refs/remotes/origin/master
+
+      - name: Fetch branches for SonarCloud for default branch 'main'
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: git fetch --no-tags ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} +refs/heads/main:refs/remotes/origin/main
 
       - name: Run SonarCloud scan
         uses: sonarsource/sonarcloud-github-action@master

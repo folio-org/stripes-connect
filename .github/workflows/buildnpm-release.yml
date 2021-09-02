@@ -222,6 +222,7 @@ jobs:
           echo ".github" >> .npmignore
           echo ".scannerwork" >> .npmignore
           cat .npmignore
+          
       - name: Publish NPM to FOLIO NPM registry
         run: npm publish
         env:

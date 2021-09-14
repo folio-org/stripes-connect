@@ -1,7 +1,8 @@
 # Change history for stripes-connect
 
-## [6.3.0] IN PROGRESS
+## 7.0.0 (IN PROGRESS)
 
+* React 17. STCON-119.
 * Upgrade RxJS to v6. Refs STRIPES-723.
 
 ## [6.2.0](https://github.com/folio-org/stripes-connect/tree/v6.2.0) (2021-06-08)

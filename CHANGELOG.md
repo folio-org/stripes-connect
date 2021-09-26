@@ -4,6 +4,7 @@
 
 * React 17. STCON-119.
 * Upgrade RxJS to v6. Refs STRIPES-723.
+* Use current eslint-parser, eslint, fetch-mock, jsdom, uuid. Refs STCON-130.
 
 ## [6.2.0](https://github.com/folio-org/stripes-connect/tree/v6.2.0) (2021-06-08)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.1.0...v6.2.0)

@@ -1,4 +1,11 @@
-function filter(action, resource) {
+import { ofType } from 'redux-observable';
+import {
+  filter,
+  map,
+  debounceTime,
+} from 'rxjs/operators';
+
+function shouldResourceRefresh(action, resource) {
   const { path } = action.meta;
   const { optionsTemplate, cachedProps } = resource;
   let resPath;
@@ -29,12 +36,13 @@ function filter(action, resource) {
 // returns epic which executes after a refresh action
 // and syncs/refreshes given resource
 export default function refreshEpic(resource) {
-  return (action$) => action$
-    .ofType('REFRESH')
-    .filter(action => filter(action, resource))
-    .debounceTime(100)
-    .map(action => {
+  return (action$) => action$.pipe(
+    ofType('REFRESH'),
+    filter(action => shouldResourceRefresh(action, resource)),
+    debounceTime(100),
+    map(action => {
       resource.sync();
       return { ...action, type: 'REFRESH_SUCCESS' };
-    });
+    }),
+  );
 }

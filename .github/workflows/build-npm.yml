@@ -16,7 +16,7 @@ name: buildNPM Snapshot
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-npm:
     env:
       YARN_TEST_OPTIONS: ''
       SQ_ROOT_DIR: '.'

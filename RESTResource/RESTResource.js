@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import queryString from 'query-string';
 
 import actionCreatorsFor from './actionCreatorsFor';
@@ -577,7 +577,7 @@ export default class RESTResource {
     const url = urlFromOptions(options);
     if (url === null) return null; // needs dynamic parts that aren't available
     // Optimistic record creation ('clientRecord')
-    const clientGeneratedId = record.id ? record.id : uuid();
+    const clientGeneratedId = record.id ? record.id : uuidv4();
     const clientRecord = { ...record, id: clientGeneratedId };
     clientRecord[pk] = clientGeneratedId;
     dispatch(this.actions.createStart(clientRecord));

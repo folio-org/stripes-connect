@@ -10,7 +10,7 @@ export const initialResourceState = {
   pendingMutations: [],
 };
 
-export default function (state = initialResourceState, action) {
+export default function reducer(state = initialResourceState, action) {
   if (!action.type.startsWith('@@stripes-connect')
     || action.meta.module !== this.module
     || action.meta.resource !== this.name

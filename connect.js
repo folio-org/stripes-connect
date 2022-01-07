@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect as reduxConnect } from 'react-redux';
@@ -9,6 +9,7 @@ import RESTResource from './RESTResource';
 import { initialResourceState } from './RESTResource/reducer';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
+import { usePrevious, useComponentWillMount } from './hooks';
 
 /* eslint-env browser */
 const defaultType = 'local';
@@ -48,69 +49,90 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     }
   });
 
-  class Wrapper extends React.Component {
-    static propTypes = {
-      refreshRemote: PropTypes.func.isRequired,
-      // We use it, but via ...props, so:
-      location: PropTypes.shape({
-        hostname: PropTypes.string, // First two are not defined in some parts of lifecyle
-        port: PropTypes.string,
-        pathname: PropTypes.string.isRequired,
-        search: PropTypes.string.isRequired,
-        hash: PropTypes.string.isRequired,
-        // query: null
-        // state: null
-      }),
-      resources: PropTypes.object,
-      dataKey: PropTypes.string,
-      root: PropTypes.object,
-    };
+  const componentShouldRefreshRemote = (props, nextProps) => {
+    // Under exactly what conditions should a change of props cause
+    // a refresh? See STRIPES-393. For now, we do this when the UI URL
+    // or any local resource has changed.
+    if (nextProps.location !== props.location) return true;
 
-    constructor(props) {
-      super(props);
-      const context = props.root;
-      this.logger = logger;
-      Wrapper.logger = logger;
-      logger.log('connect-lifecycle', `constructed <${Wrapped.name}>, resources =`, resources);
+    // Before checking if resources should be refreshed
+    // check if the props and nextProps actually changed.
+    if (arePropsEqual(props, nextProps)) return false;
 
-      if (!(context.addReducer)) {
-        throw new Error('No addReducer function available in component context');
+    const { root: { store } } = props;
+    const state = store.getState();
+
+    for (let i = 0, size = resources.length; i < size; ++i) {
+      if (resources[i].shouldRefresh(props, nextProps, state)) {
+        return true;
       }
-
-      this._subscribers = [];
-      resources.forEach((resource) => {
-        // Hopefully paging can all be absorbed into the resource in some future
-        // rearchitecting (we might also reiterate these function definitions a
-        // few million less times)
-        if (resource.pagingReducer) {
-          const pagingKey = `${resource.stateKey()}_paging`;
-          context.addReducer(pagingKey, resource.pagingReducer);
-          const store = context.store;
-          const onPageSuccess = (paging) => {
-            const records = paging.reduce((acc, val) => acc.concat(val.records), []);
-            // store.dispatch(resource.pagedFetchSuccess(records));
-            store.dispatch(resource.actions.fetchSuccess(paging[paging.length - 1].meta, records));
-          };
-          const onPageChange = (paging) => {
-            const allDone = paging.reduce((acc, val) => acc && val.isComplete, true);
-            if (allDone && paging.length > 0) onPageSuccess(paging);
-          };
-          let currentPaging;
-          const pagingListener = () => {
-            const previousPaging = currentPaging;
-            currentPaging = store.getState()[pagingKey];
-            if (currentPaging && currentPaging !== previousPaging) onPageChange(currentPaging);
-          };
-          const unsubscribe = store.subscribe(pagingListener);
-          this._subscribers.push(unsubscribe);
-        }
-        context.addReducer(resource.stateKey(), resource.reducer);
-      });
     }
 
-    componentDidMount() {
-      // this.logger.log('connect', `componentDidMount about to refreshRemote for ${Wrapped.name}`);
-      this.props.refreshRemote({ ...this.props });
+    return false;
+  };
+
+  const initResources = (context, subscribers) => {
+    resources.forEach((resource) => {
+      // Hopefully paging can all be absorbed into the resource in some future
+      // rearchitecting (we might also reiterate these function definitions a
+      // few million less times)
+      if (resource.pagingReducer) {
+        const pagingKey = `${resource.stateKey()}_paging`;
+        context.addReducer(pagingKey, resource.pagingReducer);
+        const store = context.store;
+        const onPageSuccess = (paging) => {
+          const records = paging.reduce((acc, val) => acc.concat(val.records), []);
+          // store.dispatch(resource.pagedFetchSuccess(records));
+          store.dispatch(resource.actions.fetchSuccess(paging[paging.length - 1].meta, records));
+        };
+        const onPageChange = (paging) => {
+          const allDone = paging.reduce((acc, val) => acc && val.isComplete, true);
+          if (allDone && paging.length > 0) onPageSuccess(paging);
+        };
+        let currentPaging;
+        const pagingListener = () => {
+          const previousPaging = currentPaging;
+          currentPaging = store.getState()[pagingKey];
+          if (currentPaging && currentPaging !== previousPaging) onPageChange(currentPaging);
+        };
+        const unsubscribe = store.subscribe(pagingListener);
+        subscribers.current.push(unsubscribe);
+      }
+      context.addReducer(resource.stateKey(), resource.reducer);
+    });
+  };
+
+  const unmount = (subscribers) => {
+    subscribers.forEach(unsubscribe => unsubscribe());
+    resources.forEach((resource) => {
+      if (resource instanceof OkapiResource) {
+        resource.markInvisible();
+
+        if (resource.shouldReset()) {
+          resource.reset();
+        }
+
+        if (!resource.isVisible()) {
+          resource.cancelRequestsOnUnmout();
+        }
+      }
+    });
+  };
+
+  const Wrapper = (props) => {
+    const {
+      root: context,
+      refreshRemote,
+    } = props;
+    const _subscribers = useRef([]);
+    const prevProps = usePrevious(props);
+
+    // runs when component initializes (before first render)
+    useComponentWillMount(() => initResources(context, _subscribers));
+
+    // runs when component mounts
+    useEffect(() => {
+      refreshRemote({ ...props });
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           // Call refresh whenever mounting to ensure that mutated data is updated in the UI.
@@ -119,65 +141,36 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
           resource.markVisible();
         }
       });
-    }
 
-    // eslint-disable-next-line camelcase, react/no-deprecated
-    UNSAFE_componentWillReceiveProps(nextProps) {
-      // this.logger.log('connect', `in componentWillReceiveProps for ${Wrapped.name}: nextProps.location=`, nextProps.location, 'this.props.location=', this.props.location);
-      if (this.componentShouldRefreshRemote(nextProps)) {
-        this.props.refreshRemote({ ...nextProps });
+      const subscribers = _subscribers.current;
+
+      return () => unmount(subscribers);
+    }, []);
+
+    // run when component's props have changed
+    useEffect(() => {
+      if (prevProps && componentShouldRefreshRemote(prevProps, props)) {
+        refreshRemote({ ...props });
       }
-    }
+    }, [props, prevProps, refreshRemote]);
 
-    componentWillUnmount() {
-      this._subscribers.forEach((unsubscribe) => unsubscribe());
-      resources.forEach((resource) => {
-        if (resource instanceof OkapiResource) {
-          resource.markInvisible();
+    return <Wrapped {...props} />;
+  };
 
-          if (resource.shouldReset()) {
-            resource.reset();
-          }
-
-          if (!resource.isVisible()) {
-            resource.cancelRequestsOnUnmout();
-          }
-        }
-      });
-    }
-
-    componentShouldRefreshRemote(nextProps) {
-      // Under exactly what conditions should a change of props cause
-      // a refresh? See STRIPES-393. For now, we do this when the UI URL
-      // or any local resource has changed.
-      if (nextProps.location !== this.props.location) return true;
-
-      // Before checking if resources should be refreshed
-      // check if the props and nextProps actually changed.
-      if (arePropsEqual(this.props, nextProps)) return false;
-
-      const { root: { store } } = this.props;
-      const state = store.getState();
-
-      for (let i = 0, size = resources.length; i < size; ++i) {
-        if (resources[i].shouldRefresh(this.props, nextProps, state)) {
-          return true;
-        }
-      }
-
-      return false;
-    }
-
-    render() {
-      return (
-        <Wrapped {...this.props} />
-      );
-    }
-  }
-
-  Wrapper.contextTypes = {
-    addReducer: PropTypes.func,
-    store: PropTypes.object,
+  Wrapper.logger = logger;
+  Wrapper.propTypes = {
+    refreshRemote: PropTypes.func.isRequired,
+    // We use it, but via ...props, so:
+    location: PropTypes.shape({
+      hostname: PropTypes.string, // First two are not defined in some parts of lifecyle
+      port: PropTypes.string,
+      pathname: PropTypes.string.isRequired,
+      search: PropTypes.string.isRequired,
+      hash: PropTypes.string.isRequired,
+    }),
+    resources: PropTypes.object,
+    dataKey: PropTypes.string,
+    root: PropTypes.object,
   };
 
   Wrapper.mapState = (state) => {

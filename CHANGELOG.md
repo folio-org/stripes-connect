@@ -1,5 +1,7 @@
 # Change history for stripes-connect
 
+## 7.1.0 IN PROGRESS
+
 ## [7.0.0](https://github.com/folio-org/stripes-connect/tree/v7.0.0) (2021-09-26)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.2.0...v7.0.0)
 

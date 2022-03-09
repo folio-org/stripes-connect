@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## [7.1.0] IN PROGRESS
+## 7.1.0 IN PROGRESS
 
 * Refactor connect to use a functional component. Refs STCON-132.
 

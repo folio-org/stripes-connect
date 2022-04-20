@@ -9,7 +9,7 @@ import RESTResource from './RESTResource';
 import { initialResourceState } from './RESTResource/reducer';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
-import { usePrevious, useComponentWillMount } from './hooks';
+import usePrevious from './hooks/usePrevious';
 
 /* eslint-env browser */
 const defaultType = 'local';
@@ -127,12 +127,11 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     const _subscribers = useRef([]);
     const prevProps = usePrevious(props);
 
-    // runs when component initializes (before first render)
-    useComponentWillMount(() => initResources(context, _subscribers));
-
     // runs when component mounts
     useEffect(() => {
+      initResources(context, _subscribers);
       refreshRemote({ ...props });
+
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           // Call refresh whenever mounting to ensure that mutated data is updated in the UI.

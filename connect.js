@@ -127,7 +127,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     const _subscribers = useRef([]);
     const prevProps = usePrevious(props);
 
-    // runs when component mounts
+    // runs initially when component mounts for the first time
     useEffect(() => {
       initResources(context, _subscribers);
       refreshRemote({ ...props });
@@ -144,7 +144,7 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       const subscribers = _subscribers.current;
 
       return () => unmount(subscribers);
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // run when component's props have changed
     useEffect(() => {

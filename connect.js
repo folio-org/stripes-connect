@@ -9,7 +9,7 @@ import RESTResource from './RESTResource';
 import { initialResourceState } from './RESTResource/reducer';
 import LocalResource from './LocalResource';
 import { mutationEpics, refreshEpic } from './epics';
-import { usePrevious, useComponentWillMount } from './hooks';
+import usePrevious from './hooks/usePrevious';
 
 /* eslint-env browser */
 const defaultType = 'local';
@@ -127,12 +127,11 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
     const _subscribers = useRef([]);
     const prevProps = usePrevious(props);
 
-    // runs when component initializes (before first render)
-    useComponentWillMount(() => initResources(context, _subscribers));
-
-    // runs when component mounts
+    // runs initially when component mounts for the first time
     useEffect(() => {
+      initResources(context, _subscribers);
       refreshRemote({ ...props });
+
       resources.forEach((resource) => {
         if (resource instanceof OkapiResource) {
           // Call refresh whenever mounting to ensure that mutated data is updated in the UI.
@@ -145,7 +144,11 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       const subscribers = _subscribers.current;
 
       return () => unmount(subscribers);
-    }, []);
+      // This hook should only execute once
+      // when the Wrapper mounts for the first time
+      // so turn off eslint complaining about missing dependencies.
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
     // run when component's props have changed
     useEffect(() => {

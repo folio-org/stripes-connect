@@ -144,7 +144,11 @@ const wrap = (Wrapped, module, epics, logger, options = {}) => {
       const subscribers = _subscribers.current;
 
       return () => unmount(subscribers);
+      // This hook should only execute once
+      // when the Wrapper mounts for the first time
+      // so turn off eslint complaining about missing dependencies.
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
     // run when component's props have changed
     useEffect(() => {

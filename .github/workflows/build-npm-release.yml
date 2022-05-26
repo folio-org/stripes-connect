@@ -12,7 +12,7 @@
 
 
 name: buildNPM Release
-on: 
+on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
@@ -27,8 +27,9 @@ jobs:
       COMPILE_TRANSLATION_FILES: 'false'
       PUBLISH_MOD_DESCRIPTOR: 'false'
       FOLIO_NPM_REGISTRY: 'https://repository.folio.org/repository/npm-folio/'
+      FOLIO_NPM_REGISTRY_AUTH: '//repository.folio.org/repository/npm-folio/'
       FOLIO_MD_REGISTRY: 'https://folio-registry.dev.folio.org'
-      NODEJS_VERSION: '12'
+      NODEJS_VERSION: '16'
       JEST_JUNIT_OUTPUT_DIR: 'artifacts/jest-junit'
       JEST_COVERAGE_REPORT_DIR: 'artifacts/coverage-jest/lcov-report/'
       BIGTEST_JUNIT_OUTPUT_DIR: 'artifacts/runTest'
@@ -53,22 +54,22 @@ jobs:
       - name: Get version from package.json
         id: package_version
         uses: notiz-dev/github-action-json-property@release
-        with: 
+        with:
           path: 'package.json'
           prop_path: 'version'
-      
+
       - name: Check matching tag and version in package.json
         if: ${{ env.TAG_VERSION != steps.package_version.outputs.prop }}
         run: |
           echo "Tag version, ${TAG_VERSION}, does not match package.json version, ${PACKAGE_VERSION}."
           exit 1
         env:
-          PACKAGE_VERSION: ${{ steps.package_version.outputs.prop }} 
+          PACKAGE_VERSION: ${{ steps.package_version.outputs.prop }}
 
       - name: Setup kernel for react native, increase watchers
         run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODEJS_VERSION }}
           check-latest: true
@@ -188,7 +189,7 @@ jobs:
         run: echo "DEFAULT_BRANCH=${{ github.event.repository.default_branch }}" >> $GITHUB_ENV
 
       - name: Fetch branches for SonarCloud
-        run: git fetch --no-tags ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} +refs/heads/${{ env.DEFAULT_BRANCH }}:refs/remotes/origin/${{ env.DEFAULT_BRANCH }} 
+        run: git fetch --no-tags ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} +refs/heads/${{ env.DEFAULT_BRANCH }}:refs/remotes/origin/${{ env.DEFAULT_BRANCH }}
 
       - name: Run SonarCloud scan
         uses: sonarsource/sonarcloud-github-action@master
@@ -206,7 +207,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Set up NPM environment for publishing
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODEJS_VERSION }}
           check-latest: true
@@ -214,17 +215,17 @@ jobs:
 
       - name: Set _auth in .npmrc
         run: |
-          npm config set @folio:registry $FOLIO_NPM_REGISTRY 
-          npm config set _auth $NODE_AUTH_TOKEN 
+          npm config set @folio:registry $FOLIO_NPM_REGISTRY
+          npm config set $FOLIO_NPM_REGISTRY_AUTH:_auth $NODE_AUTH_TOKEN
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Exclude some CI-generated artifacts in package
-        run: | 
+        run: |
           echo ".github" >> .npmignore
           echo ".scannerwork" >> .npmignore
           cat .npmignore
-          
+
       - name: Publish NPM to FOLIO NPM registry
         run: npm publish
         env:

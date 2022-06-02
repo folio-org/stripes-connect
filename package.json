@@ -16,7 +16,7 @@
     "node": ">=14.0.0"
   },
   "scripts": {
-    "test": "mocha --require babel-test-hook",
+    "test": "mocha --require babel-test-hook --exit",
     "test-watch": "mocha --require babel-test-hook -w --watch-extensions json",
     "lint": "eslint ."
   },

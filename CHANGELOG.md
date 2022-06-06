@@ -4,6 +4,7 @@
 
 * Refactor connect to use a functional component. Refs STCON-132.
 * Move `initResources` to `useEffect` to avoid react warning. Fixes STCON-133.
+* Bump NodeJS to `v16` in CI. Refs STCON-134.
 
 ## [7.0.0](https://github.com/folio-org/stripes-connect/tree/v7.0.0) (2021-09-26)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.2.0...v7.0.0)

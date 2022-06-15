@@ -1,6 +1,7 @@
 # Change history for stripes-connect
 
-## 7.1.0 IN PROGRESS
+## [7.1.0](https://github.com/folio-org/stripes-connect/tree/v7.1.0) (2022-06-14)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v7.0.0...v7.1.0)
 
 * Refactor connect to use a functional component. Refs STCON-132.
 * Move `initResources` to `useEffect` to avoid react warning. Fixes STCON-133.

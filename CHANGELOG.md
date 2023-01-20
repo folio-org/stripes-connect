@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## 8.0.0 IN PROGRESS
+## 8.1.0 IN PROGRESS
 * Upgrade `react-redux` to `v8`. Refs STCON-139.
 
 ## [7.1.0](https://github.com/folio-org/stripes-connect/tree/v7.1.0) (2022-06-14)

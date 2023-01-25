@@ -1,6 +1,6 @@
 {
   "name": "@folio/stripes-connect",
-  "version": "7.1.0",
+  "version": "8.1.0",
   "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-connect",
   "sideEffects": [
@@ -50,6 +50,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "redux-observable": "^1.2.0",
+    "react-redux": "^8.0.5",
     "redux-thunk": "^2.1.0",
     "regenerator-runtime": "^0.13.3",
     "rxjs": "^6.6.3"
@@ -57,18 +58,17 @@
   "dependencies": {
     "lodash": "^4.17.11",
     "prop-types": "^15.5.10",
-    "query-string": "^5.0.0",
-    "react-redux": "^7.2.0",
+    "query-string": "^7.1.2",
     "redux": "^4.0.0",
     "uuid": "^8.3.2"
   },
   "peerDependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-redux": "^8.0.5",
     "redux-observable": "^1.2.0",
-    "rxjs": "^6.6.3",
     "redux": "^4.0.0",
-    "react-redux": "^7.2.0"
+    "rxjs": "^6.6.3"
   },
   "resolutions": {
     "cheerio": "1.0.0-rc.10"

@@ -10,6 +10,13 @@
     "registry": "https://repository.folio.org/repository/npm-folio/"
   },
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
+  ],
   "author": "Index Data",
   "license": "Apache-2.0",
   "engines": {

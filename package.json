@@ -1,6 +1,6 @@
 {
   "name": "@folio/stripes-connect",
-  "version": "8.1.0",
+  "version": "8.2.0",
   "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-connect",
   "sideEffects": [
@@ -9,16 +9,25 @@
   "publishConfig": {
     "registry": "https://repository.folio.org/repository/npm-folio/"
   },
-  "main": "connect.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
+  ],
   "author": "Index Data",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=14.0.0"
   },
   "scripts": {
+    "prepublish": "yarn transpile",
     "test": "mocha --require babel-test-hook --exit",
     "test-watch": "mocha --require babel-test-hook -w --watch-extensions json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "transpile": "stripes transpile"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
@@ -63,8 +72,9 @@
   "peerDependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "redux-observable": "^1.2.0",
     "react-redux": "^8.0.5",
+    "redux-observable": "^1.2.0",
+    "redux": "^4.0.0",
     "rxjs": "^6.6.3"
   },
   "resolutions": {

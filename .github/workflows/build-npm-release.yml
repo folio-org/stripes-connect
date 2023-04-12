@@ -226,9 +226,6 @@ jobs:
           echo ".scannerwork" >> .npmignore
           cat .npmignore
 
-      - name: Transpile module
-        run: npm run transpile
-
       - name: Publish NPM to FOLIO NPM registry
         run: npm publish
         env:

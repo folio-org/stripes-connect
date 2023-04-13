@@ -9,7 +9,14 @@
   "publishConfig": {
     "registry": "https://repository.folio.org/repository/npm-folio/"
   },
-  "main": "connect.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
+  ],
   "author": "Index Data",
   "license": "Apache-2.0",
   "engines": {
@@ -18,7 +25,8 @@
   "scripts": {
     "test": "mocha --require babel-test-hook --exit",
     "test-watch": "mocha --require babel-test-hook -w --watch-extensions json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "transpile": "stripes transpile"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
@@ -34,6 +42,7 @@
     "@babel/preset-react": "^7.7.4",
     "@babel/register": "^7.7.7",
     "@folio/eslint-config-stripes": "^6.0.0",
+    "@folio/stripes-cli": "^2.8.0",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "abort-controller": "^3.0.0",
     "chai": "^4.0.2",

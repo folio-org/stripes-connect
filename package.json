@@ -23,11 +23,9 @@
     "node": ">=14.0.0"
   },
   "scripts": {
-    "prepublish": "yarn transpile",
     "test": "nyc --reporter lcov --report-dir artifacts/coverage-jest mocha --require babel-test-hook --exit",
     "test-watch": "mocha --require babel-test-hook -w --watch-extensions json",
-    "lint": "eslint .",
-    "transpile": "stripes transpile"
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",

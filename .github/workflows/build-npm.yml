@@ -152,6 +152,10 @@ jobs:
           echo ".scannerwork" >> .npmignore
           cat .npmignore
 
+      - name: Transpile module
+        if: ${{ github.ref == 'refs/heads/master' || github.ref  == 'refs/heads/main' }}
+        run: npm run transpile
+
       - name: Publish NPM
         if: ${{ github.ref == 'refs/heads/master' || github.ref  == 'refs/heads/main' }}
         run: npm publish

@@ -1,5 +1,10 @@
 # Change history for stripes-connect
 
+## 8.2.0 IN PROGRESS
+
+* Introduce transpilation. Fixes STCON-140.
+* Use `index.js` to correctly export public API. Refs STCON-144.
+
 ## [8.1.0](https://github.com/folio-org/stripes-connect/tree/v8.1.0) (2023-01-30)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v7.1.0...v8.1.0)
 

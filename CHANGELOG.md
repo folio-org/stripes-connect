@@ -4,6 +4,7 @@
 
 * Introduce transpilation. Fixes STCON-140.
 * Use `index.js` to correctly export public API. Refs STCON-144.
+* Cleanup dependencies to keep `dist` lean. Refs STCON-145.
 
 ## [8.1.0](https://github.com/folio-org/stripes-connect/tree/v8.1.0) (2023-01-30)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v7.1.0...v8.1.0)

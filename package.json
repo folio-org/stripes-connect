@@ -1,6 +1,6 @@
 {
   "name": "@folio/stripes-connect",
-  "version": "8.2.0",
+  "version": "8.2.29",
   "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-connect",
   "sideEffects": [
@@ -75,7 +75,6 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^8.0.5",
-    "redux": "^4.0.0",
     "redux-observable": "^1.2.0",
     "rxjs": "^6.6.3"
   },

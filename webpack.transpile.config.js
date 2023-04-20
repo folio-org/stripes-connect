@@ -1,13 +1,19 @@
+const externals = [
+  'react/jsx-runtime',
+  'rxjs/operators'
+];
+
 const config = {
-  externals: {
-    'react/jsx-runtime': {
-      root: 'react/jsx-runtime',
-      commonjs2: 'react/jsx-runtime',
-      commonjs: 'react/jsx-runtime',
-      amd: 'react/jsx-runtime',
-      umd: 'react/jsx-runtime'
-    }
-  }
+  externals: externals.reduce((acc, name) => {
+    acc[name] = {
+      root: name,
+      commonjs2: name,
+      commonjs: name,
+      amd: name,
+      umd: name
+    };
+    return acc;
+  }, {})
 };
 
 module.exports = config;

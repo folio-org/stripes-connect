@@ -23,7 +23,7 @@
     "node": ">=14.0.0"
   },
   "scripts": {
-    "test": "mocha --require babel-test-hook --exit",
+    "test": "nyc --reporter lcov --report-dir artifacts/coverage-jest mocha --require babel-test-hook --exit",
     "test-watch": "mocha --require babel-test-hook -w --watch-extensions json",
     "lint": "eslint .",
     "transpile": "stripes transpile"

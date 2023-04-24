@@ -1,6 +1,6 @@
 {
   "name": "@folio/stripes-connect",
-  "version": "7.1.0",
+  "version": "8.2.0",
   "description": "Declarative REST data access for React components",
   "repository": "folio-org/stripes-connect",
   "sideEffects": [
@@ -9,16 +9,24 @@
   "publishConfig": {
     "registry": "https://repository.folio.org/repository/npm-folio/"
   },
-  "main": "connect.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
+  ],
   "author": "Index Data",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=14.0.0"
   },
   "scripts": {
-    "test": "mocha --require babel-test-hook",
+    "test": "nyc --reporter lcov --report-dir artifacts/coverage-jest mocha --require babel-test-hook --exit",
     "test-watch": "mocha --require babel-test-hook -w --watch-extensions json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "transpile": "stripes transpile"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
@@ -34,6 +42,7 @@
     "@babel/preset-react": "^7.7.4",
     "@babel/register": "^7.7.7",
     "@folio/eslint-config-stripes": "^6.0.0",
+    "@folio/stripes-cli": "^2.8.0",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "abort-controller": "^3.0.0",
     "chai": "^4.0.2",
@@ -48,6 +57,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "redux-observable": "^1.2.0",
+    "react-redux": "^8.0.5",
     "redux-thunk": "^2.1.0",
     "regenerator-runtime": "^0.13.3",
     "rxjs": "^6.6.3"
@@ -55,8 +65,7 @@
   "dependencies": {
     "lodash": "^4.17.11",
     "prop-types": "^15.5.10",
-    "query-string": "^5.0.0",
-    "react-redux": "^7.2.0",
+    "query-string": "^7.1.2",
     "redux": "^4.0.0",
     "uuid": "^8.3.2"
   },
@@ -64,6 +73,10 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "redux-observable": "^1.2.0",
+    "react-redux": "^8.0.5",
     "rxjs": "^6.6.3"
+  },
+  "resolutions": {
+    "cheerio": "1.0.0-rc.10"
   }
 }

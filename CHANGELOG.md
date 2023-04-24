@@ -1,8 +1,21 @@
 # Change history for stripes-connect
 
-## 7.1.0 IN PROGRESS
+## 8.2.0 IN PROGRESS
+
+* Introduce transpilation. Fixes STCON-140.
+* Use `index.js` to correctly export public API. Refs STCON-144.
+
+## [8.1.0](https://github.com/folio-org/stripes-connect/tree/v8.1.0) (2023-01-30)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v7.1.0...v8.1.0)
+
+* *BREAKING:* Upgrade `react-redux` to `v8`. Refs STCON-139.
+
+## [7.1.0](https://github.com/folio-org/stripes-connect/tree/v7.1.0) (2022-06-14)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v7.0.0...v7.1.0)
 
 * Refactor connect to use a functional component. Refs STCON-132.
+* Move `initResources` to `useEffect` to avoid react warning. Fixes STCON-133.
+* Bump NodeJS to `v16` in CI. Refs STCON-134.
 
 ## [7.0.0](https://github.com/folio-org/stripes-connect/tree/v7.0.0) (2021-09-26)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v6.2.0...v7.0.0)

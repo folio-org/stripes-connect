@@ -2,7 +2,6 @@
 
 ## 8.2.0 IN PROGRESS
 
-* Introduce transpilation. Fixes STCON-140.
 * Use `index.js` to correctly export public API. Refs STCON-144.
 * Update outdated deps. Refs STCON-145.
 * Use consistent version constraints on `redux` to guarantee a singleton. Refs STCON-146, STRIPES-860.

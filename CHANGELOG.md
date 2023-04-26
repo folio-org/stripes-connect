@@ -4,6 +4,7 @@
 
 * Introduce transpilation. Fixes STCON-140.
 * Use `index.js` to correctly export public API. Refs STCON-144.
+* Update outdated deps. Refs STCON-145.
 * Use consistent version constraints on `redux` to guarantee a singleton. Refs STCON-146, STRIPES-860.
 
 ## [8.1.0](https://github.com/folio-org/stripes-connect/tree/v8.1.0) (2023-01-30)

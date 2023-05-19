@@ -202,12 +202,10 @@ jobs:
 
       - name: Exclude some CI-generated artifacts in package
         run: |
+          echo "artifacts" >> .npmignore
           echo ".github" >> .npmignore
           echo ".scannerwork" >> .npmignore
           cat .npmignore
-
-      - name: Transpile module
-        run: npm run transpile
 
       - name: Publish NPM to FOLIO NPM registry
         run: npm publish

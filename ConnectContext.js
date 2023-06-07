@@ -1,6 +1,5 @@
 import React from 'react';
-
-const ConnectContext = React.createContext();
+import { ConnectContext } from '@folio/stripes-shared-context';
 
 function getDisplayName(WrappedComponent) {
   return WrappedComponent.displayName || WrappedComponent.name || 'Component';

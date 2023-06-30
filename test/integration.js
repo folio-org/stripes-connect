@@ -584,9 +584,7 @@ describe('connect()', () => {
     inst.findByType(Child2).props.mutator.should.have.property('childResource2');
     inst.findByType(Child2).props.resources.childResource2.should.equal('child2');
 
-    // inst.setProps({ showChild: false });
     MountedComponent.update(<Root store={store} component={Connected} />);
-    // inst.setProps({ showChild: true });
     MountedComponent.update(<Root showChild store={store} component={Connected} />);
 
     inst.findByType(Child2).props.resources.should.have.property('childResource2');
@@ -611,7 +609,6 @@ describe('connect()', () => {
     act(() => {
       MountedComponent = create(<Root id={1} store={store} component={Connected} />);
     });
-    // const inst = MountedComponent.root;
 
     MountedComponent.update(<Root id={1} hideConnected store={store} component={Connected} />);
 

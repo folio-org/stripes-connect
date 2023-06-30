@@ -2,22 +2,19 @@ import 'jsdom-global/register';
 import AbortController from 'abort-controller';
 import chai from 'chai';
 import { describe, it } from 'mocha';
-import Enzyme, { mount } from 'enzyme';
-import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
-
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
+import { create } from 'react-test-renderer';
+
 import ConnectContext from '../ConnectContext';
 
 import { connect } from '../connect';
 
 global.window.AbortController = AbortController;
-
-Enzyme.configure({ adapter: new Adapter() });
 
 chai.should();
 
@@ -71,7 +68,7 @@ class Local extends Component { // eslint-disable-line react/no-multi-comp
     return <div id="somediv" />;
   }
 }
-Local.manifest = { localResource : { initialValue: 'hi' } };
+Local.manifest = { localResource: { initialValue: 'hi' } };
 
 class Remote extends Component { // eslint-disable-line react/no-multi-comp
   render() {
@@ -274,12 +271,14 @@ describe('connect()', () => {
   it('should successfully wrap a component with a local resource', () => {
     const store = createStore((state) => state, {});
     const Connected = connect(Local, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
-    inst.find(Local).props().resources.localResource.should.equal('hi');
-    inst.find(Local).props().mutator.localResource.replace({ boo:'ya' });
-    inst.find(Local).instance().props.resources.localResource.boo.should.equal('ya');
-    inst.find(Local).props().mutator.localResource.update({ boo:'urns' });
-    inst.find(Local).instance().props.resources.localResource.boo.should.equal('urns');
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
+
+    inst.findByType(Local).props.resources.localResource.should.equal('hi');
+    inst.findByType(Local).props.mutator.localResource.replace({ boo:'ya' });
+    inst.findByType(Local).props.resources.localResource.boo.should.equal('ya');
+    inst.findByType(Local).props.mutator.localResource.update({ boo:'urns' });
+    inst.findByType(Local).props.resources.localResource.boo.should.equal('urns');
   });
 
   it('should successfully wrap a component with an okapi resource', (done) => {
@@ -303,24 +302,25 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Remote, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
-    inst.find(Remote).props().mutator.remoteResource.PUT({ id: 1, someprop: 'new' })
+    inst.findByType(Remote).props.mutator.remoteResource.PUT({ id: 1, someprop: 'new' })
       .then(res => res.someprop.should.equal('new'));
     fetchMock.lastCall()[1].body.should.equal('{"id":1,"someprop":"new"}');
     fetchMock.lastCall()[1].headers['X-Okapi-Tenant'].should.equal('tenantid');
 
-    inst.find(Remote).props().mutator.remoteResource.DELETE({ id:1 });
+    inst.findByType(Remote).props.mutator.remoteResource.DELETE({ id:1 });
     fetchMock.lastCall()[0].should.equal('http://localhost/turnip/1');
 
-    inst.find(Remote).props().mutator.remoteResource.POST({ someprop:'newer' })
+    inst.findByType(Remote).props.mutator.remoteResource.POST({ someprop:'newer' })
       .then(res => res.someprop.should.equal('newer'));
     // Confirm UUID is generated
     fetchMock.lastCall()[1].body.length.should.equal(64);
 
     setTimeout(() => {
-      inst.find(Remote).instance().props.resources.remoteResource.records[0].someprop.should.equal('someval');
-      inst.find(Remote).instance().props.resources.remoteResource.successfulMutations[0].record.someprop.should.equal('newer');
+      inst.findByType(Remote).props.resources.remoteResource.records[0].someprop.should.equal('someval');
+      inst.findByType(Remote).props.resources.remoteResource.successfulMutations[0].record.someprop.should.equal('newer');
       fetchMock.restore();
       done();
     }, 10);
@@ -345,10 +345,11 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Paged, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
     setTimeout(() => {
-      inst.find(Paged).instance().props.resources.pagedResource.records.length.should.equal(14);
+      inst.findByType(Paged).props.resources.pagedResource.records.length.should.equal(14);
       fetchMock.restore();
       done();
     }, 40);
@@ -366,10 +367,11 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(PagedOffset, 'testoffset', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
     setTimeout(() => {
-      inst.find(PagedOffset).instance().props.resources.pagedResource.records.length.should.equal(5);
+      inst.findByType(PagedOffset).props.resources.pagedResource.records.length.should.equal(5);
       fetchMock.restore();
       done();
     }, 40);
@@ -387,12 +389,14 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Functional, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
-    inst.find(Functional).props().resources.functionalResource.hasLoaded.should.equal(false);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
+
+    inst.findByType(Functional).props.resources.functionalResource.hasLoaded.should.equal(false);
 
     setTimeout(() => {
-      inst.find(Functional).instance().props.resources.functionalResource.hasLoaded.should.equal(true);
-      inst.find(Functional).instance().props.resources.functionalResource.records.length.should.equal(5);
+      inst.findByType(Functional).instance.props.resources.functionalResource.hasLoaded.should.equal(true);
+      inst.findByType(Functional).instance.props.resources.functionalResource.records.length.should.equal(5);
       fetchMock.restore();
       done();
     }, 10);
@@ -411,12 +415,14 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(ErrorProne, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
-    inst.find(ErrorProne).props().mutator.errorProne.POST({ id:1, someprop:'new' })
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
+
+    inst.findByType(ErrorProne).props.mutator.errorProne.POST({ id:1, someprop:'new' })
       .catch(err => err.text().then(msg => msg.should.equal('You are forbidden because reasons.')));
 
     setTimeout(() => {
-      const res = inst.find(ErrorProne).instance().props.resources.errorProne;
+      const res = inst.findByType(ErrorProne).props.resources.errorProne;
 
       res.isPending.should.equal(false);
       res.failed.httpStatus.should.equal(404);
@@ -437,10 +443,11 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(CompWithPerms, 'test2', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
     setTimeout(() => {
-      const res = inst.find(CompWithPerms).instance().props.resources.resourceWithPerms;
+      const res = inst.findByType(CompWithPerms).props.resources.resourceWithPerms;
       res.isPending.should.equal(false);
       res.hasLoaded.should.equal(false);
       fetchMock.restore();
@@ -459,10 +466,11 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(CompWithPerms, 'test1', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
     setTimeout(() => {
-      const res = inst.find(CompWithPerms).instance().props.resources.resourceWithPerms;
+      const res = inst.findByType(CompWithPerms).props.resources.resourceWithPerms;
       res.isPending.should.equal(false);
       res.hasLoaded.should.equal(true);
       res.records.length.should.equal(1);
@@ -482,13 +490,14 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Conditional, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
     setTimeout(() => {
-      let res = inst.find(Conditional).instance().props.resources.yes;
+      let res = inst.findByType(Conditional).props.resources.yes;
       res.hasLoaded.should.equal(true);
       res.isPending.should.equal(false);
-      res = inst.find(Conditional).instance().props.resources.no;
+      res = inst.findByType(Conditional).props.resources.no;
       res.hasLoaded.should.equal(false);
       res.isPending.should.equal(false);
       fetchMock.restore();
@@ -513,20 +522,21 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Acc, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
-    inst.find(Acc).props().mutator.accResource.GET({});
-    inst.find(Acc).props().mutator.accResource.GET({ path: 'parsnip' })
+    inst.findByType(Acc).props.mutator.accResource.GET({});
+    inst.findByType(Acc).props.mutator.accResource.GET({ path: 'parsnip' })
       .then(rec => rec[0].someprop.should.equal('otherval'));
-    inst.find(Acc).props().mutator.accResource.GET({ path: 'potato' })
+    inst.findByType(Acc).props.mutator.accResource.GET({ path: 'potato' })
       .catch(err => err.httpStatus.should.equal(403));
 
     setTimeout(() => {
-      const res = inst.find(Acc).instance().props.resources.accResource;
+      const res = inst.findByType(Acc).props.resources.accResource;
       res.records[0].someprop.should.equal('someval');
       res.records[1].someprop.should.equal('otherval');
-      inst.find(Acc).props().mutator.accResource.reset();
-      inst.find(Acc).props().resources.accResource.records.length.should.equal(0);
+      inst.findByType(Acc).props.mutator.accResource.reset();
+      inst.findByType(Acc).props.resources.accResource.records.length.should.equal(0);
       fetchMock.restore();
       done();
     }, 10);
@@ -535,17 +545,18 @@ describe('connect()', () => {
   it('should reconnect previously connected component', () => {
     const store = createStore((state) => state, {});
     const Connected = connect(Parent, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root showChild store={store} component={Connected} />);
+    const MountedComponent = create(<Root showChild store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
-    inst.find(Child2).props().resources.should.have.property('childResource2');
-    inst.find(Child2).props().mutator.should.have.property('childResource2');
-    inst.find(Child2).props().resources.childResource2.should.equal('child2');
+    inst.findByType(Child2).props.resources.should.have.property('childResource2');
+    inst.findByType(Child2).props.mutator.should.have.property('childResource2');
+    inst.findByType(Child2).props.resources.childResource2.should.equal('child2');
 
     inst.setProps({ showChild: false });
     inst.setProps({ showChild: true });
 
-    inst.find(Child2).props().resources.should.have.property('childResource2');
-    inst.find(Child2).props().mutator.should.have.property('childResource2');
+    inst.findByType(Child2).props.resources.should.have.property('childResource2');
+    inst.findByType(Child2).props.mutator.should.have.property('childResource2');
   });
 
   it('should refetch data when props change', (done) => {
@@ -562,16 +573,17 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(CompWithParams, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root id={1} store={store} component={Connected} />);
+    const MountedComponent = create(<Root id={1} store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
     setTimeout(() => {
-      const res = inst.find(CompWithParams).instance().props.resources.resourceWithParam;
+      const res = inst.findByType(CompWithParams).props.resources.resourceWithParam;
       res.records[0].someprop.should.equal('someval');
       inst.setProps({ id: 2 });
     });
 
     setTimeout(() => {
-      const res = inst.find(CompWithParams).instance().props.resources.resourceWithParam;
+      const res = inst.findByType(CompWithParams).props.resources.resourceWithParam;
       res.records[0].someprop.should.equal('otherval');
       done();
     }, 100);
@@ -589,7 +601,9 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Unmounted, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root id={1} store={store} component={Connected} />);
+    const MountedComponent = create(<Root id={1} store={store} component={Connected} />);
+    const inst = MountedComponent.root;
+
     inst.setProps({ hideConnected: true });
 
     setTimeout(() => {
@@ -611,10 +625,11 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Accumulated, 'test', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
-    inst.find(Accumulated).props().mutator.accumulated.GET();
-    inst.find(Accumulated).props().mutator.accumulated.cancel();
+    inst.findByType(Accumulated).props.mutator.accumulated.GET();
+    inst.findByType(Accumulated).props.mutator.accumulated.cancel();
 
     setTimeout(() => {
       const state = store.getState();
@@ -644,10 +659,11 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Sparsed, 'sparsed', mockedEpics, defaultLogger);
-    const inst = mount(<Root store={store} component={Connected} />);
+    const MountedComponent = create(<Root store={store} component={Connected} />);
+    const inst = MountedComponent.root;
 
     setTimeout(() => {
-      const { records } = inst.find(Sparsed).instance().props.resources.sparsedResource;
+      const { records } = inst.findByType(Sparsed).props.resources.sparsedResource;
 
       for (let i = 0; i < 5; i++) {
         (typeof records[i]).should.equal('undefined');

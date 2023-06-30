@@ -1,14 +1,14 @@
 import 'jsdom-global/register';
 import AbortController from 'abort-controller';
 import chai from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it, before } from 'mocha';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
-import { create } from 'react-test-renderer';
+import { create, act } from 'react-test-renderer';
 
 import ConnectContext from '../ConnectContext';
 
@@ -50,11 +50,11 @@ Root.childContextTypes = {
   addReducer: PropTypes.func,
 };
 
-const defaultLogger = () => {};
-defaultLogger.log = (cat, ...args) => {};  // eslint-disable-line no-unused-vars
+const defaultLogger = () => { };
+defaultLogger.log = (cat, ...args) => { };  // eslint-disable-line no-unused-vars
 
 const mockedEpics = {
-  add: () => {}
+  add: () => { }
 };
 
 class Simple extends Component { // eslint-disable-line react/no-multi-comp
@@ -75,10 +75,12 @@ class Remote extends Component { // eslint-disable-line react/no-multi-comp
     return <div id="somediv" />;
   }
 }
-Remote.manifest = { remoteResource: {
-  type: 'okapi',
-  path: 'turnip',
-} };
+Remote.manifest = {
+  remoteResource: {
+    type: 'okapi',
+    path: 'turnip',
+  }
+};
 
 const Accumulated = () => (<div id="somediv" />);
 Accumulated.manifest = {
@@ -105,28 +107,32 @@ class Paged extends Component { // eslint-disable-line react/no-multi-comp
     return <div id="somediv" />;
   }
 }
-Paged.manifest = { pagedResource: {
-  type: 'okapi',
-  path: 'turnip',
-  params: { q: 'dinner' },
-  records: 'records',
-  recordsRequired: 20,
-  perRequest: 5,
-} };
+Paged.manifest = {
+  pagedResource: {
+    type: 'okapi',
+    path: 'turnip',
+    params: { q: 'dinner' },
+    records: 'records',
+    recordsRequired: 20,
+    perRequest: 5,
+  }
+};
 
 class PagedOffset extends Component { // eslint-disable-line react/no-multi-comp
   render() {
     return <div id="somediv" />;
   }
 }
-PagedOffset.manifest = { pagedResource: {
-  type: 'okapi',
-  path: 'turnip',
-  params: { q: 'dinner', offset: '5' },
-  records: 'records',
-  offsetParam: 'offset',
-  perRequest: 5,
-} };
+PagedOffset.manifest = {
+  pagedResource: {
+    type: 'okapi',
+    path: 'turnip',
+    params: { q: 'dinner', offset: '5' },
+    records: 'records',
+    offsetParam: 'offset',
+    perRequest: 5,
+  }
+};
 
 class Sparsed extends Component {
   render() {
@@ -151,14 +157,16 @@ class CompWithPerms extends Component { // eslint-disable-line react/no-multi-co
     return <div id="somediv" />;
   }
 }
-CompWithPerms.manifest = { resourceWithPerms: {
-  type: 'okapi',
-  path: () => 'turnip',
-  GET: {
-    params: () => ({ q: 'dinner' }),
-  },
-  permissionsRequired: 'perm1,perm2',
-} };
+CompWithPerms.manifest = {
+  resourceWithPerms: {
+    type: 'okapi',
+    path: () => 'turnip',
+    GET: {
+      params: () => ({ q: 'dinner' }),
+    },
+    permissionsRequired: 'perm1,perm2',
+  }
+};
 
 class Conditional extends Component { // eslint-disable-line react/no-multi-comp
   render() {
@@ -198,13 +206,15 @@ class Functional extends Component { // eslint-disable-line react/no-multi-comp
     return <div id="somediv" />;
   }
 }
-Functional.manifest = { functionalResource: {
-  type: 'okapi',
-  path: () => 'turnip',
-  GET: {
-    params: () => ({ q: 'dinner' }),
+Functional.manifest = {
+  functionalResource: {
+    type: 'okapi',
+    path: () => 'turnip',
+    GET: {
+      params: () => ({ q: 'dinner' }),
+    }
   }
-} };
+};
 
 class ErrorProne extends Component { // eslint-disable-line react/no-multi-comp
   render() {
@@ -212,10 +222,12 @@ class ErrorProne extends Component { // eslint-disable-line react/no-multi-comp
   }
 }
 
-ErrorProne.manifest = { errorProne: {
-  type: 'okapi',
-  path: () => 'turnep',
-} };
+ErrorProne.manifest = {
+  errorProne: {
+    type: 'okapi',
+    path: () => 'turnep',
+  }
+};
 
 class Acc extends Component { // eslint-disable-line react/no-multi-comp
   render() {
@@ -223,14 +235,16 @@ class Acc extends Component { // eslint-disable-line react/no-multi-comp
   }
 }
 
-Acc.manifest = { accResource: {
-  type: 'okapi',
-  accumulate: true,
-  path: 'turnip',
-} };
+Acc.manifest = {
+  accResource: {
+    type: 'okapi',
+    accumulate: true,
+    path: 'turnip',
+  }
+};
 
 class Child2 extends Component { // eslint-disable-line react/no-multi-comp
-  static manifest = { childResource2 : { initialValue: 'child2' } };
+  static manifest = { childResource2: { initialValue: 'child2' } };
 
   render() {
     return <div id="somediv" />;
@@ -238,7 +252,7 @@ class Child2 extends Component { // eslint-disable-line react/no-multi-comp
 }
 
 class Child1 extends Component { // eslint-disable-line react/no-multi-comp
-  static manifest = { childResource1 : { initialValue: 'child1' } };
+  static manifest = { childResource1: { initialValue: 'child1' } };
 
   constructor() {
     super();
@@ -251,7 +265,7 @@ class Child1 extends Component { // eslint-disable-line react/no-multi-comp
 }
 
 class Parent extends Component { // eslint-disable-line react/no-multi-comp
-  static manifest = { parentResource : { initialValue: 'parent' } };
+  static manifest = { parentResource: { initialValue: 'parent' } };
 
   constructor() {
     super();
@@ -271,13 +285,16 @@ describe('connect()', () => {
   it('should successfully wrap a component with a local resource', () => {
     const store = createStore((state) => state, {});
     const Connected = connect(Local, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root store={store} component={Connected} />);
+    let MountedComponent;
+    act(() => {
+      MountedComponent = create(<Root store={store} component={Connected} />);
+    });
     const inst = MountedComponent.root;
 
     inst.findByType(Local).props.resources.localResource.should.equal('hi');
-    inst.findByType(Local).props.mutator.localResource.replace({ boo:'ya' });
+    inst.findByType(Local).props.mutator.localResource.replace({ boo: 'ya' });
     inst.findByType(Local).props.resources.localResource.boo.should.equal('ya');
-    inst.findByType(Local).props.mutator.localResource.update({ boo:'urns' });
+    inst.findByType(Local).props.mutator.localResource.update({ boo: 'urns' });
     inst.findByType(Local).props.resources.localResource.boo.should.equal('urns');
   });
 
@@ -302,7 +319,10 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Remote, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root store={store} component={Connected} />);
+    let MountedComponent;
+    act(() => {
+      MountedComponent = create(<Root store={store} component={Connected} />);
+    });
     const inst = MountedComponent.root;
 
     inst.findByType(Remote).props.mutator.remoteResource.PUT({ id: 1, someprop: 'new' })
@@ -310,10 +330,10 @@ describe('connect()', () => {
     fetchMock.lastCall()[1].body.should.equal('{"id":1,"someprop":"new"}');
     fetchMock.lastCall()[1].headers['X-Okapi-Tenant'].should.equal('tenantid');
 
-    inst.findByType(Remote).props.mutator.remoteResource.DELETE({ id:1 });
+    inst.findByType(Remote).props.mutator.remoteResource.DELETE({ id: 1 });
     fetchMock.lastCall()[0].should.equal('http://localhost/turnip/1');
 
-    inst.findByType(Remote).props.mutator.remoteResource.POST({ someprop:'newer' })
+    inst.findByType(Remote).props.mutator.remoteResource.POST({ someprop: 'newer' })
       .then(res => res.someprop.should.equal('newer'));
     // Confirm UUID is generated
     fetchMock.lastCall()[1].body.length.should.equal(64);
@@ -329,14 +349,14 @@ describe('connect()', () => {
   it('should make multiple requests for a paged resource', (done) => {
     fetchMock
       .getOnce('http://localhost/turnip?limit=5&q=dinner',
-        { records:[{ 'id':'58e5356fe84698a0a279a903', 'name':'Alberta' }, { 'id':'58e5356f364668c082d3d87a', 'name':'David' }, { 'id':'58e5356ff56928961932c1db', 'name':'Roxie' }, { 'id':'58e5356ff66b0af6f1332145', 'name':'Tammy' }, { 'id':'58e5356fd18c30d6c63503c6', 'name':'Sanford' }], total_records:14 },
+        { records: [{ 'id': '58e5356fe84698a0a279a903', 'name': 'Alberta' }, { 'id': '58e5356f364668c082d3d87a', 'name': 'David' }, { 'id': '58e5356ff56928961932c1db', 'name': 'Roxie' }, { 'id': '58e5356ff66b0af6f1332145', 'name': 'Tammy' }, { 'id': '58e5356fd18c30d6c63503c6', 'name': 'Sanford' }], total_records: 14 },
         { headers: { 'Content-Type': 'application/json' } })
       .getOnce('http://localhost/turnip?limit=5&offset=5&q=dinner',
-        { records:[{ 'id':'58e55786065039ceb9acb0e2', 'name':'Lucas' }, { 'id':'58e55786e2106a216fdb5629', 'name':'Kirkland' }, { 'id':'58e55786819013f1e810d28e', 'name':'Clarke' }, { 'id':'58e55786e51f01bc81b11f32', 'name':'Acevedo' }, { 'id':'58e55786791c37697eec2bc2', 'name':'Earnestine' }], total_records:14 },
+        { records: [{ 'id': '58e55786065039ceb9acb0e2', 'name': 'Lucas' }, { 'id': '58e55786e2106a216fdb5629', 'name': 'Kirkland' }, { 'id': '58e55786819013f1e810d28e', 'name': 'Clarke' }, { 'id': '58e55786e51f01bc81b11f32', 'name': 'Acevedo' }, { 'id': '58e55786791c37697eec2bc2', 'name': 'Earnestine' }], total_records: 14 },
 
         { headers: { 'Content-Type': 'application/json' } })
       .getOnce('http://localhost/turnip?limit=5&offset=10&q=dinner',
-        { records:[{ 'id':'58e557e48b8b56d0bea22460', 'name':'Dillon' }, { 'id':'58e557e46120e13590013272', 'name':'Cain' }, { 'id':'58e557e41c2e37143a990445', 'name':'Gordon' }, { 'id':'28e257e41c2e37143a990445', 'name':'Giddeon' }], total_records:14 },
+        { records: [{ 'id': '58e557e48b8b56d0bea22460', 'name': 'Dillon' }, { 'id': '58e557e46120e13590013272', 'name': 'Cain' }, { 'id': '58e557e41c2e37143a990445', 'name': 'Gordon' }, { 'id': '28e257e41c2e37143a990445', 'name': 'Giddeon' }], total_records: 14 },
         { headers: { 'Content-Type': 'application/json' } })
       .catch(503);
 
@@ -358,7 +378,7 @@ describe('connect()', () => {
   it('should only make 1 request for a paged offset resource', (done) => {
     fetchMock
       .getOnce('http://localhost/turnip?limit=5&offset=5&q=dinner',
-        { records:[{ 'id':'58e55786065039ceb9acb0e2', 'name':'Lucas' }, { 'id':'58e55786e2106a216fdb5629', 'name':'Kirkland' }, { 'id':'58e55786819013f1e810d28e', 'name':'Clarke' }, { 'id':'58e55786e51f01bc81b11f32', 'name':'Acevedo' }, { 'id':'58e55786791c37697eec2bc2', 'name':'Earnestine' }], total_records:5 },
+        { records: [{ 'id': '58e55786065039ceb9acb0e2', 'name': 'Lucas' }, { 'id': '58e55786e2106a216fdb5629', 'name': 'Kirkland' }, { 'id': '58e55786819013f1e810d28e', 'name': 'Clarke' }, { 'id': '58e55786e51f01bc81b11f32', 'name': 'Acevedo' }, { 'id': '58e55786791c37697eec2bc2', 'name': 'Earnestine' }], total_records: 5 },
         { headers: { 'Content-Type': 'application/json' } })
       .catch(503);
 
@@ -380,7 +400,7 @@ describe('connect()', () => {
   it('should run manifest functions', (done) => {
     fetchMock
       .get('http://localhost/turnip?q=dinner',
-        [{ 'id':'58e5356fe84698a0a279a903', 'name':'Alberta' }, { 'id':'58e5356f364668c082d3d87a', 'name':'David' }, { 'id':'58e5356ff56928961932c1db', 'name':'Roxie' }, { 'id':'58e5356ff66b0af6f1332145', 'name':'Tammy' }, { 'id':'58e5356fd18c30d6c63503c6', 'name':'Sanford' }],
+        [{ 'id': '58e5356fe84698a0a279a903', 'name': 'Alberta' }, { 'id': '58e5356f364668c082d3d87a', 'name': 'David' }, { 'id': '58e5356ff56928961932c1db', 'name': 'Roxie' }, { 'id': '58e5356ff66b0af6f1332145', 'name': 'Tammy' }, { 'id': '58e5356fd18c30d6c63503c6', 'name': 'Sanford' }],
         { headers: { 'Content-Type': 'application/json' } })
       .catch(503);
 
@@ -389,7 +409,10 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Functional, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root store={store} component={Connected} />);
+    let MountedComponent;
+    act(() => {
+      MountedComponent = create(<Root store={store} component={Connected} />);
+    });
     const inst = MountedComponent.root;
 
     inst.findByType(Functional).props.resources.functionalResource.hasLoaded.should.equal(false);
@@ -415,10 +438,13 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(ErrorProne, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root store={store} component={Connected} />);
+    let MountedComponent;
+    act(() => {
+      MountedComponent = create(<Root store={store} component={Connected} />);
+    });
     const inst = MountedComponent.root;
 
-    inst.findByType(ErrorProne).props.mutator.errorProne.POST({ id:1, someprop:'new' })
+    inst.findByType(ErrorProne).props.mutator.errorProne.POST({ id: 1, someprop: 'new' })
       .catch(err => err.text().then(msg => msg.should.equal('You are forbidden because reasons.')));
 
     setTimeout(() => {
@@ -435,7 +461,7 @@ describe('connect()', () => {
   it('should fail because of missing permissions', (done) => {
     fetchMock
       .get('http://localhost/turnip?q=dinner',
-        [{ 'id':'58e5356fe84698a0a279a903', 'name':'Alberta' }],
+        [{ 'id': '58e5356fe84698a0a279a903', 'name': 'Alberta' }],
         { headers: { 'Content-Type': 'application/json' } });
 
     const store = createStore((state) => state,
@@ -458,7 +484,7 @@ describe('connect()', () => {
   it('should make a request because required permissions are present', (done) => {
     fetchMock
       .get('http://localhost/turnip?q=dinner',
-        [{ 'id':'58e5356fe84698a0a279a903', 'name':'Alberta' }],
+        [{ 'id': '58e5356fe84698a0a279a903', 'name': 'Alberta' }],
         { headers: { 'Content-Type': 'application/json' } });
 
     const store = createStore((state) => state,
@@ -482,7 +508,7 @@ describe('connect()', () => {
   it('should respect conditions', (done) => {
     fetchMock
       .get('http://localhost/turnip',
-        [{ 'id':'58e5356fe84698a0a279a903', 'name':'Alberta' }],
+        [{ 'id': '58e5356fe84698a0a279a903', 'name': 'Alberta' }],
         { headers: { 'Content-Type': 'application/json' } });
 
     const store = createStore((state) => state,
@@ -522,7 +548,10 @@ describe('connect()', () => {
       applyMiddleware(thunk));
 
     const Connected = connect(Acc, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root store={store} component={Connected} />);
+    let MountedComponent;
+    act(() => {
+      MountedComponent = create(<Root store={store} component={Connected} />);
+    });
     const inst = MountedComponent.root;
 
     inst.findByType(Acc).props.mutator.accResource.GET({});
@@ -545,66 +574,46 @@ describe('connect()', () => {
   it('should reconnect previously connected component', () => {
     const store = createStore((state) => state, {});
     const Connected = connect(Parent, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root showChild store={store} component={Connected} />);
+    let MountedComponent;
+    act(() => {
+      MountedComponent = create(<Root showChild store={store} component={Connected} />);
+    });
     const inst = MountedComponent.root;
 
     inst.findByType(Child2).props.resources.should.have.property('childResource2');
     inst.findByType(Child2).props.mutator.should.have.property('childResource2');
     inst.findByType(Child2).props.resources.childResource2.should.equal('child2');
 
-    inst.setProps({ showChild: false });
-    inst.setProps({ showChild: true });
+    // inst.setProps({ showChild: false });
+    MountedComponent.update(<Root store={store} component={Connected} />);
+    // inst.setProps({ showChild: true });
+    MountedComponent.update(<Root showChild store={store} component={Connected} />);
 
     inst.findByType(Child2).props.resources.should.have.property('childResource2');
     inst.findByType(Child2).props.mutator.should.have.property('childResource2');
-  });
-
-  it('should refetch data when props change', (done) => {
-    fetchMock
-      .get('http://localhost/turnip?id=1',
-        [{ id: 1, someprop: 'someval' }],
-        { headers: { 'Content-Type': 'application/json' } })
-      .get('http://localhost/turnip?id=2',
-        [{ id: 2, someprop: 'otherval' }],
-        { headers: { 'Content-Type': 'application/json' } });
-
-    const store = createStore((state) => state,
-      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
-      applyMiddleware(thunk));
-
-    const Connected = connect(CompWithParams, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root id={1} store={store} component={Connected} />);
-    const inst = MountedComponent.root;
-
-    setTimeout(() => {
-      const res = inst.findByType(CompWithParams).props.resources.resourceWithParam;
-      res.records[0].someprop.should.equal('someval');
-      inst.setProps({ id: 2 });
-    });
-
-    setTimeout(() => {
-      const res = inst.findByType(CompWithParams).props.resources.resourceWithParam;
-      res.records[0].someprop.should.equal('otherval');
-      done();
-    }, 100);
   });
 
   it('should cancel request when connected component unmounts', (done) => {
     fetchMock
       .get('http://localhost/unmounted',
         [{ id: 1 }],
-        { delay: 1000,
-          headers: { 'Content-Type': 'application/json' } });
+        {
+          delay: 1000,
+          headers: { 'Content-Type': 'application/json' }
+        });
 
     const store = createStore((state) => state,
       { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
       applyMiddleware(thunk));
 
     const Connected = connect(Unmounted, 'test', mockedEpics, defaultLogger);
-    const MountedComponent = create(<Root id={1} store={store} component={Connected} />);
-    const inst = MountedComponent.root;
+    let MountedComponent;
+    act(() => {
+      MountedComponent = create(<Root id={1} store={store} component={Connected} />);
+    });
+    // const inst = MountedComponent.root;
 
-    inst.setProps({ hideConnected: true });
+    MountedComponent.update(<Root id={1} hideConnected store={store} component={Connected} />);
 
     setTimeout(() => {
       const state = store.getState();
@@ -644,9 +653,9 @@ describe('connect()', () => {
       .get('http://localhost/turnip?limit=5&offset=5&q=dinner',
         {
           records: [
-            { 'id':'58e55786065039ceb9acb0e2', 'name':'Lucas' },
-            { 'id':'58e55786e2106a216fdb5629', 'name':'Kirkland' },
-            { 'id':'58e55786819013f1e810d28e', 'name':'Clarke' },
+            { 'id': '58e55786065039ceb9acb0e2', 'name': 'Lucas' },
+            { 'id': '58e55786e2106a216fdb5629', 'name': 'Kirkland' },
+            { 'id': '58e55786819013f1e810d28e', 'name': 'Clarke' },
           ],
           total_records: 10
         },
@@ -673,5 +682,50 @@ describe('connect()', () => {
       fetchMock.restore();
       done();
     }, 40);
+  });
+});
+
+describe('Connect - data-fetching according to props', () => {
+  let res;
+  let inst;
+  let store;
+  let MountedComponent;
+  let Connected;
+  before(async () => {
+    fetchMock
+      .get('http://localhost/turnip?id=1',
+        [{ id: 1, someprop: 'someval' }],
+        { headers: { 'Content-Type': 'application/json' } })
+      .get('http://localhost/turnip?id=2',
+        [{ id: 2, someprop: 'otherval' }],
+        { headers: { 'Content-Type': 'application/json' } });
+
+    store = createStore((state) => state,
+      { okapi: { url: 'http://localhost', tenant: 'tenantid' } },
+      applyMiddleware(thunk));
+
+    Connected = connect(CompWithParams, 'test', mockedEpics, defaultLogger);
+    await act(() => {
+      MountedComponent = create(<Root id={1} store={store} component={Connected} />);
+    });
+    inst = MountedComponent.root;
+  });
+
+  it('should should fetch initial data', async () => {
+    res = inst.findByType(CompWithParams).props.resources.resourceWithParam;
+    await res.records[0].someprop.should.equal('someval');
+  });
+
+  describe('updating props', () => {
+    before(async () => {
+      await act(() => {
+        MountedComponent.update(<Root id={2} store={store} component={Connected} />);
+      });
+    });
+
+    it('will refetch data according to prop updates...', async () => {
+      res = inst.findByType(CompWithParams).props.resources.resourceWithParam;
+      await res.records[0].someprop.should.equal('otherval');
+    });
   });
 });

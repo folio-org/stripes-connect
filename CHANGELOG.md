@@ -5,6 +5,7 @@
 * Use `index.js` to correctly export public API. Refs STCON-144.
 * Update outdated deps. Refs STCON-145.
 * Use consistent version constraints on `redux` to guarantee a singleton. Refs STCON-146, STRIPES-860.
+* Import babel's test config via stripes-cli to keep consistent with settings in stripes-webpack. Refs STCON-148.
 
 ## [8.1.0](https://github.com/folio-org/stripes-connect/tree/v8.1.0) (2023-01-30)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v7.1.0...v8.1.0)

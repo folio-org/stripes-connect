@@ -1,6 +1,6 @@
 # Change history for stripes-connect
 
-## 8.2.0 IN PROGRESS
+## 9.0.0 IN PROGRESS
 
 * Use `index.js` to correctly export public API. Refs STCON-144.
 * Update outdated deps. Refs STCON-145.

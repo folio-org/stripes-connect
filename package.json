@@ -23,7 +23,6 @@
   "devDependencies": {
     "@babel/core": "^7.8.0",
     "@babel/eslint-parser": "^7.15.0",
-    "@babel/preset-react": "^7.7.4",
     "@babel/register": "^7.7.7",
     "@folio/eslint-config-stripes": "^6.0.0",
     "@folio/stripes-cli": "^2.8.0",

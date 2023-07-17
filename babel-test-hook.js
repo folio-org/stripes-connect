@@ -1,6 +1,5 @@
 const { babelOptions } = require('@folio/stripes-cli');
 
-
 require('@babel/register')({
   ...babelOptions,
   test: (fileName) => {

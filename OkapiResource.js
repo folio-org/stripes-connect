@@ -45,7 +45,7 @@ function optionsFromState(options, state) {
     const okapiOptions = {
       root: state.okapi.url,
       headers: {
-        'X-Okapi-Tenant': state.okapi.tenant,
+        'X-Okapi-Tenant': options.tenant || state.okapi.tenant,
         'Accept-Language': state.okapi.locale ?? 'en',
       },
     };

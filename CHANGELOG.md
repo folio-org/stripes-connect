@@ -8,6 +8,7 @@
 * Import babel's test config via stripes-cli to keep consistent with settings in stripes-webpack. Refs STCON-148.
 * *BREAKING* Bump `react` to `18.2.0`. Refs STCON-147.
 * Support tenant override in okapi resources. Refs STCON-150.
+* *BREAKING* Omit `X-Okapi-Token` request header; handle access-control via cookies. Refs STCON-138.
 
 ## [8.1.0](https://github.com/folio-org/stripes-connect/tree/v8.1.0) (2023-01-30)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v7.1.0...v8.1.0)

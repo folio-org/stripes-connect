@@ -1,6 +1,9 @@
 # Change history for stripes-connect
 
-## 9.0.0 IN PROGRESS
+## 9.1.0 IN PROGRESS
+
+## [9.0.0](https://github.com/folio-org/stripes-connect/tree/v9.0.0) (2023-10-11)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v8.1.0...v9.0.0)
 
 * Use `index.js` to correctly export public API. Refs STCON-144.
 * Update outdated deps. Refs STCON-145.

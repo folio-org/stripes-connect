@@ -595,6 +595,8 @@ export default class RESTResource {
       headers,
       signal,
       body: JSON.stringify(remoteRecord),
+      credentials: 'include',
+      mode: 'cors',
     }).then((response) => {
       if (response.status >= 400) {
         const clonedResponse = response.clone();
@@ -656,6 +658,8 @@ export default class RESTResource {
         headers,
         signal,
         body: JSON.stringify(record),
+        credentials: 'include',
+        mode: 'cors',
       })
         .then((response) => {
           if (response.status >= 400) {
@@ -712,6 +716,8 @@ export default class RESTResource {
       method: 'DELETE',
       headers,
       signal,
+      credentials: 'include',
+      mode: 'cors',
     })
       .then((response) => {
         if (response.status >= 400) {
@@ -781,7 +787,7 @@ export default class RESTResource {
 
       const signal = this.addAbortController('fetch', options);
 
-      return fetch(url, { headers, signal })
+      return fetch(url, { headers, signal, credentials: 'include', mode: 'cors' })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));
@@ -853,7 +859,7 @@ export default class RESTResource {
 
       const signal = this.addAbortController('fetchPageByOffset', options);
 
-      return fetch(url, { headers, signal })
+      return fetch(url, { headers, signal, credentials: 'include', mode: 'cors' })
         .then((response) => {
           if (response.status >= 400) {
             dispatch(this.fetchHTTPError(response));
@@ -898,7 +904,7 @@ export default class RESTResource {
 
         const signal = this.addAbortController(`fetchMore${offset}`, options);
 
-        fetch(url, { headers, signal })
+        fetch(url, { headers, signal, credentials: 'include', mode: 'cors' })
           .then((response) => {
             if (response.status >= 400) {
               dispatch(this.fetchHTTPError(response));
@@ -954,7 +960,7 @@ export default class RESTResource {
 
       const signal = this.addAbortController('accFetch', options);
 
-      const beforeCatch = fetch(url, { headers, signal })
+      const beforeCatch = fetch(url, { headers, signal, credentials: 'include', mode: 'cors' })
         .then(response => response.text()
           .then((text) => {
             if (response.status >= 400) {

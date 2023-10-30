@@ -49,6 +49,7 @@ function optionsFromState(options, state) {
         'Accept-Language': state.okapi.locale ?? 'en',
       },
     };
+    if (state.okapi.token) okapiOptions.headers['X-Okapi-Token'] = state.okapi.token;
     return okapiOptions;
   }
   return {};

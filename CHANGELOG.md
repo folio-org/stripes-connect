@@ -1,6 +1,8 @@
 # Change history for stripes-connect
 
-## 9.1.0 IN PROGRESS
+## [9.1.0](https://github.com/folio-org/stripes-connect/tree/v9.1.0) (2024-03-12)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v9.0.0...v9.1.0)
+
 * Include auth-n related request options. Refs STCON-138.
 
 ## [9.0.0](https://github.com/folio-org/stripes-connect/tree/v9.0.0) (2023-10-11)

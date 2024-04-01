@@ -644,7 +644,9 @@ export default class RESTResource {
     const clientRecord = { ...record };
 
     return (dispatch, getState) => {
-      const options = this.verbOptions('PUT', getState(), props);
+      let options = this.verbOptions('PUT', getState(), props);
+      options = Object.assign(options, opts);
+
       const { pk, headers } = options;
       const url = urlFromOptions(options, record[pk]);
       if (url === null) return null;

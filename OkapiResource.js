@@ -19,7 +19,7 @@ const defaults = {
   },
   DELETE: {
     headers: {
-      'Accept': 'text/plain',
+      'Accept': 'text/plain, application/json',
       'Content-Type': 'application/json',
     },
   },
@@ -31,7 +31,7 @@ const defaults = {
   },
   PUT: {
     headers: {
-      'Accept': 'text/plain',
+      'Accept': 'text/plain, application/json',
       'Content-Type': 'application/json',
     },
   },

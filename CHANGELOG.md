@@ -2,6 +2,8 @@
 
 ## 9.2.0 IN PROGRESS
 
+* Provide more lenient defaults for `PUT`/`DELETE` `Accept` headers. Refs STCON-154.
+
 ## [9.1.0](https://github.com/folio-org/stripes-connect/tree/v9.1.0) (2024-03-12)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v9.0.0...v9.1.0)
 

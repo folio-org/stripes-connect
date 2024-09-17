@@ -11,3 +11,7 @@ jobs:
     with:
       jest-enabled: true
       jest-test-command: yarn run test
+      sonar-sources: .
+      compile-translations: false
+
+

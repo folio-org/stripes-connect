@@ -1,6 +1,9 @@
 # Change history for stripes-connect
 
-## 9.2.0 IN PROGRESS
+## 9.3.0 IN PROGRESS
+
+## [9.2.0](https://github.com/folio-org/stripes-connect/tree/v9.2.0) (2024-10-11)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v9.1.0...v9.2.0)
 
 * Provide more lenient defaults for `PUT`/`DELETE` `Accept` headers. Refs STCON-154.
 

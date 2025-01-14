@@ -10,9 +10,9 @@ import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 import { create, act } from 'react-test-renderer';
 
-import ConnectContext from '../ConnectContext';
+import ConnectContext from '../src/ConnectContext';
 
-import { connect } from '../connect';
+import { connect } from '../src/connect';
 
 global.window.AbortController = AbortController;
 

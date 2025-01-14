@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import OkapiResource from '../OkapiResource';
+import OkapiResource from '../src/OkapiResource';
 
 describe('OkapiResource', () => {
   describe('optionsFromState', () => {

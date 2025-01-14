@@ -1,7 +1,7 @@
 import { should } from 'chai';
 import { describe, it } from 'mocha';
 
-import reducer from '../RESTResource/reducer';
+import reducer from '../src/RESTResource/reducer';
 
 should();
 

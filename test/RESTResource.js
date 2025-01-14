@@ -1,7 +1,7 @@
 import { should, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { substitute, buildOption } from '../RESTResource/RESTResource';
+import { substitute, buildOption } from '../src/RESTResource/RESTResource';
 
 should();
 

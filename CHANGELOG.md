@@ -1,6 +1,7 @@
 # Change history for stripes-connect
 
-## 10.0.0 IN PROGRESS
+## [10.0.0](https://github.com/folio-org/stripes-connect/tree/v10.0.0) (2025-02-24)
+[Full Changelog](https://github.com/folio-org/stripes-connect/compare/v9.2.0...v10.0.0)
 
 * *BREAKING* Bump `@folio/stripes-*` dependencies.
 

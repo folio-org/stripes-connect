@@ -1,4 +1,13 @@
-import { substitute, buildOption } from './RESTResource';
+import {
+  buildOption,
+  compilePathTemplate,
+  extractTotal,
+  mockProps,
+  processFallback,
+  substitute,
+  urlFromOptions,
+} from './RESTResource';
+
 
 const state = {
   somemodule_top: 'somestring',
@@ -97,6 +106,171 @@ describe('RESTResource', () => {
         parsedQuery: { q: 'water' },
         params: { id: '42' }
       });
+    });
+  });
+});
+
+describe('extractTotal', () => {
+  it('prefers resultInfo.totalRecords', () => {
+    const json = { resultInfo: { totalRecords: 271828 }, totalRecords: 1414, total_records: 314159 };
+    expect(extractTotal(json)).toEqual(json.resultInfo.totalRecords);
+  });
+
+  it('falls back to totalRecords', () => {
+    const json = { totalRecords: 1414, total_records: 314159 };
+    expect(extractTotal(json)).toEqual(json.totalRecords);
+  });
+
+  it('falls back total_records', () => {
+    const json = { total_records: 314159 };
+    expect(extractTotal(json)).toEqual(json.total_records);
+  });
+
+  it('returns null when all else fails', () => {
+    const json = {};
+    expect(extractTotal(json)).toBeNull();
+  });
+});
+
+describe('processFallback', () => {
+  describe('handles +', () => {
+    it('"key:+replacement" > "replacement" when key maps to anything truthy', () => {
+      expect(processFallback('key:+replacement', [], { key: true })).toEqual('replacement');
+    });
+
+    it('"key:+replacement" > "" when key is absent', () => {
+      expect(processFallback('key:+replacement', [], {})).toEqual('');
+    });
+  });
+
+  describe('handles -', () => {
+    it('"key:-replacement" > "val" when key maps to "val"', () => {
+      expect(processFallback('key:-replacement', [], { key: 'val' })).toEqual('val');
+    });
+
+    it('"key:-replacement" > "replacement" when key is absent', () => {
+      expect(processFallback('key:-replacement', [], { val: 'aaa' })).toEqual('replacement');
+    });
+  });
+});
+
+
+describe('urlFromOptions', () => {
+  it('returns null given null path', () => {
+    expect(urlFromOptions({ path: null })).toBeNull();
+  });
+
+  it('returns null given null params', () => {
+    expect(urlFromOptions({ path: 'path', params: null })).toBeNull();
+  });
+
+  it('returns null given any params property with a null value', () => {
+    expect(urlFromOptions({ path: 'path', params: { a: 'a', b: null } })).toBeNull();
+  });
+
+  it('fills params from staticFallback', () => {
+    const options = {
+      path: 'path',
+      params: { a: 'a', b: null },
+      staticFallback: {
+        params: {
+          b: 'b'
+        }
+      }
+    };
+    expect(urlFromOptions(options)).toEqual('/path?a=a&b=b');
+  });
+
+  it('returns path when params is undefined', () => {
+    expect(urlFromOptions({ path: 'path' })).toEqual('/path');
+  });
+
+  it('optionally includes root prefix', () => {
+    expect(urlFromOptions({ path: 'path', root: 'root' })).toEqual('root/path');
+  });
+
+  describe('handles primary key', () => {
+    it('appends it when provided and not already included', () => {
+      expect(urlFromOptions({ path: 'path' }, 'SOME_PK')).toEqual('/path/SOME_PK');
+    });
+
+    it('does nothing if path ends with it', () => {
+      expect(urlFromOptions({ path: 'path/SOME_PK' }, 'SOME_PK')).toEqual('/path/SOME_PK');
+    });
+  });
+});
+
+describe('substitute', () => {
+  it('throws errors as necessary', () => {
+    const tryMe = () => {
+      substitute({}, {}, {}, 'string', { log: jest.fn() });
+    };
+
+    expect(tryMe).toThrow(/Invalid type/);
+  });
+});
+
+describe('compilePathTemplate', () => {
+  describe('handles ? (query-params)', () => {
+    it('replaces values when satisfied', () => {
+      const q = { foo: 'FOO' }; // query
+      const p = {};
+      const l = {};
+      expect(compilePathTemplate('/path/?{foo}/bar', q, p, l)).toEqual('/path/FOO/bar');
+    });
+
+    it('returns null when unsatisfied', () => {
+      const q = {};
+      const p = {};
+      const l = {};
+      expect(compilePathTemplate('/path/?{foo}/bar', q, p, l)).toBeNull();
+    });
+  });
+
+  describe('handles : (react-router path components)', () => {
+    it('replaces values when satisfied', () => {
+      const q = {};
+      const p = { match: { params: { foo: 'FOO' } } }; // match, params
+      const l = {};
+      expect(compilePathTemplate('/path/:{foo}/bar', q, p, l)).toEqual('/path/FOO/bar');
+    });
+
+    it('returns null when unsatisfied', () => {
+      const q = {};
+      const p = {};
+      const l = {};
+      expect(compilePathTemplate('/path/:{foo}/bar', q, p, l)).toBeNull();
+    });
+  });
+
+  describe('handles % and $ (resources)', () => {
+    it('replaces values when satisfied', () => {
+      const q = {};
+      const p = {};
+      const l = { foo: 'FOO' };
+      expect(compilePathTemplate('/path/%{foo}/bar', q, p, l)).toEqual('/path/FOO/bar');
+    });
+    it('returns null when unsatisfied', () => {
+      const q = {};
+      const p = {};
+      const l = {};
+      expect(compilePathTemplate('/path/%{foo}/bar', q, p, l)).toBeNull();
+    });
+  });
+
+  describe('handles ! (local resources)', () => {
+    it('replaces values when satisfied', () => {
+      const q = {};
+      const p = { foo: 'FOO' };
+      const l = {};
+      expect(compilePathTemplate('/path/!{foo}/bar', q, p, l)).toEqual('/path/FOO/bar');
+    });
+
+    it('returns null when unsatisfied', () => {
+      const q = {};
+      const p = {};
+      const l = {};
+      expect(compilePathTemplate('/path/!{foo}/bar', q, p, l)).toBeNull();
     });
   });
 });

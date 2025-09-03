@@ -26,7 +26,7 @@ const defaultDefaults = {
  * @param json object
  * @return int
  */
-function extractTotal(json) {
+export function extractTotal(json) {
   if (json.resultInfo !== undefined &&
     json.resultInfo.totalRecords !== undefined) {
     return json.resultInfo.totalRecords;
@@ -60,7 +60,7 @@ function extractTotal(json) {
  *
  * @return string
  */
-function processFallback(s, getPath, props) {
+export function processFallback(s, getPath, props) {
   let name = s;
   let type;
   let val;
@@ -98,7 +98,7 @@ function processFallback(s, getPath, props) {
  * If we restructure the state into a per-module hierarchy we
  * won't need to go through this dance STRIPES-238
  */
-function mockProps(state, module, dataKey, logger) {
+export function mockProps(state, module, dataKey, logger) {
   const mock = { resources: {} };
   logger.log('mock', 'mockProps with state', state);
   Object.keys(state).forEach((key) => {
@@ -143,7 +143,7 @@ function mockProps(state, module, dataKey, logger) {
  *
  * @return string
  */
-function urlFromOptions(options, pk) {
+export function urlFromOptions(options, pk) {
   const o = Object.assign({}, options);
   if (o.path === null) return null;
   if (o.params === null) return null;
@@ -211,6 +211,8 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
         if (prop === null) dynamicPartsSatisfied = false;
         return prop;
       }
+      // this is unreachable; the cases above account for all
+      // possible conditions in the regex
       default: {
         dynamicPartsSatisfied = false;
         return null;

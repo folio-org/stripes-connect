@@ -1,5 +1,9 @@
 # Change history for stripes-connect
 
+## 10.1.0 IN PROGRESS
+
+* Refactor to avoid deprecated React 19 methods. Refs STCON-155.
+
 ## 10.0.0 IN PROGRESS
 
 * *BREAKING* Bump `@folio/stripes-*` dependencies.

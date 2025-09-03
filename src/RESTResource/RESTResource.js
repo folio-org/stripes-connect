@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import queryString from 'query-string';
 
 import actionCreatorsFor from './actionCreatorsFor';
-import reducer from './reducer';
+import reducer, { REDUCER_ACTIONS } from './reducer';
 import { resultDensities } from '../constants';
 
 const defaultDefaults = {
@@ -407,10 +407,10 @@ export default class RESTResource {
       || action.meta.resource !== this.name
       || action.meta.dataKey !== this.dataKey) return state;
     switch (action.type) {
-      case '@@stripes-connect/PAGING_START': {
+      case REDUCER_ACTIONS.PAGING_START: {
         return [];
       }
-      case '@@stripes-connect/PAGE_START': {
+      case REDUCER_ACTIONS.PAGE_START: {
         const newPage = {
           records: null,
           url: action.url,
@@ -419,7 +419,7 @@ export default class RESTResource {
         };
         return [...state, newPage];
       }
-      case '@@stripes-connect/PAGE_SUCCESS': {
+      case REDUCER_ACTIONS.PAGE_SUCCESS: {
         let allDone = false;
         const newState = state.reduce((acc, val) => {
           allDone = allDone && val.isComplete;

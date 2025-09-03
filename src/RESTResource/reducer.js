@@ -10,6 +10,25 @@ export const initialResourceState = {
   pendingMutations: [],
 };
 
+export const REDUCER_ACTIONS = {
+  FETCH_START: '@@stripes-connect/FETCH_START',
+  FETCH_SUCCESS: '@@stripes-connect/FETCH_SUCCESS',
+  ACC_FETCH_SUCCESS: '@@stripes-connect/ACC_FETCH_SUCCESS',
+  OFFSET_FETCH_SUCCESS: '@@stripes-connect/OFFSET_FETCH_SUCCESS',
+  OFFSET_FETCH_SPARSE_SLICE_SUCCESS: '@@stripes-connect/OFFSET_FETCH_SPARSE_SLICE_SUCCESS',
+  RESET: '@@stripes-connect/RESET',
+  CREATE_SUCCESS: '@@stripes-connect/CREATE_SUCCESS',
+  UPDATE_SUCCESS: '@@stripes-connect/UPDATE_SUCCESS',
+  DELETE_SUCCESS: '@@stripes-connect/DELETE_SUCCESS',
+  MUTATION_ERROR: '@@stripes-connect/MUTATION_ERROR',
+  FETCH_ERROR: '@@stripes-connect/FETCH_ERROR',
+  FETCH_ABORT: '@@stripes-connect/FETCH_ABORT',
+
+  PAGING_START: '@@stripes-connect/PAGING_START',
+  PAGE_START: '@@stripes-connect/PAGE_START',
+  PAGE_SUCCESS: '@@stripes-connect/PAGE_SUCCESS',
+};
+
 export default function reducer(state = initialResourceState, action) {
   if (!action.type.startsWith('@@stripes-connect')
     || action.meta.module !== this.module
@@ -17,10 +36,10 @@ export default function reducer(state = initialResourceState, action) {
     || action.meta.dataKey !== this.dataKey) return state;
 
   switch (action.type) {
-    case '@@stripes-connect/FETCH_START': {
+    case REDUCER_ACTIONS.FETCH_START: {
       return Object.assign({}, state, { isPending: true });
     }
-    case '@@stripes-connect/FETCH_SUCCESS': {
+    case REDUCER_ACTIONS.FETCH_SUCCESS: {
       let records;
       if (Array.isArray(action.payload)) records = [...action.payload];
       else records = [_.clone(action.payload)];
@@ -33,7 +52,7 @@ export default function reducer(state = initialResourceState, action) {
         ...action.meta,
       });
     }
-    case '@@stripes-connect/ACC_FETCH_SUCCESS': {
+    case REDUCER_ACTIONS.ACC_FETCH_SUCCESS: {
       let records;
       if (Array.isArray(action.payload)) records = [...state.records, ...action.payload];
       else records = [...state.records, _.clone(action.payload)];
@@ -46,7 +65,7 @@ export default function reducer(state = initialResourceState, action) {
         ...action.meta,
       });
     }
-    case '@@stripes-connect/OFFSET_FETCH_SUCCESS': {
+    case REDUCER_ACTIONS.OFFSET_FETCH_SUCCESS: {
       const records = [...state.records];
       if (Array.isArray(action.payload)) records.splice(action.meta.offset, 0, ...action.payload);
       else records.splice(action.meta.offset, 0, _.clone(action.payload));
@@ -59,7 +78,7 @@ export default function reducer(state = initialResourceState, action) {
         ...action.meta,
       });
     }
-    case '@@stripes-connect/OFFSET_FETCH_SPARSE_SLICE_SUCCESS': {
+    case REDUCER_ACTIONS.OFFSET_FETCH_SPARSE_SLICE_SUCCESS: {
       let tempArray = [];
       let remove = 0;
 
@@ -86,10 +105,10 @@ export default function reducer(state = initialResourceState, action) {
         ...action.meta,
       });
     }
-    case '@@stripes-connect/RESET': {
+    case REDUCER_ACTIONS.RESET: {
       return initialResourceState;
     }
-    case '@@stripes-connect/CREATE_SUCCESS': {
+    case REDUCER_ACTIONS.CREATE_SUCCESS: {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'POST',
@@ -97,7 +116,7 @@ export default function reducer(state = initialResourceState, action) {
         }, ...state.successfulMutations],
       });
     }
-    case '@@stripes-connect/UPDATE_SUCCESS': {
+    case REDUCER_ACTIONS.UPDATE_SUCCESS: {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'PUT',
@@ -105,7 +124,7 @@ export default function reducer(state = initialResourceState, action) {
         }, ...state.successfulMutations],
       });
     }
-    case '@@stripes-connect/DELETE_SUCCESS': {
+    case REDUCER_ACTIONS.DELETE_SUCCESS: {
       return Object.assign({}, state, {
         successfulMutations: [{
           type: 'DELETE',
@@ -113,7 +132,7 @@ export default function reducer(state = initialResourceState, action) {
         }, ...state.successfulMutations],
       });
     }
-    case '@@stripes-connect/MUTATION_ERROR': {
+    case REDUCER_ACTIONS.MUTATION_ERROR: {
       return Object.assign({}, state, {
         failedMutations: [{
           ...action.meta,
@@ -121,13 +140,13 @@ export default function reducer(state = initialResourceState, action) {
         }, ...state.failedMutations],
       });
     }
-    case '@@stripes-connect/FETCH_ERROR': {
+    case REDUCER_ACTIONS.FETCH_ERROR: {
       return Object.assign({}, state, {
         isPending: false,
         failed: Object.assign({}, action.meta, action.payload),
       });
     }
-    case '@@stripes-connect/FETCH_ABORT': {
+    case REDUCER_ACTIONS.FETCH_ABORT: {
       // We do not use action.payload.message
       return initialResourceState;
     }

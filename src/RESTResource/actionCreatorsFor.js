@@ -1,3 +1,5 @@
+import { REDUCER_ACTIONS } from './reducer';
+
 export default function actionCreatorsFor(resource) {
   const commonMeta = {
     resource: resource.name,
@@ -29,7 +31,7 @@ export default function actionCreatorsFor(resource) {
     deleteSuccess: passMetaPayload('DELETE_SUCCESS'),
 
     mutationError: (err, mutator, meta) => ({
-      type: '@@stripes-connect/MUTATION_ERROR',
+      type: REDUCER_ACTIONS.MUTATION_ERROR,
       payload: { type: mutator, ...err },
       meta: Object.assign({}, commonMeta, meta),
     }),
@@ -49,12 +51,12 @@ export default function actionCreatorsFor(resource) {
     fetchAbort: passPayload('FETCH_ABORT'),
 
     pagingStart: () => ({
-      type: '@@stripes-connect/PAGING_START',
+      type: REDUCER_ACTIONS.PAGING_START,
       meta: commonMeta,
     }),
 
     pageStart: url => ({
-      type: '@@stripes-connect/PAGE_START',
+      type: REDUCER_ACTIONS.PAGE_START,
       url,
       meta: commonMeta,
     }),
@@ -62,7 +64,7 @@ export default function actionCreatorsFor(resource) {
     pageSuccess: passMetaPayload('PAGE_SUCCESS'),
 
     reset: () => ({
-      type: '@@stripes-connect/RESET',
+      type: REDUCER_ACTIONS.RESET,
       meta: commonMeta,
     }),
   };

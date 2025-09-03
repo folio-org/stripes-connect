@@ -996,12 +996,12 @@ export default class RESTResource {
   }
 
   handleFetchOrAbortError = (reason, dispatch) => {
-    const { name, message } = reason;
+    const { name, message, httpStatus } = reason;
 
     if (name === 'AbortError') {
       dispatch(this.actions.fetchAbort({ message }));
     } else {
-      dispatch(this.actions.fetchError({ message }));
+      dispatch(this.actions.fetchError({ message, httpStatus }));
     }
   }
 

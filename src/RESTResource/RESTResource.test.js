@@ -2,7 +2,6 @@ import {
   buildOption,
   compilePathTemplate,
   extractTotal,
-  mockProps,
   processFallback,
   substitute,
   urlFromOptions,

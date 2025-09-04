@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import fetchMock from 'fetch-mock';
 import { render, screen, waitFor } from '@folio/jest-config-stripes/testing-library/react';
-import userEvent from '@folio/jest-config-stripes/testing-library/user-event'
+import userEvent from '@folio/jest-config-stripes/testing-library/user-event';
 
 import ConnectContext from './ConnectContext';
 
@@ -282,7 +282,6 @@ const ErrorProne = (props) => {
       {stringify(props.resources, props.mutator)}
     </>
   );
-
 };
 ErrorProne.manifest = {
   errorProne: {

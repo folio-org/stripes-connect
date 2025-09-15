@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import queryString from 'query-string';
 
 import actionCreatorsFor from './actionCreatorsFor';
-import reducer from './reducer';
+import reducer, { REDUCER_ACTIONS } from './reducer';
 import { resultDensities } from '../constants';
 
 const defaultDefaults = {
@@ -26,7 +26,7 @@ const defaultDefaults = {
  * @param json object
  * @return int
  */
-function extractTotal(json) {
+export function extractTotal(json) {
   if (json.resultInfo !== undefined &&
     json.resultInfo.totalRecords !== undefined) {
     return json.resultInfo.totalRecords;
@@ -60,7 +60,7 @@ function extractTotal(json) {
  *
  * @return string
  */
-function processFallback(s, getPath, props) {
+export function processFallback(s, getPath, props) {
   let name = s;
   let type;
   let val;
@@ -98,7 +98,7 @@ function processFallback(s, getPath, props) {
  * If we restructure the state into a per-module hierarchy we
  * won't need to go through this dance STRIPES-238
  */
-function mockProps(state, module, dataKey, logger) {
+export function mockProps(state, module, dataKey, logger) {
   const mock = { resources: {} };
   logger.log('mock', 'mockProps with state', state);
   Object.keys(state).forEach((key) => {
@@ -143,7 +143,7 @@ function mockProps(state, module, dataKey, logger) {
  *
  * @return string
  */
-function urlFromOptions(options, pk) {
+export function urlFromOptions(options, pk) {
   const o = Object.assign({}, options);
   if (o.path === null) return null;
   if (o.params === null) return null;
@@ -211,6 +211,8 @@ export function compilePathTemplate(template, parsedQuery, props, localProps) {
         if (prop === null) dynamicPartsSatisfied = false;
         return prop;
       }
+      // this is unreachable; the cases above account for all
+      // possible conditions in the regex
       default: {
         dynamicPartsSatisfied = false;
         return null;
@@ -407,10 +409,10 @@ export default class RESTResource {
       || action.meta.resource !== this.name
       || action.meta.dataKey !== this.dataKey) return state;
     switch (action.type) {
-      case '@@stripes-connect/PAGING_START': {
+      case REDUCER_ACTIONS.PAGING_START: {
         return [];
       }
-      case '@@stripes-connect/PAGE_START': {
+      case REDUCER_ACTIONS.PAGE_START: {
         const newPage = {
           records: null,
           url: action.url,
@@ -419,7 +421,7 @@ export default class RESTResource {
         };
         return [...state, newPage];
       }
-      case '@@stripes-connect/PAGE_SUCCESS': {
+      case REDUCER_ACTIONS.PAGE_SUCCESS: {
         let allDone = false;
         const newState = state.reduce((acc, val) => {
           allDone = allDone && val.isComplete;
@@ -996,12 +998,12 @@ export default class RESTResource {
   }
 
   handleFetchOrAbortError = (reason, dispatch) => {
-    const { name, message } = reason;
+    const { name, message, httpStatus } = reason;
 
     if (name === 'AbortError') {
       dispatch(this.actions.fetchAbort({ message }));
     } else {
-      dispatch(this.actions.fetchError({ message }));
+      dispatch(this.actions.fetchError({ message, httpStatus }));
     }
   }
 

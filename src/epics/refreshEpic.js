@@ -5,7 +5,7 @@ import {
   debounceTime,
 } from 'rxjs/operators';
 
-function shouldResourceRefresh(action, resource) {
+export function shouldResourceRefresh(action, resource) {
   const { path } = action.meta;
   const { optionsTemplate, cachedProps } = resource;
   let resPath;

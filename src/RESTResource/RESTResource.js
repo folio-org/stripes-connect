@@ -13,6 +13,7 @@ const defaultDefaults = {
   clear: true,
   abortable: false,
   abortOnUnmount: false,
+  allowUndefinedRecords: false,
   resultDensity: resultDensities.DENSE,
 };
 
@@ -802,11 +803,15 @@ export default class RESTResource {
                 this.logger.log('connect', `Response ${response.url} does not match most recent request ${this.lastUrl}`);
                 return;
               }
-              const data = (records ? _.get(json, records) : json);
+              let data = (records ? _.get(json, records) : json);
               this.logger.log('connect-fetch', `fetch ${key} (${url}) succeeded with`, data);
               if (!data) {
-                dispatch(this.actions.fetchError({ message: `no records in '${records}' element` }));
-                return;
+                if (!options.allowUndefinedRecords) {
+                  dispatch(this.actions.fetchError({ message: `no records in '${records}' element` }));
+                  return;
+                }
+
+                data = [];
               }
               const reqd = requestIndex;
               const perPage = options.perRequest;

@@ -1,4 +1,6 @@
-import {
+import { waitFor } from '@folio/jest-config-stripes/testing-library/react';
+
+import RESTResource, {
   buildOption,
   compilePathTemplate,
   extractTotal,
@@ -270,6 +272,88 @@ describe('compilePathTemplate', () => {
       const p = {};
       const l = {};
       expect(compilePathTemplate('/path/!{foo}/bar', q, p, l)).toBeNull();
+    });
+  });
+});
+
+describe('RESTResource', () => {
+  const mockDispatch = jest.fn();
+  const mockGetState = jest.fn().mockReturnValue({});
+  const mockFetch = jest.fn().mockResolvedValue({});
+  const logger = {
+    log: jest.fn(),
+  };
+  let realFetch;
+
+  beforeEach(() => {
+    realFetch = global.fetch;
+    global.fetch = mockFetch;
+    mockDispatch.mockClear();
+    mockGetState.mockClear();
+  });
+
+  afterAll(() => {
+    global.fetch = realFetch;
+  });
+
+  describe('when calling fetchAction', () => {
+    describe('when \\"records\\" is missing from response', () => {
+      beforeEach(() => {
+        mockFetch.mockClear().mockResolvedValue({
+          url: '/',
+          json: jest.fn().mockResolvedValue({
+            totalRecords: 1,
+          }),
+        });
+      });
+
+      describe('when using allowUndefinedRecords parameter', () => {
+        const restResource = new RESTResource(
+          'test-name',
+          { query: 'test-query' },
+          null,
+          logger,
+          null,
+          {
+            records: 'records',
+            allowUndefinedRecords: true,
+          }
+        );
+
+        it('should dispatch fetchSuccess action', async () => {
+          restResource.fetchAction({})(mockDispatch, mockGetState);
+
+          await waitFor(() => expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
+            type: '@@stripes-connect/FETCH_SUCCESS',
+            payload: [],
+          })));
+        });
+      });
+
+      describe('when allowUndefinedRecords parameter is false', () => {
+        const restResource = new RESTResource(
+          'test-name',
+          { query: 'test-query' },
+          null,
+          logger,
+          null,
+          {
+            records: 'records',
+            allowUndefinedRecords: false,
+          }
+        );
+
+        it('should dispatch fetchError action', async () => {
+          restResource.fetchAction({})(mockDispatch, mockGetState);
+
+          await waitFor(() => expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
+            type: '@@stripes-connect/FETCH_ERROR',
+            payload: {
+              message: 'no records in \'records\' element',
+            },
+          })));
+        });
+      });
     });
   });
 });

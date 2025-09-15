@@ -7,6 +7,7 @@
 ## 10.0.0 IN PROGRESS
 
 * *BREAKING* Bump `@folio/stripes-*` dependencies.
+* Add an option `allowUndefinedRecords` to RESTResource to allow for missing "records" collection in response. Refs STCON-175.
 
 ## [9.2.0](https://github.com/folio-org/stripes-connect/tree/v9.2.0) (2024-10-11)
 [Full Changelog](https://github.com/folio-org/stripes-connect/compare/v9.1.0...v9.2.0)

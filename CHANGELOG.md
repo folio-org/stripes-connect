@@ -3,6 +3,7 @@
 ## 10.1.0 IN PROGRESS
 
 * Refactor to avoid deprecated React 19 methods. Refs STCON-155.
+* Commit `yarn.lock` to avoid future supply chain attacks. Refs STCON-176.
 
 ## 10.0.0 IN PROGRESS
 

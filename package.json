@@ -1,6 +1,6 @@
 {
   "name": "@folio/stripes-connect",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "Declarative REST data access for React components",
   "repository": {
     "type": "git",

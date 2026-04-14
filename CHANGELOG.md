@@ -1,11 +1,11 @@
 # Change history for stripes-connect
 
-## 10.1.0 IN PROGRESS
+## [10.1.0](https://github.com/folio-org/stripes-connect/tree/v10.1.0) (2026-04-14)
 
 * Refactor to avoid deprecated React 19 methods. Refs STCON-155.
 * Commit `yarn.lock` to avoid future supply chain attacks. Refs STCON-176.
 
-## 10.0.0 IN PROGRESS
+## [10.0.0](https://github.com/folio-org/stripes-connect/tree/v10.0.0) (2025, 02, 24)
 
 * *BREAKING* Bump `@folio/stripes-*` dependencies.
 * Add an option `allowUndefinedRecords` to RESTResource to allow for missing "records" collection in response. Refs STCON-175.

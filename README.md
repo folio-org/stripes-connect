@@ -1,9 +1,29 @@
 # The Stripes Connect module
 
-Copyright (C) 2016-2018 The Open Library Foundation
+Copyright (C) 2016-2026 The Open Library Foundation
 
 This software is distributed under the terms of the Apache License,
 Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
+
+## Deprecation
+
+This module is deprecated. As of 2026, API queries should use [react-query](https://tanstack.com/query/latest). For example:
+```
+import { useQuery } from 'react-query';
+import { useNamespace, useOkapiKy } from '@folio/stripes/core';
+
+const useSomeQuery = () => {
+  const ky = useOkapiKy();
+  const [namespace] = useNamespace({ key: 'some-unique-key' });
+
+  const { data, isLoading, isError } = useQuery(
+    [namespace],
+    () => ky.get('/some/resource').json(),
+  );
+
+  return { data, isLoading, isError };
+};
+```
 
 ## Introduction
 
@@ -36,7 +56,7 @@ is explained in
 
 See [stripes-core](https://github.com/folio-org/stripes-core).
 
-See project [STRPCONN](https://issues.folio.org/browse/STRPCONN)
-at the [FOLIO issue tracker](https://dev.folio.org/guidelines/issue-tracker/).
+See project [STCON](https://issues.folio.org/browse/STCON)
+at the [FOLIO issue tracker](https://folio-org.atlassian.net/jira/).
 
 Other FOLIO Developer documentation is at [dev.folio.org](https://dev.folio.org/)

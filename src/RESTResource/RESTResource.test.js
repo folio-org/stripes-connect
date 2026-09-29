@@ -31,7 +31,7 @@ const props = {
   propVal: 'my_prop_value'
 
 };
-const module = 'somemodule';
+const moduleName = 'somemodule';
 
 // Modified from connect.js, as we don't want to export it there just so we can import it here
 const defaultLogger = () => { };
@@ -39,7 +39,7 @@ defaultLogger.log = (cat, ...args) => { // eslint-disable-line no-unused-vars
   // console.log(`stripes-connect (${cat})`, ...args);
 };
 
-const args = [props, state, module, defaultLogger];
+const args = [props, state, moduleName, defaultLogger];
 
 describe('RESTResource', () => {
   describe('substitute()', () => {

@@ -1,5 +1,7 @@
-const config = require('@folio/jest-config-stripes');
+import jcs from '@folio/jest-config-stripes';
 
-module.exports = {
+const { config } = jcs;
+
+export default {
   ...config,
 };

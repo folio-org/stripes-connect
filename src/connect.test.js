@@ -349,7 +349,12 @@ class Parent extends Component { // eslint-disable-line react/no-multi-comp
 
 describe('connect()', () => {
   beforeEach(() => {
-    fetchMock.restore();
+    fetchMock.hardReset();
+    fetchMock.mockGlobal();
+  });
+
+  afterAll(() => {
+    fetchMock.hardReset();
   });
 
   it('should pass through a component with no manifest', async () => {
@@ -764,6 +769,11 @@ describe('connect()', () => {
 describe('Connect - data-fetching according to props', () => {
   let store;
   let Connected;
+
+  beforeAll(() => {
+    fetchMock.hardReset();
+    fetchMock.mockGlobal();
+  });
 
   it('should should fetch initial data', async () => {
     fetchMock

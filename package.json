@@ -21,7 +21,7 @@
   "type": "module",
   "devDependencies": {
     "@folio/eslint-config-stripes": "^10.0.0",
-    "@folio/jest-config-stripes": "folio-org/jest-config-stripes#jest-30",
+    "@folio/jest-config-stripes": "^5.0.0",
     "abort-controller": "^3.0.0",
     "core-js": "^3.6.1",
     "fetch-mock": "^9.10.1",

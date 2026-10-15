@@ -31,7 +31,7 @@ const stringify = (resources = {}, mutator = {}) => {
 const jsonify = (element) => {
   try {
     return JSON.parse(element.textContent);
-  } catch (e) {
+  } catch {
     return '';
   }
 };

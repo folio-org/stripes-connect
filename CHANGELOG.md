@@ -4,6 +4,7 @@
 
 * Supply Personal Data Disclosure form. Refs STCON-174.
 * Add deprecation notice to README.md.
+* Modern Lint. Modern Jest. Purge unnecessary cruft. Refs STCON-177.
 
 ## [10.1.0](https://github.com/folio-org/stripes-connect/tree/v10.1.0) (2026-04-14)
 

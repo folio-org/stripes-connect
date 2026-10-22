@@ -18,19 +18,18 @@
     "test": "stripes-jest .",
     "lint": "stripes-lint ."
   },
-  "type": "module",
   "devDependencies": {
     "@folio/eslint-config-stripes": "^10.0.0",
     "@folio/jest-config-stripes": "^5.0.0",
     "abort-controller": "^3.0.0",
     "core-js": "^3.6.1",
     "fetch-mock": "^12.6.0",
+    "jest-environment-jsdom": "^30.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",
     "redux-observable": "^1.2.0",
     "redux-thunk": "^2.1.0",
-    "regenerator-runtime": "^0.13.3",
     "rxjs": "^6.6.3"
   },
   "dependencies": {
